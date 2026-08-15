@@ -326,5 +326,65 @@ nav a {
   .profile-card select {
     font-size: 16px;
   }
+  .dashboard {
+  max-width: 1100px;
+  margin: 60px auto;
+  padding: 0 25px;
+}
+
+.dashboard-welcome {
+  margin-bottom: 40px;
+}
+
+.dashboard-welcome h1 {
+  font-size: 38px;
+  margin-bottom: 10px;
+}
+
+.dashboard-welcome p {
+  line-height: 1.6;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+}
+
+.dashboard-card {
+  padding: 25px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-card h2 {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+.dashboard-card p {
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.dashboard-card .btn {
+  border: none;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .dashboard {
+    margin: 35px auto;
+  }
+
+  .dashboard-welcome h1 {
+    font-size: 30px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
   }
 }
