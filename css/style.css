@@ -162,4 +162,29 @@ nav a {
     grid-template-columns: 1fr;
   }
     }
+  .cta {
+  max-width: 900px;
+  margin: 80px auto;
+  padding: 60px 25px;
+  text-align: center;
+  background: #3157d5;
+  color: white;
+  border-radius: 20px;
+}
+
+.cta h2 {
+  font-size: 36px;
+  margin-bottom: 15px;
+}
+
+.cta p {
+  max-width: 600px;
+  margin: 0 auto 30px;
+  line-height: 1.6;
+}
+
+.cta .btn {
+  background: white;
+  color: #3157d5;
+  }
 }
