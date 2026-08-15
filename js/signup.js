@@ -20,7 +20,7 @@ signupForm.addEventListener("submit", async (event) => {
 
     alert("Account created successfully!");
 
-    window.location.href = "index.html";
+    window.location.href = "profile.html";
 
   } catch (error) {
     console.error(error);
