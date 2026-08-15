@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Set Up Your Profile - StudentConnect</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <main class="profile-page">
+
+    <section class="profile-card">
+
+      <h1>Tell Us About Yourself</h1>
+
+      <p>
+        This helps us recommend students, communities, and learning content
+        that match your interests.
+      </p>
+
+      <form id="profileForm">
+
+        <label for="displayName">Display Name</label>
+        <input
+          type="text"
+          id="displayName"
+          placeholder="Choose a display name"
+          required
+        >
+
+        <label for="level">School Level</label>
+        <select id="level" required>
+          <option value="">Choose your level</option>
+          <option value="JSS1">JSS1</option>
+          <option value="JSS2">JSS2</option>
+          <option value="JSS3">JSS3</option>
+          <option value="SS1">SS1</option>
+          <option value="SS2">SS2</option>
+          <option value="SS3">SS3</option>
+        </select>
+
+        <label for="subjects">Favorite Subject</label>
+        <select id="subjects" required>
+          <option value="">Choose a subject</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="Physics">Physics</option>
+          <option value="Chemistry">Chemistry</option>
+          <option value="Biology">Biology</option>
+          <option value="Computer Science">Computer Science</option>
+          <option value="English">English</option>
+        </select>
+
+        <label for="interests">Main Interest</label>
+        <select id="interests" required>
+          <option value="">Choose an interest</option>
+          <option value="Coding">Coding</option>
+          <option value="Football">Football</option>
+          <option value="Music">Music</option>
+          <option value="Art">Art</option>
+          <option value="Gaming">Gaming</option>
+          <option value="Science">Science</option>
+          <option value="Business">Business</option>
+        </select>
+
+        <button type="submit" class="btn">
+          Continue
+        </button>
+
+      </form>
+
+    </section>
+
+  </main>
+
+  <script type="module" src="js/profile.js"></script>
+
+</body>
+          </html>
