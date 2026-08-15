@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account - StudentConnect</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <main class="signup-page">
+
+    <section class="signup-card">
+
+      <h1>Create Your Account</h1>
+
+      <p>Tell us a little about yourself.</p>
+
+      <form>
+
+        <label for="name">Name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          placeholder="Enter your name"
+          required
+        >
+
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="Enter your email"
+          required
+        >
+
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Create a password"
+          required
+        >
+
+        <label for="country">Country</label>
+        <select id="country" name="country" required>
+          <option value="">Select your country</option>
+          <option value="nigeria">Nigeria</option>
+          <option value="ghana">Ghana</option>
+          <option value="kenya">Kenya</option>
+          <option value="south-africa">South Africa</option>
+          <option value="other">Other</option>
+        </select>
+
+        <label for="level">School Level</label>
+        <select id="level" name="level" required>
+          <option value="">Select your level</option>
+          <option value="jss1">JSS1</option>
+          <option value="jss2">JSS2</option>
+          <option value="jss3">JSS3</option>
+          <option value="ss1">SS1</option>
+          <option value="ss2">SS2</option>
+          <option value="ss3">SS3</option>
+          <option value="other">Other</option>
+        </select>
+
+        <button type="submit" class="btn">
+          Create Account
+        </button>
+
+      </form>
+
+      <p>
+        Already have an account?
+        <a href="login.html">Login</a>
+      </p>
+
+    </section>
+
+  </main>
+
+</body>
+</html>
