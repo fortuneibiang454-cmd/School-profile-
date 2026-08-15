@@ -187,4 +187,60 @@ nav a {
   background: white;
   color: #3157d5;
   }
+  .signup-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 20px;
+}
+
+.signup-card {
+  width: 100%;
+  max-width: 500px;
+  padding: 35px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.signup-card h1 {
+  margin-bottom: 10px;
+}
+
+.signup-card > p {
+  margin-bottom: 25px;
+  line-height: 1.6;
+}
+
+.signup-card form {
+  display: flex;
+  flex-direction: column;
+}
+
+.signup-card label {
+  margin-bottom: 7px;
+  font-weight: 600;
+}
+
+.signup-card input,
+.signup-card select {
+  padding: 13px;
+  margin-bottom: 18px;
+  border: 1px solid #d5d9e2;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.signup-card input:focus,
+.signup-card select:focus {
+  outline: 2px solid #3157d5;
+}
+
+.signup-card button {
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 5px;
+}
 }
