@@ -243,4 +243,88 @@ nav a {
   font-size: 16px;
   margin-top: 5px;
 }
+  .profile-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 20px;
+  box-sizing: border-box;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 550px;
+  padding: 35px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+}
+
+.profile-card h1 {
+  margin-bottom: 12px;
+}
+
+.profile-card > p {
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+.profile-card form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.profile-card label {
+  margin-bottom: 7px;
+  font-weight: 600;
+}
+
+.profile-card input,
+.profile-card select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px;
+  margin-bottom: 18px;
+  border: 1px solid #d5d9e2;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.profile-card button {
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 5px;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+
+  .profile-page {
+    padding: 20px 15px;
+    align-items: flex-start;
+  }
+
+  .profile-card {
+    padding: 25px 20px;
+    margin-top: 20px;
+  }
+
+  .profile-card h1 {
+    font-size: 30px;
+  }
+
+  .profile-card > p {
+    font-size: 15px;
+  }
+
+  .profile-card input,
+  .profile-card select {
+    font-size: 16px;
+  }
+  }
 }
