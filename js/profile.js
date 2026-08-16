@@ -1,0 +1,57 @@
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+
+const profileForm = document.getElementById("profileForm");
+
+onAuthStateChanged(auth, (user) => {
+
+  if (!user) {
+    alert("Please log in first.");
+    window.location.href = "login.html";
+    return;
+  }
+
+  profileForm.addEventListener("submit", async (event) => {
+
+    event.preventDefault();
+
+    const displayName =
+      document.getElementById("displayName").value.trim();
+
+    const level =
+      document.getElementById("level").value;
+
+    const subject =
+      document.getElementById("subjects").value;
+
+    const interest =
+      document.getElementById("interests").value;
+
+    try {
+
+      await setDoc(
+        doc(db, "users", user.uid),
+        {
+          displayName: displayName,
+          level: level,
+          subject: subject,
+          interest: interest
+        }
+      );
+
+      alert("Profile saved successfully!");
+
+      window.location.href = "dashboard.html";
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert("Could not save your profile. Please try again.");
+
+    }
+
+  });
+
+});
