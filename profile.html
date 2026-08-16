@@ -21,7 +21,32 @@
       </p>
 
       <form id="profileForm">
+<div class="privacy-choice">
+  <p><strong>Discoverability</strong></p>
 
+  <p>
+    Would you like other students to discover your profile?
+  </p>
+
+  <label>
+    <input
+      type="radio"
+      name="discoverable"
+      value="yes"
+      required
+    >
+    Yes, let students discover me
+  </label>
+
+  <label>
+    <input
+      type="radio"
+      name="discoverable"
+      value="no"
+    >
+    No, keep my profile private
+  </label>
+</div>
         <label for="displayName">Display Name</label>
         <input
           type="text"
@@ -63,7 +88,27 @@
           <option value="Science">Science</option>
           <option value="Business">Business</option>
         </select>
+<div class="privacy-choice">
+  <p><strong>Discoverability</strong></p>
 
+  <p>
+    Would you like other students to discover your profile?
+  </p>
+
+  <label>
+    <input type="radio" name="discoverable" value="yes" required>
+    Yes, let students discover me
+  </label>
+
+  <label>
+    <input type="radio" name="discoverable" value="no">
+    No, keep my profile private
+  </label>
+</div>
+
+<button type="submit" class="btn">
+  Continue
+          </button>
         <button type="submit" class="btn">
           Continue
         </button>
