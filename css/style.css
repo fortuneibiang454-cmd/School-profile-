@@ -554,6 +554,10 @@ nav a {
 .conversation-card p {
   margin-bottom: 15px;
     }
+  #messageBadge {
+  font-size: 12px;
+  font-weight: bold;
+    }
     }
   }
 }
