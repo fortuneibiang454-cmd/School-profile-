@@ -5,27 +5,26 @@ import { collection, getDocs } from "firebase/firestore";
 const studentList = document.getElementById("studentList");
 
 onAuthStateChanged(auth, async (user) => {
-
   if (!user) {
     window.location.href = "login.html";
     return;
   }
 
   try {
-    const usersSnapshot = await getDocs(collection(db, "users"));
+    const profilesSnapshot =
+      await getDocs(collection(db, "discoverableProfiles"));
 
     studentList.innerHTML = "";
 
     let foundStudents = 0;
 
-    usersSnapshot.forEach((studentDoc) => {
-
-      // Don't show the currently logged-in student
-      if (studentDoc.id === user.uid) {
+    profilesSnapshot.forEach((profileDoc) => {
+      // Don't show yourself
+      if (profileDoc.id === user.uid) {
         return;
       }
 
-      const student = studentDoc.data();
+      const student = profileDoc.data();
 
       const card = document.createElement("div");
       card.className = "student-card";
@@ -48,7 +47,7 @@ onAuthStateChanged(auth, async (user) => {
           ${student.interest || "Not provided"}
         </p>
 
-        <button class="btn">
+        <button class="btn" type="button">
           View Profile
         </button>
       `;
@@ -59,23 +58,15 @@ onAuthStateChanged(auth, async (user) => {
 
     if (foundStudents === 0) {
       studentList.innerHTML = `
-        <p>
-          No other students have joined yet.
-          Check back later!
-        </p>
+        <p>No discoverable students yet. Check back later!</p>
       `;
     }
 
   } catch (error) {
-
-    console.error(error);
+    console.error("Discover error:", error);
 
     studentList.innerHTML = `
-      <p>
-        We couldn't load students right now.
-        Please try again later.
-      </p>
+      <p>We couldn't load students right now. Please try again.</p>
     `;
   }
-
 });
