@@ -10,6 +10,17 @@ await setDoc(
     discoverable: discoverable === "yes"
   }
 );
+if (discoverable === "yes") {
+  await setDoc(
+    doc(db, "discoverableProfiles", user.uid),
+    {
+      displayName: displayName,
+      level: level,
+      subject: subject,
+      interest: interest
+    }
+  );
+}
 
 const profileForm = document.getElementById("profileForm");
 
