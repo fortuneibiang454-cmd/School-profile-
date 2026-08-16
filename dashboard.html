@@ -1,81 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>Student Dashboard - StudentConnect</title>
-  <link rel="stylesheet" href="css/style.css">
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
 </head>
+
 
 <body>
 
+  <!-- NAVIGATION -->
+
   <nav>
+
     <h2>StudentConnect</h2>
 
     <div>
-      <a href="dashboard.html">Home</a>
-      <a href="profile.html">Profile</a>
-      <button id="logoutBtn">Logout</button>
+
+      <a href="dashboard.html">
+        Home
+      </a>
+
+      <a href="profile.html">
+        Profile
+      </a>
+
+      <a href="discover.html">
+        Discover
+      </a>
+
+      <a href="messages.html">
+        Messages
+      </a>
+
+      <a href="communities.html">
+        Communities
+      </a>
+
+      <button
+        id="logoutBtn"
+        type="button"
+      >
+        Logout
+      </button>
+
     </div>
+
   </nav>
 
-  <section class="dashboard-welcome">
 
-  <h1 id="welcomeMessage">Welcome to StudentConnect 👋</h1>
+  <main>
 
-  <p>
-    Connect, learn, discover, and meet students
-    who share your interests.
-  </p>
+    <!-- WELCOME -->
 
-</section>
+    <section class="dashboard-welcome">
 
-<section class="student-profile">
+      <h1 id="welcomeMessage">
+        Welcome to StudentConnect 👋
+      </h1>
 
-  <h2>👤 Your Profile</h2>
+      <p>
+        Connect, learn, discover, and meet students
+        who share your interests.
+      </p>
 
-  <p><strong>School Level:</strong> <span id="studentLevel">Loading...</span></p>
+    </section>
 
-  <p><strong>Favorite Subject:</strong> <span id="studentSubject">Loading...</span></p>
 
-  <p><strong>Main Interest:</strong> <span id="studentInterest">Loading...</span></p>
+    <!-- PROFILE SUMMARY -->
 
-</section>
+    <section class="student-profile">
+
+      <h2>
+        👤 Your Profile
+      </h2>
+
+      <p>
+        <strong>School Level:</strong>
+        <span id="studentLevel">
+          Loading...
+        </span>
+      </p>
+
+      <p>
+        <strong>Favorite Subject:</strong>
+        <span id="studentSubject">
+          Loading...
+        </span>
+      </p>
+
+      <p>
+        <strong>Main Interest:</strong>
+        <span id="studentInterest">
+          Loading...
+        </span>
+      </p>
+
+    </section>
+
+
+    <!-- DASHBOARD CARDS -->
 
     <section class="dashboard-grid">
 
-      <div class="dashboard-card">
-        <h2>🌍 Discover Students</h2>
-        <p>Find students with similar interests and subjects.</p>
-        <a href="discover.html" class="btn">
-  Discover
-        </a>
-      </div>
+
+      <!-- DISCOVER -->
 
       <div class="dashboard-card">
-        <h2>👥 Communities</h2>
-        <p>Join communities based on your hobbies and interests.</p>
-        <a href="communities.html" class="btn">
-  Explore
+
+        <h2>
+          🌍 Discover Students
+        </h2>
+
+        <p>
+          Find students with similar interests
+          and subjects.
+        </p>
+
+        <a
+          href="discover.html"
+          class="btn"
+        >
+          Discover
         </a>
+
       </div>
 
+
+      <!-- COMMUNITIES -->
+
       <div class="dashboard-card">
-        <h2>🤖 AI Study Assistant</h2>
-        <p>Ask questions and get help understanding difficult topics.</p>
-        <button class="btn">Ask AI</button>
+
+        <h2>
+          👥 Communities
+        </h2>
+
+        <p>
+          Join communities based on your
+          hobbies, interests, and subjects.
+        </p>
+
+        <a
+          href="communities.html"
+          class="btn"
+        >
+          Explore
+        </a>
+
       </div>
+
+
+      <!-- MESSAGES -->
+
+      <div class="dashboard-card">
+
+        <h2>
+          💬 Messages
+        </h2>
+
+        <p>
+          Chat privately with students
+          you've connected with.
+        </p>
+
+        <a
+          href="messages.html"
+          class="btn"
+        >
+          Open Messages
+        </a>
+
+        <span id="messageBadge"></span>
+
+      </div>
+
+
+      <!-- AI ASSISTANT -->
+
+      <div class="dashboard-card">
+
+        <h2>
+          🤖 AI Study Assistant
+        </h2>
+
+        <p>
+          Ask questions and get help
+          understanding difficult topics.
+        </p>
+
+        <button
+          class="btn"
+          type="button"
+          id="askAiBtn"
+        >
+          Ask AI
+        </button>
+
+      </div>
+
+
+      <!-- PROFILE -->
+
+      <div class="dashboard-card">
+
+        <h2>
+          👤 My Profile
+        </h2>
+
+        <p>
+          View or update your StudentConnect
+          profile information.
+        </p>
+
+        <a
+          href="profile.html"
+          class="btn"
+        >
+          View Profile
+        </a>
+
+      </div>
+
 
     </section>
 
   </main>
-<script type="module" src="js/dashboard.js"></script>
-  <a href="messages.html" class="btn">
-  💬 Messages
-  <span id="messageBadge"></span>
-  </a>
-  <a href="communities.html" class="btn">
-  👥 Communities
-  </a>
+
+
+  <!-- DASHBOARD JAVASCRIPT -->
+
+  <script
+    type="module"
+    src="js/dashboard.js"
+  ></script>
+
+
+  <!-- SIMPLE AI BUTTON -->
+
+  <script>
+
+    const askAiBtn =
+      document.getElementById("askAiBtn");
+
+
+    if (askAiBtn) {
+
+      askAiBtn.addEventListener(
+        "click",
+        () => {
+
+          alert(
+            "The AI Study Assistant is coming soon! 🤖📚"
+          );
+
+        }
+      );
+
+    }
+
+  </script>
+
+
 </body>
-</html>
+
+  </html>
