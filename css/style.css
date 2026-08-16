@@ -385,6 +385,23 @@ nav a {
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
+  .student-profile {
+  max-width: 600px;
+  margin-bottom: 35px;
+  padding: 25px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.student-profile h2 {
+  margin-bottom: 20px;
+}
+
+.student-profile p {
+  margin: 12px 0;
+  line-height: 1.5;
+  }
 }
   }
 }
