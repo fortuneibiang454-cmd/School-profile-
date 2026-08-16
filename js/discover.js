@@ -10,24 +10,31 @@ import {
 const studentList = document.getElementById("studentList");
 
 onAuthStateChanged(auth, async (user) => {
+
   if (!user) {
     window.location.href = "login.html";
     return;
   }
 
+  studentList.innerHTML = "<p>Finding students for you...</p>";
+
   try {
-    // Get the current student's profile
+
+    // Get YOUR profile
     const myProfileRef = doc(db, "users", user.uid);
     const myProfileSnapshot = await getDoc(myProfileRef);
 
     if (!myProfileSnapshot.exists()) {
-      studentList.innerHTML = "<p>Your profile could not be found.</p>";
+      studentList.innerHTML = `
+        <p>Your profile hasn't been completed yet.</p>
+        <a href="profile.html" class="btn">Complete Profile</a>
+      `;
       return;
     }
 
     const myProfile = myProfileSnapshot.data();
 
-    // Get profiles that students chose to make discoverable
+    // Get discoverable profiles
     const profilesSnapshot = await getDocs(
       collection(db, "discoverableProfiles")
     );
@@ -35,7 +42,8 @@ onAuthStateChanged(auth, async (user) => {
     const students = [];
 
     profilesSnapshot.forEach((profileDoc) => {
-      // Don't recommend yourself
+
+      // Don't show yourself
       if (profileDoc.id === user.uid) {
         return;
       }
@@ -57,30 +65,34 @@ onAuthStateChanged(auth, async (user) => {
       }
 
       students.push({
+        id: profileDoc.id,
         ...student,
         score: score
       });
+
     });
 
-    // Highest matching students first
+    // Highest matches first
     students.sort((a, b) => b.score - a.score);
 
     studentList.innerHTML = "";
 
     if (students.length === 0) {
+
       studentList.innerHTML = `
-        <p>
-          No other discoverable students yet.
-          Check back later!
-        </p>
+        <div class="student-card">
+          <h2>🌍 No students yet</h2>
+          <p>
+            There are no other discoverable students yet.
+            Invite more students to join StudentConnect!
+          </p>
+        </div>
       `;
+
       return;
     }
 
     students.forEach((student) => {
-
-      const card = document.createElement("div");
-      card.className = "student-card";
 
       let matchText = "New connection";
 
@@ -88,23 +100,29 @@ onAuthStateChanged(auth, async (user) => {
         matchText = "🔥 Great match";
       } else if (student.score >= 4) {
         matchText = "⭐ Good match";
+      } else if (student.score >= 1) {
+        matchText = "✨ Some things in common";
       }
+
+      const card = document.createElement("div");
+
+      card.className = "student-card";
 
       card.innerHTML = `
         <h2>👤 ${student.displayName || "Student"}</h2>
 
         <p>
-          <strong>Level:</strong>
+          <strong>School Level:</strong>
           ${student.level || "Not provided"}
         </p>
 
         <p>
-          <strong>Subject:</strong>
+          <strong>Favorite Subject:</strong>
           ${student.subject || "Not provided"}
         </p>
 
         <p>
-          <strong>Interest:</strong>
+          <strong>Main Interest:</strong>
           ${student.interest || "Not provided"}
         </p>
 
@@ -112,23 +130,37 @@ onAuthStateChanged(auth, async (user) => {
           <strong>${matchText}</strong>
         </p>
 
-        <button class="btn" type="button">
+        <button
+          class="btn"
+          type="button"
+          onclick="alert('Student messaging will be added soon!')"
+        >
           View Profile
         </button>
       `;
 
       studentList.appendChild(card);
+
     });
 
   } catch (error) {
 
-    console.error("Matching error:", error);
+    console.error("Discover error:", error);
 
     studentList.innerHTML = `
-      <p>
-        We couldn't load student matches.
-        Please try again later.
-      </p>
+      <div class="student-card">
+        <h2>⚠️ Something went wrong</h2>
+
+        <p>
+          We couldn't load student recommendations.
+        </p>
+
+        <p>
+          Please refresh the page and try again.
+        </p>
+      </div>
     `;
+
   }
+
 });
