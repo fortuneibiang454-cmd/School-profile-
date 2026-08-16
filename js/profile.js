@@ -1,6 +1,15 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+await setDoc(
+  doc(db, "users", user.uid),
+  {
+    displayName: displayName,
+    level: level,
+    subject: subject,
+    interest: interest,
+    discoverable: discoverable === "yes"
+  }
+);
 
 const profileForm = document.getElementById("profileForm");
 
