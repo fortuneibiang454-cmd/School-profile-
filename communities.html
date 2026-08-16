@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Community - StudentConnect</title>
+  <title>Communities - StudentConnect</title>
 
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -23,56 +23,188 @@
     </div>
   </nav>
 
-  <main class="community-page">
 
-    <section class="community-header">
+  <main class="communities-page">
 
-      <h1 id="communityTitle">
-        Community
-      </h1>
+    <section class="communities-header">
 
-      <p id="communityDescription">
-        Welcome to this community.
+      <h1>👥 Communities</h1>
+
+      <p>
+        Find communities based on your subjects,
+        interests, and hobbies.
       </p>
 
     </section>
 
 
-    <section class="community-post-box">
-
-      <h2>💬 Start a Discussion</h2>
-
-      <textarea
-        id="postInput"
-        placeholder="Share something with the community..."
-        maxlength="500"
-      ></textarea>
-
-      <button
-        id="postButton"
-        class="btn"
-        type="button"
-      >
-        Post
-      </button>
-
-    </section>
+    <section class="community-grid">
 
 
-    <section class="community-posts">
+      <!-- STUDY HUB -->
 
-      <h2>📢 Discussions</h2>
+      <div class="community-card">
 
-      <div id="postsList">
-        <p>Loading discussions...</p>
+        <h2>📚 Study Hub</h2>
+
+        <p>
+          Study together and share useful learning tips.
+        </p>
+
+        <button
+          class="btn open-community"
+          data-community="study-hub"
+          type="button"
+        >
+          Open Community
+        </button>
+
       </div>
+
+
+      <!-- CODING CLUB -->
+
+      <div class="community-card">
+
+        <h2>💻 Coding Club</h2>
+
+        <p>
+          Learn programming and build projects together.
+        </p>
+
+        <button
+          class="btn open-community"
+          data-community="coding-club"
+          type="button"
+        >
+          Open Community
+        </button>
+
+      </div>
+
+
+      <!-- SCIENCE ZONE -->
+
+      <div class="community-card">
+
+        <h2>🔬 Science Zone</h2>
+
+        <p>
+          Discuss science subjects and school projects.
+        </p>
+
+        <button
+          class="btn open-community"
+          data-community="science-zone"
+          type="button"
+        >
+          Open Community
+        </button>
+
+      </div>
+
+
+      <!-- CREATIVE CORNER -->
+
+      <div class="community-card">
+
+        <h2>🎨 Creative Corner</h2>
+
+        <p>
+          Share art, design, writing, and creative ideas.
+        </p>
+
+        <button
+          class="btn open-community"
+          data-community="creative-corner"
+          type="button"
+        >
+          Open Community
+        </button>
+
+      </div>
+
+
+      <!-- SPORTS CLUB -->
+
+      <div class="community-card">
+
+        <h2>⚽ Sports Club</h2>
+
+        <p>
+          Talk about sports and share your favourite teams.
+        </p>
+
+        <button
+          class="btn open-community"
+          data-community="sports-club"
+          type="button"
+        >
+          Open Community
+        </button>
+
+      </div>
+
+
+      <!-- EXAM PREP -->
+
+      <div class="community-card">
+
+        <h2>📖 Exam Prep</h2>
+
+        <p>
+          Prepare for exams together and exchange study strategies.
+        </p>
+
+        <button
+          class="btn open-community"
+          data-community="exam-prep"
+          type="button"
+        >
+          Open Community
+        </button>
+
+      </div>
+
 
     </section>
 
   </main>
 
 
-  <script type="module" src="js/community.js"></script>
+  <script>
+
+    const communityButtons =
+      document.querySelectorAll(
+        ".open-community"
+      );
+
+
+    communityButtons.forEach(
+      (button) => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            const community =
+              button.dataset.community;
+
+
+            window.location.href =
+              "community.html?community=" +
+              encodeURIComponent(
+                community
+              );
+
+          }
+        );
+
+      }
+    );
+
+  </script>
+
 
 </body>
   </html>
