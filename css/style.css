@@ -523,6 +523,37 @@ nav a {
   .messages {
     height: 400px;
   }
+  .messages-page {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.messages-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.conversation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.conversation-card {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+.conversation-card h2 {
+  margin-top: 0;
+}
+
+.conversation-card p {
+  margin-bottom: 15px;
+    }
     }
   }
 }
