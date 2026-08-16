@@ -402,6 +402,68 @@ nav a {
   margin: 12px 0;
   line-height: 1.5;
   }
+  .discover {
+  max-width: 1100px;
+  margin: 50px auto;
+  padding: 0 25px;
+}
+
+.discover-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.discover-header h1 {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.discover-header p {
+  line-height: 1.6;
+}
+
+.student-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+}
+
+.student-card {
+  padding: 25px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.student-card h2 {
+  margin-bottom: 15px;
+}
+
+.student-card p {
+  line-height: 1.6;
+  margin: 8px 0;
+}
+
+.student-card .btn {
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+@media (max-width: 700px) {
+  .discover {
+    margin: 30px auto;
+  }
+
+  .discover-header h1 {
+    font-size: 30px;
+  }
+
+  .student-list {
+    grid-template-columns: 1fr;
+  }
+  }
 }
   }
 }
