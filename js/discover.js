@@ -131,12 +131,12 @@ onAuthStateChanged(auth, async (user) => {
         </p>
 
         <button
-          class="btn"
-          type="button"
-          onclick="alert('Student messaging will be added soon!')"
-        >
-          View Profile
-        </button>
+  class="btn"
+  type="button"
+  onclick="window.location.href='chat.html?user=${student.id}'"
+>
+  Message
+</button>
       `;
 
       studentList.appendChild(card);
