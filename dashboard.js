@@ -1,6 +1,13 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  onSnapshot
+} from "firebase/firestore";
 
 const welcomeMessage = document.getElementById("welcomeMessage");
 const studentLevel = document.getElementById("studentLevel");
@@ -59,5 +66,30 @@ logoutBtn.addEventListener("click", async () => {
     console.error(error);
     alert("Could not log out. Please try again.");
   }
+});
+  const messageBadge = document.getElementById("messageBadge");
+
+onAuthStateChanged(auth, (user) => {
+
+  if (!user) {
+    return;
+  }
+
+  const chatsRef = collection(db, "chats");
+
+  const chatsQuery = query(
+    chatsRef,
+    where("participants", "array-contains", user.uid)
+  );
+
+  onSnapshot(chatsQuery, (snapshot) => {
+
+    if (snapshot.empty) {
+      messageBadge.textContent = "";
+      return;
+    }
+
+    messageBadge.textContent = " • New";
+  });
 });
 });
