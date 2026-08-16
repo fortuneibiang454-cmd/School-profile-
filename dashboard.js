@@ -1,5 +1,5 @@
 import { auth, db } from "./firebase.js";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
 const welcomeMessage = document.getElementById("welcomeMessage");
@@ -45,5 +45,19 @@ onAuthStateChanged(auth, async (user) => {
       "Welcome to StudentConnect 👋";
 
   }
+const logoutBtn = document.getElementById("logoutBtn");
 
+logoutBtn.addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+
+    alert("You have been logged out.");
+
+    window.location.href = "index.html";
+
+  } catch (error) {
+    console.error(error);
+    alert("Could not log out. Please try again.");
+  }
+});
 });
