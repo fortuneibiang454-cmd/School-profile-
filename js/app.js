@@ -63,6 +63,8 @@ let unsubscribeMessages = null;
 
 let selectedCommunity = null;
 
+let unsubscribeCommunityPosts = null;
+
 
 /* -----------------------------
    AUTH MODE
@@ -174,6 +176,21 @@ signupForm.addEventListener(
         "signupPassword"
       ).value;
 
+    const country =
+      document.getElementById(
+        "signupCountry"
+      ).value;
+
+    const region =
+      document.getElementById(
+        "signupRegion"
+      ).value.trim();
+
+    const school =
+      document.getElementById(
+        "signupSchool"
+      ).value.trim();
+
     const level =
       document.getElementById(
         "signupLevel"
@@ -209,6 +226,12 @@ signupForm.addEventListener(
         {
 
           displayName: name,
+
+          country: country,
+
+          region: region,
+
+          school: school,
 
           level: level,
 
@@ -821,6 +844,15 @@ async function loadCommunityPosts() {
     return;
 
 
+  if (unsubscribeCommunityPosts) {
+
+    unsubscribeCommunityPosts();
+
+    unsubscribeCommunityPosts = null;
+
+  }
+
+
   const postsBox =
     document.getElementById(
       "communityPosts"
@@ -849,95 +881,96 @@ async function loadCommunityPosts() {
     );
 
 
-  onSnapshot(
-    postsQuery,
-    (snapshot) => {
+  unsubscribeCommunityPosts =
+    onSnapshot(
+      postsQuery,
+      (snapshot) => {
 
-      postsBox.innerHTML = "";
+        postsBox.innerHTML = "";
 
 
-      if (snapshot.empty) {
+        if (snapshot.empty) {
+
+          postsBox.innerHTML = `
+            <div class="card">
+              <p>
+                No discussions yet.
+                Be the first to post!
+              </p>
+            </div>
+          `;
+
+          return;
+
+        }
+
+
+        snapshot.forEach(
+          (postDoc) => {
+
+            const post =
+              postDoc.data();
+
+
+            const div =
+              document.createElement(
+                "div"
+              );
+
+
+            div.className =
+              "post";
+
+
+            const date =
+              post.createdAt?.toDate
+                ? post.createdAt.toDate()
+                : null;
+
+
+            div.innerHTML = `
+
+              <div class="post-meta">
+                👤 Student
+                ${
+                  date
+                    ? " • " +
+                      escapeHTML(
+                        date.toLocaleString()
+                      )
+                    : ""
+                }
+              </div>
+
+              <div>
+                ${escapeHTML(
+                  post.text || ""
+                )}
+              </div>
+
+            `;
+
+
+            postsBox.appendChild(
+              div
+            );
+
+          }
+        );
+
+      },
+      (error) => {
+
+        console.error(error);
 
         postsBox.innerHTML = `
           <div class="card">
-            <p>
-              No discussions yet.
-              Be the first to post!
-            </p>
+            Unable to load posts.
           </div>
         `;
 
-        return;
-
       }
-
-
-      snapshot.forEach(
-        (postDoc) => {
-
-          const post =
-            postDoc.data();
-
-
-          const div =
-            document.createElement(
-              "div"
-            );
-
-
-          div.className =
-            "post";
-
-
-          const date =
-            post.createdAt?.toDate
-              ? post.createdAt.toDate()
-              : null;
-
-
-          div.innerHTML = `
-
-            <div class="post-meta">
-              👤 Student
-              ${
-                date
-                  ? " • " +
-                    escapeHTML(
-                      date.toLocaleString()
-                    )
-                  : ""
-              }
-            </div>
-
-            <div>
-              ${escapeHTML(
-                post.text || ""
-              )}
-            </div>
-
-          `;
-
-
-          postsBox.appendChild(
-            div
-          );
-
-        }
-      );
-
-    },
-    (error) => {
-
-      console.error(error);
-
-      postsBox.innerHTML = `
-        <div class="card">
-          Unable to load posts.
-        </div>
-      `;
-
-    }
-  );
+    );
 
 }
 
