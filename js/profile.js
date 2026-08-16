@@ -27,7 +27,8 @@ onAuthStateChanged(auth, (user) => {
 
     const interest =
       document.getElementById("interests").value;
-
+const discoverable =
+  document.querySelector('input[name="discoverable"]:checked').value;
     try {
 
       await setDoc(
