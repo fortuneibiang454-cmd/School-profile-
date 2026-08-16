@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Communities - StudentConnect</title>
+  <title>Community - StudentConnect</title>
 
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -18,112 +18,61 @@
       <a href="dashboard.html">Home</a>
       <a href="discover.html">Discover</a>
       <a href="messages.html">Messages</a>
+      <a href="communities.html">Communities</a>
       <a href="profile.html">Profile</a>
     </div>
   </nav>
 
-  <main class="communities-page">
+  <main class="community-page">
 
-    <section class="communities-header">
-      <h1>👥 Communities</h1>
+    <section class="community-header">
 
-      <p>
-        Find communities based on your subjects,
-        interests, and hobbies.
+      <h1 id="communityTitle">
+        Community
+      </h1>
+
+      <p id="communityDescription">
+        Welcome to this community.
       </p>
+
     </section>
 
-    <section class="community-grid">
 
-      <!-- Study Hub -->
-      <div class="community-card">
-        <h2>📚 Study Hub</h2>
-        <p>
-          Study together and share useful learning tips.
-        </p>
+    <section class="community-post-box">
 
-        <button
-          class="btn join-community"
-          data-community="study-hub">
-          Join Community
-        </button>
-      </div>
+      <h2>💬 Start a Discussion</h2>
 
-      <!-- Coding Club -->
-      <div class="community-card">
-        <h2>💻 Coding Club</h2>
-        <p>
-          Learn programming and build projects together.
-        </p>
+      <textarea
+        id="postInput"
+        placeholder="Share something with the community..."
+        maxlength="500"
+      ></textarea>
 
-        <button
-          class="btn join-community"
-          data-community="coding-club">
-          Join Community
-        </button>
-      </div>
+      <button
+        id="postButton"
+        class="btn"
+        type="button"
+      >
+        Post
+      </button>
 
-      <!-- Science Zone -->
-      <div class="community-card">
-        <h2>🔬 Science Zone</h2>
-        <p>
-          Discuss science subjects and school projects.
-        </p>
+    </section>
 
-        <button
-          class="btn join-community"
-          data-community="science-zone">
-          Join Community
-        </button>
-      </div>
 
-      <!-- Creative Corner -->
-      <div class="community-card">
-        <h2>🎨 Creative Corner</h2>
-        <p>
-          Share art, design, writing, and creative ideas.
-        </p>
+    <section class="community-posts">
 
-        <button
-          class="btn join-community"
-          data-community="creative-corner">
-          Join Community
-        </button>
-      </div>
+      <h2>📢 Discussions</h2>
 
-      <!-- Sports Club -->
-      <div class="community-card">
-        <h2>⚽ Sports Club</h2>
-        <p>
-          Talk about sports and share your favourite teams.
-        </p>
-
-        <button
-          class="btn join-community"
-          data-community="sports-club">
-          Join Community
-        </button>
-      </div>
-
-      <!-- Exam Prep -->
-      <div class="community-card">
-        <h2>📖 Exam Prep</h2>
-        <p>
-          Prepare for exams together and exchange study strategies.
-        </p>
-
-        <button
-          class="btn join-community"
-          data-community="exam-prep">
-          Join Community
-        </button>
+      <div id="postsList">
+        <p>Loading discussions...</p>
       </div>
 
     </section>
 
   </main>
 
-  <script type="module" src="js/communities.js"></script>
+
+  <script type="module" src="js/community.js"></script>
 
 </body>
   </html>
