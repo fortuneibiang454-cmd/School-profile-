@@ -18,12 +18,28 @@
     </div>
   </nav>
 
-  <main class="dashboard">
+  <section class="dashboard-welcome">
 
-    <section class="dashboard-welcome">
-      <h1>Welcome to StudentConnect 👋</h1>
-      <p>Connect, learn, discover, and meet students who share your interests.</p>
-    </section>
+  <h1 id="welcomeMessage">Welcome to StudentConnect 👋</h1>
+
+  <p>
+    Connect, learn, discover, and meet students
+    who share your interests.
+  </p>
+
+</section>
+
+<section class="student-profile">
+
+  <h2>👤 Your Profile</h2>
+
+  <p><strong>School Level:</strong> <span id="studentLevel">Loading...</span></p>
+
+  <p><strong>Favorite Subject:</strong> <span id="studentSubject">Loading...</span></p>
+
+  <p><strong>Main Interest:</strong> <span id="studentInterest">Loading...</span></p>
+
+</section>
 
     <section class="dashboard-grid">
 
@@ -48,6 +64,6 @@
     </section>
 
   </main>
-
+<script type="module" src="js/dashboard.js"></script>
 </body>
 </html>
