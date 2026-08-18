@@ -5,119 +5,189 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Set Up Your Profile - StudentConnect</title>
   <link rel="stylesheet" href="css/style.css">
-</head>
+</head><body>  <main class="profile-page"><section class="profile-card">
 
-<body>
-
-  <main class="profile-page">
-
-    <section class="profile-card">
-
-      <h1>Tell Us About Yourself</h1>
-
-      <p>
-        This helps us recommend students, communities, and learning content
-        that match your interests.
-      </p>
-
-      <form id="profileForm">
-<div class="privacy-choice">
-  <p><strong>Discoverability</strong></p>
+  <h1>Tell Us About Yourself</h1>
 
   <p>
-    Would you like other students to discover your profile?
+    This helps us recommend students, communities, and learning content
+    that match your interests.
   </p>
 
-  <label>
+  <form id="profileForm">
+
+    <!-- DISPLAY NAME -->
+
+    <label for="displayName">Display Name</label>
+
     <input
-      type="radio"
-      name="discoverable"
-      value="yes"
+      type="text"
+      id="displayName"
+      placeholder="Choose a display name"
+      maxlength="40"
       required
     >
-    Yes, let students discover me
-  </label>
 
-  <label>
+
+    <!-- COUNTRY -->
+
+    <label for="country">Country</label>
+
+    <select id="country" required>
+
+      <option value="">
+        Choose your country
+      </option>
+
+      <option value="Nigeria">Nigeria</option>
+      <option value="Ghana">Ghana</option>
+      <option value="Kenya">Kenya</option>
+      <option value="South Africa">South Africa</option>
+      <option value="United Kingdom">United Kingdom</option>
+      <option value="United States">United States</option>
+      <option value="Canada">Canada</option>
+      <option value="Other">Other</option>
+
+    </select>
+
+
+    <!-- REGION -->
+
+    <label for="region">Region / State</label>
+
     <input
-      type="radio"
-      name="discoverable"
-      value="no"
+      type="text"
+      id="region"
+      placeholder="Example: Cross River"
+      maxlength="60"
+      required
     >
-    No, keep my profile private
-  </label>
-</div>
-        <label for="displayName">Display Name</label>
+
+
+    <!-- SCHOOL -->
+
+    <label for="school">School</label>
+
+    <input
+      type="text"
+      id="school"
+      placeholder="Enter your school"
+      maxlength="100"
+      required
+    >
+
+
+    <!-- LEVEL -->
+
+    <label for="level">School Level</label>
+
+    <select id="level" required>
+
+      <option value="">
+        Choose your level
+      </option>
+
+      <option value="JSS1">JSS1</option>
+      <option value="JSS2">JSS2</option>
+      <option value="JSS3">JSS3</option>
+
+      <option value="SS1">SS1</option>
+      <option value="SS2">SS2</option>
+      <option value="SS3">SS3</option>
+
+    </select>
+
+
+    <!-- SUBJECT -->
+
+    <label for="subjects">Favorite Subject</label>
+
+    <select id="subjects" required>
+
+      <option value="">
+        Choose a subject
+      </option>
+
+      <option value="Mathematics">Mathematics</option>
+      <option value="Physics">Physics</option>
+      <option value="Chemistry">Chemistry</option>
+      <option value="Biology">Biology</option>
+      <option value="Computer Science">Computer Science</option>
+      <option value="English">English</option>
+
+    </select>
+
+
+    <!-- INTEREST -->
+
+    <label for="interests">Main Interest</label>
+
+    <select id="interests" required>
+
+      <option value="">
+        Choose an interest
+      </option>
+
+      <option value="Coding">Coding</option>
+      <option value="Football">Football</option>
+      <option value="Music">Music</option>
+      <option value="Art">Art</option>
+      <option value="Gaming">Gaming</option>
+      <option value="Science">Science</option>
+      <option value="Business">Business</option>
+
+    </select>
+
+
+    <!-- DISCOVERABILITY -->
+
+    <div class="privacy-choice">
+
+      <p>
+        <strong>Discoverability</strong>
+      </p>
+
+      <p>
+        Would you like other students to discover your profile?
+      </p>
+
+      <label>
         <input
-          type="text"
-          id="displayName"
-          placeholder="Choose a display name"
+          type="radio"
+          name="discoverable"
+          value="yes"
           required
         >
+        Yes, let students discover me
+      </label>
 
-        <label for="level">School Level</label>
-        <select id="level" required>
-          <option value="">Choose your level</option>
-          <option value="JSS1">JSS1</option>
-          <option value="JSS2">JSS2</option>
-          <option value="JSS3">JSS3</option>
-          <option value="SS1">SS1</option>
-          <option value="SS2">SS2</option>
-          <option value="SS3">SS3</option>
-        </select>
+      <label>
+        <input
+          type="radio"
+          name="discoverable"
+          value="no"
+        >
+        No, keep my profile private
+      </label>
 
-        <label for="subjects">Favorite Subject</label>
-        <select id="subjects" required>
-          <option value="">Choose a subject</option>
-          <option value="Mathematics">Mathematics</option>
-          <option value="Physics">Physics</option>
-          <option value="Chemistry">Chemistry</option>
-          <option value="Biology">Biology</option>
-          <option value="Computer Science">Computer Science</option>
-          <option value="English">English</option>
-        </select>
+    </div>
 
-        <label for="interests">Main Interest</label>
-        <select id="interests" required>
-          <option value="">Choose an interest</option>
-          <option value="Coding">Coding</option>
-          <option value="Football">Football</option>
-          <option value="Music">Music</option>
-          <option value="Art">Art</option>
-          <option value="Gaming">Gaming</option>
-          <option value="Science">Science</option>
-          <option value="Business">Business</option>
-        </select>
-<div class="privacy-choice">
-  <p><strong>Discoverability</strong></p>
 
-  <p>
-    Would you like other students to discover your profile?
-  </p>
+    <!-- CONTINUE -->
 
-  <label>
-    <input type="radio" name="discoverable" value="yes" required>
-    Yes, let students discover me
-  </label>
+    <button
+      type="submit"
+      class="btn"
+    >
+      Continue
+    </button>
 
-  <label>
-    <input type="radio" name="discoverable" value="no">
-    No, keep my profile private
-  </label>
-</div>
+  </form>
 
-          </button>
-        <button type="submit" class="btn">
-          Continue
-        </button>
+</section>
 
-      </form>
-
-    </section>
-
-  </main>
-
-  <script type="module" src="js/profile.js"></script>
-
-</body>
-          </html>
+  </main>  <script
+    type="module"
+    src="js/profile.js"
+  ></script></body>
+</html>
