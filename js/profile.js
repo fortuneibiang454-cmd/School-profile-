@@ -1,502 +1,501 @@
-import { auth, db } from "./firebase.js";
-
-import {
-onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-
-import {
-doc,
-setDoc,
-deleteDoc
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-const profileForm =
-document.getElementById("profileForm");
-
-const countrySelect =
-document.getElementById("country");
-
-const levelSelect =
-document.getElementById("level");
-
-/*
-SCHOOL LEVELS BY COUNTRY
-
-These are broad school-level labels.
-Education systems can vary within countries,
-so students can use the closest applicable level.
-*/
-
-const schoolLevels = {
-
-Nigeria: [
-"JSS1",
-"JSS2",
-"JSS3",
-"SS1",
-"SS2",
-"SS3"
-],
-
-Ghana: [
-"Basic 7",
-"Basic 8",
-"Basic 9",
-"SHS 1",
-"SHS 2",
-"SHS 3"
-],
-
-Kenya: [
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12"
-],
-
-"South Africa": [
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12"
-],
-
-"United Kingdom": [
-"Year 7",
-"Year 8",
-"Year 9",
-"Year 10",
-"Year 11",
-"Year 12",
-"Year 13"
-],
-
-"United States": [
-"Grade 6",
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12"
-],
-
-Canada: [
-"Grade 6",
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12"
-],
-
-Australia: [
-"Year 7",
-"Year 8",
-"Year 9",
-"Year 10",
-"Year 11",
-"Year 12"
-],
-
-"New Zealand": [
-"Year 7",
-"Year 8",
-"Year 9",
-"Year 10",
-"Year 11",
-"Year 12",
-"Year 13"
-],
-
-India: [
-"Class 6",
-"Class 7",
-"Class 8",
-"Class 9",
-"Class 10",
-"Class 11",
-"Class 12"
-],
-
-Pakistan: [
-"Grade 6",
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12"
-],
-
-Bangladesh: [
-"Class 6",
-"Class 7",
-"Class 8",
-"Class 9",
-"Class 10",
-"Class 11",
-"Class 12"
-],
-
-Philippines: [
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12"
-],
-
-Singapore: [
-"Secondary 1",
-"Secondary 2",
-"Secondary 3",
-"Secondary 4",
-"Junior College 1",
-"Junior College 2"
-],
-
-Malaysia: [
-"Form 1",
-"Form 2",
-"Form 3",
-"Form 4",
-"Form 5"
-],
-
-Germany: [
-"Grade 6",
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12",
-"Grade 13"
-],
-
-France: [
-"6ème",
-"5ème",
-"4ème",
-"3ème",
-"Seconde",
-"Première",
-"Terminale"
-],
-
-Brazil: [
-"6º Ano",
-"7º Ano",
-"8º Ano",
-"9º Ano",
-"1º Ano",
-"2º Ano",
-"3º Ano"
-]
-
-};
-
-/*
-DEFAULT LEVELS
-
-Used for countries whose education
-system hasn't been specifically listed yet.
-*/
-
-const defaultLevels = [
-"Lower Secondary",
-"Middle School",
-"Upper Secondary",
-"High School",
-"Other"
-];
-
-/*
-UPDATE SCHOOL LEVELS
-WHEN COUNTRY CHANGES
-*/
-
-function updateSchoolLevels() {
-
-const country =
-countrySelect.value;
-
-const levels =
-schoolLevels[country] ||
-defaultLevels;
-
-levelSelect.innerHTML = "";
-
-const firstOption =
-document.createElement("option");
-
-firstOption.value = "";
-
-firstOption.textContent =
-"Choose your level";
-
-levelSelect.appendChild(
-firstOption
-);
-
-levels.forEach(
-(level) => {
-
-  const option =
-    document.createElement(
-      "option"
-    );
-
-  option.value = level;
-
-  option.textContent = level;
-
-  levelSelect.appendChild(
-    option
-  );
-
-}
-
-);
-
-}
-
-/*
-COUNTRY CHANGE
-*/
-
-countrySelect.addEventListener(
-"change",
-updateSchoolLevels
-);
-
-/*
-AUTHENTICATION
-*/
-
-onAuthStateChanged(
-auth,
-(user) => {
-
-if (!user) {
-
-  alert(
-    "Please log in first."
-  );
-
-  window.location.href =
-    "login.html";
-
-  return;
-
-}
-
-
-profileForm.addEventListener(
-  "submit",
-  async (event) => {
-
-    event.preventDefault();
-
-
-    const displayName =
-      document
-        .getElementById("displayName")
-        .value
-        .trim();
-
-
-    const country =
-      countrySelect.value;
-
-
-    const region =
-      document
-        .getElementById("region")
-        .value
-        .trim();
-
-
-    const school =
-      document
-        .getElementById("school")
-        .value
-        .trim();
-
-
-    const level =
-      levelSelect.value;
-
-
-    const subject =
-      document
-        .getElementById("subjects")
-        .value;
-
-
-    const interest =
-      document
-        .getElementById("interests")
-        .value;
-
-
-    const discoverableChoice =
-      document.querySelector(
-        'input[name="discoverable"]:checked'
-      );
-
-
-    if (!discoverableChoice) {
-
-      alert(
-        "Please choose your discoverability setting."
-      );
-
-      return;
-
-    }
-
-
-    const discoverable =
-      discoverableChoice.value === "yes";
-
-
-    try {
-
-      /*
-        SAVE MAIN PROFILE
-      */
-
-      await setDoc(
-        doc(
-          db,
-          "users",
-          user.uid
-        ),
-        {
-
-          displayName:
-            displayName,
-
-          email:
-            user.email || "",
-
-          country:
-            country,
-
-          region:
-            region,
-
-          school:
-            school,
-
-          level:
-            level,
-
-          subject:
-            subject,
-
-          interest:
-            interest,
-
-          discoverable:
-            discoverable,
-
-          updatedAt:
-            new Date()
-
-        },
-        {
-          merge: true
-        }
-      );
-
-
-      /*
-        SAVE OR REMOVE
-        DISCOVERABLE PROFILE
-      */
-
-      const discoverableRef =
-        doc(
-          db,
-          "discoverableProfiles",
-          user.uid
-        );
-
-
-      if (discoverable) {
-
-        await setDoc(
-          discoverableRef,
-          {
-
-            displayName:
-              displayName,
-
-            country:
-              country,
-
-            region:
-              region,
-
-            school:
-              school,
-
-            level:
-              level,
-
-            subject:
-              subject,
-
-            interest:
-              interest
-
-          },
-          {
-            merge: true
-          }
-        );
-
-      } else {
-
-        await deleteDoc(
-          discoverableRef
-        );
-
-      }
-
-
-      alert(
-        "Profile saved successfully!"
-      );
-
-
-      window.location.href =
-        "dashboard.html";
-
-    } catch (error) {
-
-      console.error(
-        "Profile error:",
-        error
-      );
-
-      alert(
-        "Could not save your profile. Please try again."
-      );
-
-    }
-
-  }
-);
-
-}
-);
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+  <title>Set Up Your Profile - StudentConnect</title>  <link rel="stylesheet" href="css/style.css">
+</head>
+  <body>  
+  <main class="profile-page"><section class="profile-card">
+
+  <h1>Tell Us About Yourself</h1>
+
+  <p>
+    This helps us recommend students, communities,
+    and learning content that match your interests.
+  </p>
+
+
+  <form id="profileForm">
+
+
+    <!-- DISPLAY NAME -->
+
+    <label for="displayName">
+      Display Name
+    </label>
+
+    <input
+      type="text"
+      id="displayName"
+      placeholder="Choose a display name"
+      maxlength="40"
+      required
+    >
+
+
+    <!-- COUNTRY -->
+
+    <label for="country">
+      Country
+    </label>
+
+    <select id="country" required>
+
+      <option value="">
+        Choose your country
+      </option>
+
+      <option>Afghanistan</option>
+      <option>Albania</option>
+      <option>Algeria</option>
+      <option>Andorra</option>
+      <option>Angola</option>
+      <option>Antigua and Barbuda</option>
+      <option>Argentina</option>
+      <option>Armenia</option>
+      <option>Australia</option>
+      <option>Austria</option>
+      <option>Azerbaijan</option>
+
+      <option>Bahamas</option>
+      <option>Bahrain</option>
+      <option>Bangladesh</option>
+      <option>Barbados</option>
+      <option>Belarus</option>
+      <option>Belgium</option>
+      <option>Belize</option>
+      <option>Benin</option>
+      <option>Bhutan</option>
+      <option>Bolivia</option>
+      <option>Bosnia and Herzegovina</option>
+      <option>Botswana</option>
+      <option>Brazil</option>
+      <option>Brunei</option>
+      <option>Bulgaria</option>
+      <option>Burkina Faso</option>
+      <option>Burundi</option>
+
+      <option>Cabo Verde</option>
+      <option>Cambodia</option>
+      <option>Cameroon</option>
+      <option>Canada</option>
+      <option>Central African Republic</option>
+      <option>Chad</option>
+      <option>Chile</option>
+      <option>China</option>
+      <option>Colombia</option>
+      <option>Comoros</option>
+      <option>Congo</option>
+      <option>Costa Rica</option>
+      <option>Côte d'Ivoire</option>
+      <option>Croatia</option>
+      <option>Cuba</option>
+      <option>Cyprus</option>
+      <option>Czechia</option>
+
+      <option>Democratic Republic of the Congo</option>
+      <option>Denmark</option>
+      <option>Djibouti</option>
+      <option>Dominica</option>
+      <option>Dominican Republic</option>
+
+      <option>Ecuador</option>
+      <option>Egypt</option>
+      <option>El Salvador</option>
+      <option>Equatorial Guinea</option>
+      <option>Eritrea</option>
+      <option>Estonia</option>
+      <option>Eswatini</option>
+      <option>Ethiopia</option>
+
+      <option>Fiji</option>
+      <option>Finland</option>
+      <option>France</option>
+
+      <option>Gabon</option>
+      <option>Gambia</option>
+      <option>Georgia</option>
+      <option>Germany</option>
+      <option>Ghana</option>
+      <option>Greece</option>
+      <option>Grenada</option>
+      <option>Guatemala</option>
+      <option>Guinea</option>
+      <option>Guinea-Bissau</option>
+      <option>Guyana</option>
+
+      <option>Haiti</option>
+      <option>Honduras</option>
+      <option>Hungary</option>
+
+      <option>Iceland</option>
+      <option>India</option>
+      <option>Indonesia</option>
+      <option>Iran</option>
+      <option>Iraq</option>
+      <option>Ireland</option>
+      <option>Israel</option>
+      <option>Italy</option>
+
+      <option>Jamaica</option>
+      <option>Japan</option>
+      <option>Jordan</option>
+
+      <option>Kazakhstan</option>
+      <option>Kenya</option>
+      <option>Kiribati</option>
+      <option>Kuwait</option>
+      <option>Kyrgyzstan</option>
+
+      <option>Laos</option>
+      <option>Latvia</option>
+      <option>Lebanon</option>
+      <option>Lesotho</option>
+      <option>Liberia</option>
+      <option>Libya</option>
+      <option>Liechtenstein</option>
+      <option>Lithuania</option>
+      <option>Luxembourg</option>
+
+      <option>Madagascar</option>
+      <option>Malawi</option>
+      <option>Malaysia</option>
+      <option>Maldives</option>
+      <option>Mali</option>
+      <option>Malta</option>
+      <option>Marshall Islands</option>
+      <option>Mauritania</option>
+      <option>Mauritius</option>
+      <option>Mexico</option>
+      <option>Micronesia</option>
+      <option>Moldova</option>
+      <option>Monaco</option>
+      <option>Mongolia</option>
+      <option>Montenegro</option>
+      <option>Morocco</option>
+      <option>Mozambique</option>
+      <option>Myanmar</option>
+
+      <option>Namibia</option>
+      <option>Nauru</option>
+      <option>Nepal</option>
+      <option>Netherlands</option>
+      <option>New Zealand</option>
+      <option>Nicaragua</option>
+      <option>Niger</option>
+      <option>Nigeria</option>
+      <option>North Korea</option>
+      <option>North Macedonia</option>
+      <option>Norway</option>
+
+      <option>Oman</option>
+
+      <option>Pakistan</option>
+      <option>Palau</option>
+      <option>Palestine</option>
+      <option>Panama</option>
+      <option>Papua New Guinea</option>
+      <option>Paraguay</option>
+      <option>Peru</option>
+      <option>Philippines</option>
+      <option>Poland</option>
+      <option>Portugal</option>
+
+      <option>Qatar</option>
+
+      <option>Romania</option>
+      <option>Russia</option>
+      <option>Rwanda</option>
+
+      <option>Saint Kitts and Nevis</option>
+      <option>Saint Lucia</option>
+      <option>Saint Vincent and the Grenadines</option>
+      <option>Samoa</option>
+      <option>San Marino</option>
+      <option>Sao Tome and Principe</option>
+      <option>Saudi Arabia</option>
+      <option>Senegal</option>
+      <option>Serbia</option>
+      <option>Seychelles</option>
+      <option>Sierra Leone</option>
+      <option>Singapore</option>
+      <option>Slovakia</option>
+      <option>Slovenia</option>
+      <option>Solomon Islands</option>
+      <option>Somalia</option>
+      <option>South Africa</option>
+      <option>South Korea</option>
+      <option>South Sudan</option>
+      <option>Spain</option>
+      <option>Sri Lanka</option>
+      <option>Sudan</option>
+      <option>Suriname</option>
+      <option>Sweden</option>
+      <option>Switzerland</option>
+      <option>Syria</option>
+
+      <option>Taiwan</option>
+      <option>Tajikistan</option>
+      <option>Tanzania</option>
+      <option>Thailand</option>
+      <option>Timor-Leste</option>
+      <option>Togo</option>
+      <option>Tonga</option>
+      <option>Trinidad and Tobago</option>
+      <option>Tunisia</option>
+      <option>Türkiye</option>
+      <option>Turkmenistan</option>
+      <option>Tuvalu</option>
+
+      <option>Uganda</option>
+      <option>Ukraine</option>
+      <option>United Arab Emirates</option>
+      <option>United Kingdom</option>
+      <option>United States</option>
+      <option>Uruguay</option>
+      <option>Uzbekistan</option>
+
+      <option>Vanuatu</option>
+      <option>Vatican City</option>
+      <option>Venezuela</option>
+      <option>Vietnam</option>
+
+      <option>Yemen</option>
+
+      <option>Zambia</option>
+      <option>Zimbabwe</option>
+
+    </select>
+
+
+    <!-- REGION / STATE -->
+
+    <label for="region">
+      Region / State / Province
+    </label>
+
+    <input
+      type="text"
+      id="region"
+      placeholder="Example: Cross River"
+      maxlength="60"
+      required
+    >
+
+
+    <!-- SCHOOL -->
+
+    <label for="school">
+      School
+    </label>
+
+    <input
+      type="text"
+      id="school"
+      placeholder="Enter your school"
+      maxlength="100"
+      required
+    >
+
+
+    <!-- SCHOOL LEVEL -->
+
+    <label for="level">
+      School Level
+    </label>
+
+    <select id="level" required>
+
+      <option value="">
+        Choose your level
+      </option>
+
+    </select>
+
+
+    <!-- FAVORITE SUBJECT -->
+
+    <label for="subjects">
+      Favorite Subject
+    </label>
+
+    <select id="subjects" required>
+
+      <option value="">
+        Choose a subject
+      </option>
+
+      <option value="Mathematics">
+        Mathematics
+      </option>
+
+      <option value="Physics">
+        Physics
+      </option>
+
+      <option value="Chemistry">
+        Chemistry
+      </option>
+
+      <option value="Biology">
+        Biology
+      </option>
+
+      <option value="Computer Science">
+        Computer Science
+      </option>
+
+      <option value="English">
+        English
+      </option>
+
+      <option value="History">
+        History
+      </option>
+
+      <option value="Geography">
+        Geography
+      </option>
+
+      <option value="Economics">
+        Economics
+      </option>
+
+      <option value="Literature">
+        Literature
+      </option>
+
+      <option value="Other">
+        Other
+      </option>
+
+    </select>
+
+
+    <!-- MAIN INTEREST -->
+
+    <label for="interests">
+      Main Interest
+    </label>
+
+    <select id="interests" required>
+
+      <option value="">
+        Choose an interest
+      </option>
+
+      <option value="Coding">
+        Coding
+      </option>
+
+      <option value="Football">
+        Football
+      </option>
+
+      <option value="Music">
+        Music
+      </option>
+
+      <option value="Art">
+        Art
+      </option>
+
+      <option value="Gaming">
+        Gaming
+      </option>
+
+      <option value="Science">
+        Science
+      </option>
+
+      <option value="Business">
+        Business
+      </option>
+
+      <option value="Reading">
+        Reading
+      </option>
+
+      <option value="Writing">
+        Writing
+      </option>
+
+      <option value="Technology">
+        Technology
+      </option>
+
+      <option value="Sports">
+        Sports
+      </option>
+
+      <option value="Other">
+        Other
+      </option>
+
+    </select>
+
+
+    <!-- DISCOVERABILITY -->
+
+    <div class="privacy-choice">
+
+      <p>
+        <strong>
+          Discoverability
+        </strong>
+      </p>
+
+      <p>
+        Would you like other students
+        to discover your profile?
+      </p>
+
+      <label>
+
+        <input
+          type="radio"
+          name="discoverable"
+          value="yes"
+          required
+        >
+
+        Yes, let students discover me
+
+      </label>
+
+      <label>
+
+        <input
+          type="radio"
+          name="discoverable"
+          value="no"
+        >
+
+        No, keep my profile private
+
+      </label>
+
+    </div>
+
+
+    <!-- CONTINUE -->
+
+    <button
+      type="submit"
+      class="btn"
+    >
+      Continue
+    </button>
+
+  </form>
+
+</section>
+
+  </main>  <script
+    type="module"
+    src="js/profile.js"
+  >
+      </script>
+      </body>
+      </html>
