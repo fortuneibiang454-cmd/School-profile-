@@ -8,82 +8,109 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 import {
+  collection,
   doc,
+  getDoc,
+  getDocs,
+  addDoc,
   setDoc,
+  query,
+  where,
+  orderBy,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
-const loginForm =
-  document.getElementById("loginForm");
+/* =========================
+   ELEMENTS
+========================= */
 
-const signupForm =
-  document.getElementById("signupForm");
+const loginForm = document.getElementById("loginForm");
+const signupForm = document.getElementById("signupForm");
+const switchAuth = document.getElementById("switchAuth");
+const authMessage = document.getElementById("authMessage");
+const logoutBtn = document.getElementById("logoutBtn");
 
-const switchAuth =
-  document.getElementById("switchAuth");
+const discoverList = document.getElementById("discoverList");
 
-const authMessage =
-  document.getElementById("authMessage");
+const communityList = document.getElementById("communityList");
+const communityView = document.getElementById("communityView");
+const communityTitle = document.getElementById("communityTitle");
+const communityDescription =
+  document.getElementById("communityDescription");
 
-const authScreen =
-  document.getElementById("authScreen");
+const backToCommunities =
+  document.getElementById("backToCommunities");
 
-const appScreen =
-  document.getElementById("appScreen");
+const postInput = document.getElementById("postInput");
+const postButton = document.getElementById("postButton");
+const communityPosts =
+  document.getElementById("communityPosts");
 
-const logoutBtn =
-  document.getElementById("logoutBtn");
+const chatUsers = document.getElementById("chatUsers");
+const chatTitle = document.getElementById("chatTitle");
+const chatMessages = document.getElementById("chatMessages");
+const chatForm = document.getElementById("chatForm");
+const messageInput = document.getElementById("messageInput");
 
-const welcomeMessage =
-  document.getElementById("welcomeMessage");
+const profileName = document.getElementById("profileName");
+const profileEmail = document.getElementById("profileEmail");
+const profileLevel = document.getElementById("profileLevel");
+const profileSubject = document.getElementById("profileSubject");
+const profileInterest = document.getElementById("profileInterest");
+
+const aiBtn = document.getElementById("aiBtn");
 
 
 let signupMode = false;
+let currentUser = null;
+let currentCommunity = null;
+let selectedChatUser = null;
 
 
 /* =========================
-   SWITCH LOGIN / SIGNUP
+   LOGIN / SIGNUP SWITCH
 ========================= */
 
-switchAuth.addEventListener(
-  "click",
-  () => {
+if (switchAuth) {
+
+  switchAuth.addEventListener("click", () => {
 
     signupMode = !signupMode;
 
-    authMessage.textContent = "";
+    if (authMessage) {
+      authMessage.textContent = "";
+    }
 
     if (signupMode) {
 
-      loginForm.classList.add("hidden");
-
-      signupForm.classList.remove("hidden");
+      loginForm?.classList.add("hidden");
+      signupForm?.classList.remove("hidden");
 
       switchAuth.textContent =
         "Already have an account? Login";
 
     } else {
 
-      signupForm.classList.add("hidden");
-
-      loginForm.classList.remove("hidden");
+      signupForm?.classList.add("hidden");
+      loginForm?.classList.remove("hidden");
 
       switchAuth.textContent =
         "Create an account";
     }
 
-  }
-);
+  });
+
+}
 
 
 /* =========================
    SIGN UP
 ========================= */
 
-signupForm.addEventListener(
-  "submit",
-  async (event) => {
+if (signupForm) {
+
+  signupForm.addEventListener("submit", async (event) => {
 
     event.preventDefault();
 
@@ -91,22 +118,13 @@ signupForm.addEventListener(
       "Creating your account...";
 
     const name =
-      document
-        .getElementById("signupName")
-        .value
-        .trim();
+      document.getElementById("signupName")?.value.trim();
 
     const email =
-      document
-        .getElementById("signupEmail")
-        .value
-        .trim();
+      document.getElementById("signupEmail")?.value.trim();
 
     const password =
-      document
-        .getElementById("signupPassword")
-        .value;
-
+      document.getElementById("signupPassword")?.value;
 
     try {
 
@@ -117,205 +135,118 @@ signupForm.addEventListener(
           password
         );
 
-
-      const user =
-        result.user;
-
-
-      /*
-       * Save the basic account information.
-       * The complete student profile will be
-       * collected on profile.html.
-       */
+      const user = result.user;
 
       await setDoc(
-        doc(
-          db,
-          "users",
-          user.uid
-        ),
+        doc(db, "users", user.uid),
         {
-
           uid: user.uid,
-
           displayName: name,
-
           email: email,
-
           profileComplete: false,
-
-          createdAt:
-            serverTimestamp()
-
+          createdAt: serverTimestamp()
         },
-        {
-          merge: true
-        }
+        { merge: true }
       );
 
+      window.location.href = "profile.html";
 
-      /*
-       * Send the new student to
-       * profile setup.
-       */
+    } catch (error) {
 
-      window.location.href =
-        "profile.html";
-
-    }
-
-    catch (error) {
-
-      console.error(
-        "Signup error:",
-        error
-      );
+      console.error(error);
 
       authMessage.textContent =
         getFirebaseError(error);
-
     }
 
-  }
-);
+  });
+
+}
 
 
 /* =========================
    LOGIN
 ========================= */
 
-loginForm.addEventListener(
-  "submit",
-  async (event) => {
+if (loginForm) {
+
+  loginForm.addEventListener("submit", async (event) => {
 
     event.preventDefault();
 
     authMessage.textContent =
       "Logging in...";
 
-
     const email =
-      document
-        .getElementById("loginEmail")
-        .value
-        .trim();
+      document.getElementById("loginEmail")?.value.trim();
 
     const password =
-      document
-        .getElementById("loginPassword")
-        .value;
-
+      document.getElementById("loginPassword")?.value;
 
     try {
 
-      const result =
-        await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-
-
-      const user =
-        result.user;
-
-
-      /*
-       * Existing students go to the app.
-       * New students without a completed
-       * profile go to profile setup.
-       */
-
-      const profileRef =
-        doc(
-          db,
-          "users",
-          user.uid
-        );
-
-
-      /*
-       * We don't need to read the profile
-       * here just to log in.
-       * Send the student to the main app.
-       */
-
-      window.location.href =
-        "dashboard.html";
-
-    }
-
-    catch (error) {
-
-      console.error(
-        "Login error:",
-        error
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
       );
 
-      authMessage.textContent =
-        getFirebaseError(error);
+      window.location.href = "dashboard.html";
 
-    }
-
-  }
-);
-
-
-/* =========================
-   LOGOUT
-========================= */
-
-logoutBtn.addEventListener(
-  "click",
-  async () => {
-
-    try {
-
-      await signOut(auth);
-
-      window.location.reload();
-
-    }
-
-    catch (error) {
+    } catch (error) {
 
       console.error(error);
 
+      authMessage.textContent =
+        getFirebaseError(error);
     }
 
-  }
-);
+  });
+
+}
 
 
 /* =========================
    AUTH STATE
 ========================= */
 
-onAuthStateChanged(
-  auth,
-  (user) => {
+onAuthStateChanged(auth, async (user) => {
 
-    /*
-     * Don't automatically hide the login
-     * screen here if the user is on signup.
-     *
-     * Authentication is handled by the
-     * forms above.
-     */
+  currentUser = user;
 
-    if (user) {
+  if (!user) return;
 
-      if (welcomeMessage) {
+  await loadProfile();
+  await loadDiscoverStudents();
+  await loadCommunities();
+  await loadChatUsers();
 
-        welcomeMessage.textContent =
-          `Welcome to StudentConnect 👋`;
+});
 
-      }
+
+/* =========================
+   LOGOUT
+========================= */
+
+if (logoutBtn) {
+
+  logoutBtn.addEventListener("click", async () => {
+
+    try {
+
+      await signOut(auth);
+
+      window.location.href = "index.html";
+
+    } catch (error) {
+
+      console.error(error);
 
     }
 
-  }
-);
+  });
+
+}
 
 
 /* =========================
@@ -324,59 +255,729 @@ onAuthStateChanged(
 
 document
   .querySelectorAll("[data-page]")
-  .forEach(
-    (button) => {
+  .forEach(button => {
+
+    button.addEventListener("click", () => {
+
+      const page = button.dataset.page;
+
+      document
+        .querySelectorAll(".page")
+        .forEach(section => {
+          section.classList.remove("active");
+        });
+
+      const target =
+        document.getElementById(`page-${page}`);
+
+      if (target) {
+
+        target.classList.add("active");
+
+        window.scrollTo(0, 0);
+
+      }
+
+    });
+
+  });
+
+
+/* =========================
+   PROFILE
+========================= */
+
+async function loadProfile() {
+
+  if (!currentUser) return;
+
+  try {
+
+    const profileSnapshot =
+      await getDoc(
+        doc(db, "users", currentUser.uid)
+      );
+
+    if (!profileSnapshot.exists()) return;
+
+    const data = profileSnapshot.data();
+
+    if (profileName)
+      profileName.textContent =
+        data.displayName || "Not set";
+
+    if (profileEmail)
+      profileEmail.textContent =
+        data.email || currentUser.email || "";
+
+    if (profileLevel)
+      profileLevel.textContent =
+        data.level || "Not set";
+
+    if (profileSubject)
+      profileSubject.textContent =
+        data.subject || "Not set";
+
+    if (profileInterest)
+      profileInterest.textContent =
+        data.interest || "Not set";
+
+    const welcome =
+      document.getElementById("welcomeMessage");
+
+    if (welcome && data.displayName) {
+
+      welcome.textContent =
+        `Welcome, ${data.displayName} 👋`;
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Profile loading error:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================
+   DISCOVER STUDENTS
+========================= */
+
+async function loadDiscoverStudents() {
+
+  if (!discoverList) return;
+
+  discoverList.innerHTML =
+    `<div class="card">Loading students...</div>`;
+
+  try {
+
+    const q = query(
+      collection(db, "discoverableProfiles"),
+      where("discoverable", "==", true)
+    );
+
+    const snapshot = await getDocs(q);
+
+    discoverList.innerHTML = "";
+
+    if (snapshot.empty) {
+
+      discoverList.innerHTML =
+        `<div class="card">
+          <h3>No students yet</h3>
+          <p>More students will appear here as they join StudentConnect.</p>
+        </div>`;
+
+      return;
+    }
+
+    snapshot.forEach(studentDoc => {
+
+      const student = studentDoc.data();
+
+      if (studentDoc.id === currentUser?.uid)
+        return;
+
+      const card =
+        document.createElement("div");
+
+      card.className =
+        "card student-card";
+
+      card.innerHTML = `
+        <h3>👤 ${escapeHTML(student.displayName || "Student")}</h3>
+
+        <p>
+          🌍 ${escapeHTML(student.country || "Unknown")}
+        </p>
+
+        <p>
+          📍 ${escapeHTML(student.region || "Unknown")}
+        </p>
+
+        <p>
+          🏫 ${escapeHTML(student.school || "School not listed")}
+        </p>
+
+        <p>
+          🎓 ${escapeHTML(student.level || "Level not listed")}
+        </p>
+
+        <p>
+          📚 ${escapeHTML(student.subject || "Subject not listed")}
+        </p>
+
+        <p>
+          ⭐ ${escapeHTML(student.interest || "Interest not listed")}
+        </p>
+
+        <button
+          class="action-btn"
+          data-chat="${studentDoc.id}"
+        >
+          Message
+        </button>
+      `;
+
+      discoverList.appendChild(card);
+
+    });
+
+    document
+      .querySelectorAll("[data-chat]")
+      .forEach(button => {
+
+        button.addEventListener("click", () => {
+
+          openChatWith(button.dataset.chat);
+
+        });
+
+      });
+
+  } catch (error) {
+
+    console.error(
+      "Discover error:",
+      error
+    );
+
+    discoverList.innerHTML =
+      `<div class="card">
+        Unable to load students.
+      </div>`;
+  }
+
+}
+
+
+/* =========================
+   COMMUNITIES
+========================= */
+
+const communities = [
+
+  {
+    id: "study-hub",
+    name: "📚 Study Hub",
+    description:
+      "Ask questions, explain topics and study together."
+  },
+
+  {
+    id: "coding-club",
+    name: "💻 Coding Club",
+    description:
+      "Learn programming, build projects and share ideas."
+  },
+
+  {
+    id: "science-zone",
+    name: "🔬 Science Zone",
+    description:
+      "Discuss Biology, Chemistry, Physics and other sciences."
+  },
+
+  {
+    id: "exam-prep",
+    name: "📝 Exam Prep",
+    description:
+      "Share study strategies and prepare for exams together."
+  },
+
+  {
+    id: "creative-corner",
+    name: "🎨 Creative Corner",
+    description:
+      "Art, writing, music and creative projects."
+  },
+
+  {
+    id: "sports-club",
+    name: "⚽ Sports Club",
+    description:
+      "Talk about sports and connect with students who enjoy them."
+  }
+
+];
+
+
+async function loadCommunities() {
+
+  if (!communityList) return;
+
+  communityList.innerHTML = "";
+
+  communities.forEach(community => {
+
+    const card =
+      document.createElement("div");
+
+    card.className =
+      "card community-card";
+
+    card.innerHTML = `
+      <h3>${community.name}</h3>
+
+      <p>
+        ${community.description}
+      </p>
+
+      <button
+        class="action-btn"
+        data-community="${community.id}"
+      >
+        Open Community
+      </button>
+    `;
+
+    communityList.appendChild(card);
+
+  });
+
+  document
+    .querySelectorAll("[data-community]")
+    .forEach(button => {
 
       button.addEventListener(
         "click",
         () => {
 
-          const page =
-            button.dataset.page;
-
-          document
-            .querySelectorAll(".page")
-            .forEach(
-              (section) => {
-                section.classList.remove(
-                  "active"
-                );
-              }
-            );
-
-
-          const target =
-            document.getElementById(
-              `page-${page}`
-            );
-
-
-          if (target) {
-
-            target.classList.add(
-              "active"
-            );
-
-            window.scrollTo(
-              0,
-              0
-            );
-
-          }
+          openCommunity(
+            button.dataset.community
+          );
 
         }
       );
 
+    });
+
+}
+
+
+async function openCommunity(id) {
+
+  currentCommunity =
+    communities.find(
+      community => community.id === id
+    );
+
+  if (!currentCommunity) return;
+
+  communityList?.classList.add("hidden");
+  communityView?.classList.remove("hidden");
+
+  communityTitle.textContent =
+    currentCommunity.name;
+
+  communityDescription.textContent =
+    currentCommunity.description;
+
+  await loadCommunityPosts(id);
+
+}
+
+
+if (backToCommunities) {
+
+  backToCommunities.addEventListener(
+    "click",
+    () => {
+
+      communityView?.classList.add("hidden");
+      communityList?.classList.remove("hidden");
+
+      currentCommunity = null;
+
     }
   );
 
+}
+
 
 /* =========================
-   AI BUTTON
+   COMMUNITY POSTS
 ========================= */
 
-const aiBtn =
-  document.getElementById("aiBtn");
+if (postButton) {
+
+  postButton.addEventListener(
+    "click",
+    async () => {
+
+      if (!currentUser) {
+
+        alert("Please log in first.");
+        return;
+
+      }
+
+      const text =
+        postInput.value.trim();
+
+      if (!text) {
+
+        alert("Write something first.");
+        return;
+
+      }
+
+      if (!currentCommunity) return;
+
+      postButton.disabled = true;
+
+      try {
+
+        const profile =
+          await getDoc(
+            doc(
+              db,
+              "users",
+              currentUser.uid
+            )
+          );
+
+        const userData =
+          profile.exists()
+            ? profile.data()
+            : {};
+
+        await addDoc(
+          collection(
+            db,
+            "communities",
+            currentCommunity.id,
+            "posts"
+          ),
+          {
+
+            text: text,
+
+            uid:
+              currentUser.uid,
+
+            displayName:
+              userData.displayName ||
+              currentUser.email ||
+              "Student",
+
+            createdAt:
+              serverTimestamp()
+
+          }
+        );
+
+        postInput.value = "";
+
+        await loadCommunityPosts(
+          currentCommunity.id
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Could not publish your post."
+        );
+
+      }
+
+      postButton.disabled = false;
+
+    }
+  );
+
+}
+
+
+async function loadCommunityPosts(id) {
+
+  if (!communityPosts) return;
+
+  communityPosts.innerHTML =
+    `<div class="card">Loading discussions...</div>`;
+
+  try {
+
+    const q = query(
+      collection(
+        db,
+        "communities",
+        id,
+        "posts"
+      ),
+      orderBy("createdAt", "desc")
+    );
+
+    const snapshot =
+      await getDocs(q);
+
+    communityPosts.innerHTML = "";
+
+    if (snapshot.empty) {
+
+      communityPosts.innerHTML =
+        `<div class="card">
+          <p>No discussions yet.</p>
+          <p>Be the first student to start one!</p>
+        </div>`;
+
+      return;
+    }
+
+    snapshot.forEach(postDoc => {
+
+      const post =
+        postDoc.data();
+
+      const article =
+        document.createElement("article");
+
+      article.className = "post";
+
+      const date =
+        post.createdAt?.toDate
+          ? post.createdAt.toDate()
+              .toLocaleString()
+          : "Just now";
+
+      article.innerHTML = `
+
+        <div class="post-meta">
+          👤 ${escapeHTML(post.displayName || "Student")}
+          • ${escapeHTML(date)}
+        </div>
+
+        <div>
+          ${escapeHTML(post.text || "")}
+        </div>
+
+      `;
+
+      communityPosts.appendChild(article);
+
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    communityPosts.innerHTML =
+      `<div class="card">
+        Unable to load discussions.
+      </div>`;
+
+  }
+
+}
+
+
+/* =========================
+   CHAT USERS
+========================= */
+
+async function loadChatUsers() {
+
+  if (!chatUsers) return;
+
+  chatUsers.innerHTML =
+    "Loading students...";
+
+  try {
+
+    const q = query(
+      collection(db, "discoverableProfiles"),
+      where("discoverable", "==", true)
+    );
+
+    const snapshot =
+      await getDocs(q);
+
+    chatUsers.innerHTML = "";
+
+    snapshot.forEach(studentDoc => {
+
+      if (
+        studentDoc.id ===
+        currentUser?.uid
+      ) return;
+
+      const student =
+        studentDoc.data();
+
+      const button =
+        document.createElement("button");
+
+      button.className =
+        "user-item";
+
+      button.textContent =
+        `👤 ${student.displayName || "Student"}`;
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          openChatWith(
+            studentDoc.id
+          );
+
+        }
+      );
+
+      chatUsers.appendChild(button);
+
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    chatUsers.innerHTML =
+      "Unable to load students.";
+
+  }
+
+}
+
+
+/* =========================
+   CHAT
+========================= */
+
+async function openChatWith(uid) {
+
+  selectedChatUser = uid;
+
+  if (!messageInput) return;
+
+  messageInput.disabled = false;
+
+  chatTitle.textContent =
+    "💬 Chat";
+
+  chatMessages.innerHTML =
+    "<p>Loading conversation...</p>";
+
+  try {
+
+    const student =
+      await getDoc(
+        doc(
+          db,
+          "discoverableProfiles",
+          uid
+        )
+      );
+
+    if (student.exists()) {
+
+      chatTitle.textContent =
+        `💬 ${student.data().displayName || "Student"}`;
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+
+  chatMessages.innerHTML = `
+    <div class="card">
+      <p>Chat is ready.</p>
+      <p>Send a message below.</p>
+    </div>
+  `;
+
+}
+
+
+if (chatForm) {
+
+  chatForm.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+      if (!currentUser || !selectedChatUser)
+        return;
+
+      const text =
+        messageInput.value.trim();
+
+      if (!text) return;
+
+      try {
+
+        const chatId =
+          [currentUser.uid, selectedChatUser]
+            .sort()
+            .join("_");
+
+        await addDoc(
+          collection(
+            db,
+            "chats",
+            chatId,
+            "messages"
+          ),
+          {
+
+            senderId:
+              currentUser.uid,
+
+            receiverId:
+              selectedChatUser,
+
+            text: text,
+
+            createdAt:
+              serverTimestamp()
+
+          }
+        );
+
+        const message =
+          document.createElement("div");
+
+        message.className =
+          "message mine";
+
+        message.textContent =
+          text;
+
+        chatMessages.appendChild(message);
+
+        messageInput.value = "";
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Could not send message."
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================
+   AI STUDY ASSISTANT
+========================= */
 
 if (aiBtn) {
 
@@ -385,7 +986,7 @@ if (aiBtn) {
     () => {
 
       alert(
-        "The AI Study Assistant will be added in the next stage."
+        "AI Study Assistant is the next feature to connect."
       );
 
     }
@@ -395,7 +996,23 @@ if (aiBtn) {
 
 
 /* =========================
-   FIREBASE ERROR MESSAGES
+   SECURITY HELPER
+========================= */
+
+function escapeHTML(value) {
+
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+}
+
+
+/* =========================
+   FIREBASE ERRORS
 ========================= */
 
 function getFirebaseError(error) {
@@ -412,7 +1029,7 @@ function getFirebaseError(error) {
       return "Please enter a valid email address.";
 
     case "auth/weak-password":
-      return "Your password must be at least 6 characters.";
+      return "Password must be at least 6 characters.";
 
     case "auth/invalid-credential":
       return "Incorrect email or password.";
@@ -422,6 +1039,9 @@ function getFirebaseError(error) {
 
     case "auth/wrong-password":
       return "Incorrect password.";
+
+    case "auth/network-request-failed":
+      return "Network connection problem. Check your internet and try again.";
 
     default:
       return error?.message ||
