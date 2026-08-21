@@ -1,421 +1,637 @@
 import { auth, db } from "./firebase.js";
 
 import {
-onAuthStateChanged
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 import {
-doc,
-setDoc,
-deleteDoc
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-const profileForm = document.getElementById("profileForm");
-const countrySelect = document.getElementById("country");
-const levelSelect = document.getElementById("level");
 
-/* SCHOOL LEVELS */
+const profileForm =
+  document.getElementById("profileForm");
+
+const countrySelect =
+  document.getElementById("country");
+
+const levelSelect =
+  document.getElementById("level");
+
+
+/* =========================
+   COUNTRY SCHOOL SYSTEMS
+========================= */
 
 const schoolLevels = {
 
-Nigeria: [
-"JSS1",
-"JSS2",
-"JSS3",
-"SS1",
-"SS2",
-"SS3"
-],
+  Nigeria: [
+    "Primary 1",
+    "Primary 2",
+    "Primary 3",
+    "Primary 4",
+    "Primary 5",
+    "Primary 6",
+    "JSS1",
+    "JSS2",
+    "JSS3",
+    "SS1",
+    "SS2",
+    "SS3",
+    "University"
+  ],
 
-Ghana: [
-"Basic 7",
-"Basic 8",
-"Basic 9",
-"SHS 1",
-"SHS 2",
-"SHS 3"
-],
+  Ghana: [
+    "Basic 1",
+    "Basic 2",
+    "Basic 3",
+    "Basic 4",
+    "Basic 5",
+    "Basic 6",
+    "JHS1",
+    "JHS2",
+    "JHS3",
+    "SHS1",
+    "SHS2",
+    "SHS3",
+    "University"
+  ],
 
-Kenya: [
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12"
-],
+  Kenya: [
+    "Grade 1",
+    "Grade 2",
+    "Grade 3",
+    "Grade 4",
+    "Grade 5",
+    "Grade 6",
+    "Grade 7",
+    "Grade 8",
+    "Grade 9",
+    "Grade 10",
+    "Grade 11",
+    "Grade 12",
+    "University"
+  ],
 
-"South Africa": [
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12"
-],
+  "United States": [
+    "Kindergarten",
+    "Grade 1",
+    "Grade 2",
+    "Grade 3",
+    "Grade 4",
+    "Grade 5",
+    "Grade 6",
+    "Grade 7",
+    "Grade 8",
+    "Grade 9",
+    "Grade 10",
+    "Grade 11",
+    "Grade 12",
+    "College / University"
+  ],
 
-"United Kingdom": [
-"Year 7",
-"Year 8",
-"Year 9",
-"Year 10",
-"Year 11",
-"Year 12",
-"Year 13"
-],
+  Canada: [
+    "Kindergarten",
+    "Grade 1",
+    "Grade 2",
+    "Grade 3",
+    "Grade 4",
+    "Grade 5",
+    "Grade 6",
+    "Grade 7",
+    "Grade 8",
+    "Grade 9",
+    "Grade 10",
+    "Grade 11",
+    "Grade 12",
+    "College / University"
+  ],
 
-"United States": [
-"Grade 6",
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12"
-],
+  "United Kingdom": [
+    "Reception",
+    "Year 1",
+    "Year 2",
+    "Year 3",
+    "Year 4",
+    "Year 5",
+    "Year 6",
+    "Year 7",
+    "Year 8",
+    "Year 9",
+    "Year 10",
+    "Year 11",
+    "Year 12",
+    "Year 13",
+    "University"
+  ],
 
-Canada: [
-"Grade 6",
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12"
-],
+  "South Africa": [
+    "Grade R",
+    "Grade 1",
+    "Grade 2",
+    "Grade 3",
+    "Grade 4",
+    "Grade 5",
+    "Grade 6",
+    "Grade 7",
+    "Grade 8",
+    "Grade 9",
+    "Grade 10",
+    "Grade 11",
+    "Grade 12",
+    "University"
+  ],
 
-Australia: [
-"Year 7",
-"Year 8",
-"Year 9",
-"Year 10",
-"Year 11",
-"Year 12"
-],
+  India: [
+    "Class 1",
+    "Class 2",
+    "Class 3",
+    "Class 4",
+    "Class 5",
+    "Class 6",
+    "Class 7",
+    "Class 8",
+    "Class 9",
+    "Class 10",
+    "Class 11",
+    "Class 12",
+    "University"
+  ],
 
-"New Zealand": [
-"Year 7",
-"Year 8",
-"Year 9",
-"Year 10",
-"Year 11",
-"Year 12",
-"Year 13"
-],
+  Australia: [
+    "Prep / Foundation",
+    "Year 1",
+    "Year 2",
+    "Year 3",
+    "Year 4",
+    "Year 5",
+    "Year 6",
+    "Year 7",
+    "Year 8",
+    "Year 9",
+    "Year 10",
+    "Year 11",
+    "Year 12",
+    "University"
+  ],
 
-India: [
-"Class 6",
-"Class 7",
-"Class 8",
-"Class 9",
-"Class 10",
-"Class 11",
-"Class 12"
-],
-
-Pakistan: [
-"Grade 6",
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12"
-],
-
-Philippines: [
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12"
-],
-
-Singapore: [
-"Secondary 1",
-"Secondary 2",
-"Secondary 3",
-"Secondary 4",
-"Junior College 1",
-"Junior College 2"
-],
-
-Malaysia: [
-"Form 1",
-"Form 2",
-"Form 3",
-"Form 4",
-"Form 5"
-],
-
-France: [
-"6ème",
-"5ème",
-"4ème",
-"3ème",
-"Seconde",
-"Première",
-"Terminale"
-],
-
-Germany: [
-"Grade 6",
-"Grade 7",
-"Grade 8",
-"Grade 9",
-"Grade 10",
-"Grade 11",
-"Grade 12",
-"Grade 13"
-],
-
-Brazil: [
-"6º Ano",
-"7º Ano",
-"8º Ano",
-"9º Ano",
-"1º Ano",
-"2º Ano",
-"3º Ano"
-]
+  default: [
+    "Primary School",
+    "Lower Secondary",
+    "Upper Secondary",
+    "College",
+    "University"
+  ]
 
 };
 
-/* DEFAULT LEVELS */
 
-const defaultLevels = [
-"Lower Secondary",
-"Middle School",
-"Upper Secondary",
-"High School",
-"Other"
-];
-
-/* UPDATE LEVELS */
+/* =========================
+   UPDATE LEVELS
+========================= */
 
 function updateSchoolLevels() {
 
-const country = countrySelect.value;
+  const country =
+    countrySelect.value;
 
-const levels =
-schoolLevels[country] || defaultLevels;
 
-levelSelect.innerHTML = "";
+  levelSelect.innerHTML = "";
 
-const firstOption =
-document.createElement("option");
 
-firstOption.value = "";
-firstOption.textContent = "Choose your level";
+  const firstOption =
+    document.createElement("option");
 
-levelSelect.appendChild(firstOption);
+  firstOption.value = "";
 
-levels.forEach((level) => {
+  firstOption.textContent =
+    country
+      ? "Choose your level"
+      : "Choose your country first";
 
-const option =
-  document.createElement("option");
+  levelSelect.appendChild(
+    firstOption
+  );
 
-option.value = level;
-option.textContent = level;
 
-levelSelect.appendChild(option);
+  if (!country) {
+    levelSelect.disabled = true;
+    return;
+  }
 
-});
+
+  levelSelect.disabled = false;
+
+
+  const levels =
+    schoolLevels[country] ||
+    schoolLevels.default;
+
+
+  levels.forEach(
+    (level) => {
+
+      const option =
+        document.createElement("option");
+
+      option.value = level;
+
+      option.textContent = level;
+
+      levelSelect.appendChild(
+        option
+      );
+
+    }
+  );
 
 }
 
-/* COUNTRY LISTENER */
+
+/* =========================
+   COUNTRY CHANGE
+========================= */
 
 countrySelect.addEventListener(
-"change",
-updateSchoolLevels
+  "change",
+  updateSchoolLevels
 );
 
-/* AUTH */
+
+/* =========================
+   AUTH CHECK
+========================= */
 
 onAuthStateChanged(
-auth,
-(user) => {
+  auth,
+  async (user) => {
 
-if (!user) {
-
-  alert("Please log in first.");
-
-  window.location.href =
-    "login.html";
-
-  return;
-}
-
-
-profileForm.addEventListener(
-  "submit",
-  async (event) => {
-
-    event.preventDefault();
-
-
-    const displayName =
-      document
-        .getElementById("displayName")
-        .value
-        .trim();
-
-
-    const country =
-      countrySelect.value;
-
-
-    const region =
-      document
-        .getElementById("region")
-        .value
-        .trim();
-
-
-    const school =
-      document
-        .getElementById("school")
-        .value
-        .trim();
-
-
-    const level =
-      levelSelect.value;
-
-
-    const subject =
-      document
-        .getElementById("subjects")
-        .value;
-
-
-    const interest =
-      document
-        .getElementById("interests")
-        .value;
-
-
-    const discoverableChoice =
-      document.querySelector(
-        'input[name="discoverable"]:checked'
-      );
-
-
-    if (!discoverableChoice) {
+    if (!user) {
 
       alert(
-        "Please choose whether students can discover you."
+        "Please log in first."
       );
+
+      window.location.href =
+        "index.html";
 
       return;
 
     }
 
 
-    const discoverable =
-      discoverableChoice.value === "yes";
-
+    /*
+     * Load existing profile if one exists.
+     */
 
     try {
 
-      /* SAVE USER PROFILE */
-
-      await setDoc(
+      const profileRef =
         doc(
           db,
           "users",
           user.uid
-        ),
-        {
+        );
 
-          displayName,
-          email: user.email || "",
-          country,
-          region,
-          school,
-          level,
-          subject,
-          interest,
-          discoverable,
+      const profileSnap =
+        await getDoc(profileRef);
 
-          updatedAt:
-            new Date()
 
-        },
+      if (profileSnap.exists()) {
 
-        {
-          merge: true
+        const data =
+          profileSnap.data();
+
+
+        if (data.country) {
+
+          countrySelect.value =
+            data.country;
+
+          updateSchoolLevels();
+
         }
 
-      );
+
+        if (data.displayName) {
+
+          document
+            .getElementById("displayName")
+            .value =
+              data.displayName;
+
+        }
 
 
-      /* DISCOVERABLE PROFILE */
+        if (data.region) {
 
-      const discoverableRef =
-        doc(
-          db,
-          "discoverableProfiles",
-          user.uid
-        );
+          document
+            .getElementById("region")
+            .value =
+              data.region;
+
+        }
 
 
-      if (discoverable) {
+        if (data.school) {
 
-        await setDoc(
-          discoverableRef,
-          {
+          document
+            .getElementById("school")
+            .value =
+              data.school;
 
-            displayName,
-            country,
-            region,
-            school,
-            level,
-            subject,
-            interest
+        }
 
-          },
 
-          {
-            merge: true
+        if (data.level) {
+
+          levelSelect.value =
+            data.level;
+
+        }
+
+
+        if (data.subject) {
+
+          document
+            .getElementById("subjects")
+            .value =
+              data.subject;
+
+        }
+
+
+        if (data.interest) {
+
+          document
+            .getElementById("interests")
+            .value =
+              data.interest;
+
+        }
+
+
+        if (
+          data.discoverable !==
+          undefined
+        ) {
+
+          const value =
+            data.discoverable
+              ? "yes"
+              : "no";
+
+
+          const radio =
+            document.querySelector(
+              `input[name="discoverable"][value="${value}"]`
+            );
+
+
+          if (radio) {
+            radio.checked = true;
           }
 
-        );
-
-      } else {
-
-        await deleteDoc(
-          discoverableRef
-        );
+        }
 
       }
 
+    }
 
-      alert(
-        "Profile saved successfully!"
-      );
-
-
-      window.location.href =
-        "dashboard.html";
-
-  } catch (error) {
+    catch (error) {
 
       console.error(
-        "Profile error:",
+        "Could not load profile:",
         error
-      );
-
-      alert(
-        "Could not save your profile. Please try again."
       );
 
     }
 
+
+    /* =========================
+       SAVE PROFILE
+    ========================= */
+
+    profileForm.addEventListener(
+      "submit",
+      async (event) => {
+
+        event.preventDefault();
+
+
+        const displayName =
+          document
+            .getElementById("displayName")
+            .value
+            .trim();
+
+
+        const country =
+          countrySelect.value;
+
+
+        const region =
+          document
+            .getElementById("region")
+            .value
+            .trim();
+
+
+        const school =
+          document
+            .getElementById("school")
+            .value
+            .trim();
+
+
+        const level =
+          levelSelect.value;
+
+
+        const subject =
+          document
+            .getElementById("subjects")
+            .value;
+
+
+        const interest =
+          document
+            .getElementById("interests")
+            .value;
+
+
+        const selectedRadio =
+          document.querySelector(
+            'input[name="discoverable"]:checked'
+          );
+
+
+        if (!selectedRadio) {
+
+          alert(
+            "Please choose your discoverability setting."
+          );
+
+          return;
+
+        }
+
+
+        const discoverable =
+          selectedRadio.value === "yes";
+
+
+        try {
+
+          /*
+           * Save complete profile.
+           */
+
+          await setDoc(
+            doc(
+              db,
+              "users",
+              user.uid
+            ),
+            {
+
+              uid:
+                user.uid,
+
+              displayName:
+                displayName,
+
+              email:
+                user.email || "",
+
+              country:
+                country,
+
+              region:
+                region,
+
+              school:
+                school,
+
+              level:
+                level,
+
+              subject:
+                subject,
+
+              interest:
+                interest,
+
+              discoverable:
+                discoverable,
+
+              profileComplete:
+                true,
+
+              updatedAt:
+                serverTimestamp()
+
+            },
+            {
+              merge: true
+            }
+          );
+
+
+          /*
+           * Add to discoverableProfiles
+           * only when the student agrees.
+           */
+
+          if (discoverable) {
+
+            await setDoc(
+              doc(
+                db,
+                "discoverableProfiles",
+                user.uid
+              ),
+              {
+
+                uid:
+                  user.uid,
+
+                displayName:
+                  displayName,
+
+                country:
+                  country,
+
+                region:
+                  region,
+
+                school:
+                  school,
+
+                level:
+                  level,
+
+                subject:
+                  subject,
+
+                interest:
+                  interest,
+
+                updatedAt:
+                  serverTimestamp()
+
+              },
+              {
+                merge: true
+              }
+            );
+
+          }
+
+
+          alert(
+            "Profile saved successfully! 🎉"
+          );
+
+
+          /*
+           * Go to dashboard.
+           */
+
+          window.location.href =
+            "dashboard.html";
+
+        }
+
+        catch (error) {
+
+          console.error(
+            "Profile error:",
+            error
+          );
+
+          alert(
+            "Could not save your profile: " +
+            error.message
+          );
+
+        }
+
+      },
+      {
+        once: true
+      }
+    );
+
   }
 );
 
-}
-);
+
+/* =========================
+   INITIAL LEVEL STATE
+========================= */
+
+updateSchoolLevels();
