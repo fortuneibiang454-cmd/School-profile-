@@ -18,14 +18,14 @@ import {
   query,
   where,
   orderBy,
-  onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
-/* =========================
+/* =====================================================
    ELEMENTS
-========================= */
+===================================================== */
 
 const loginForm = document.getElementById("loginForm");
 const signupForm = document.getElementById("signupForm");
@@ -44,54 +44,88 @@ const communityDescription =
 const backToCommunities =
   document.getElementById("backToCommunities");
 
-const postInput = document.getElementById("postInput");
-const postButton = document.getElementById("postButton");
+const postInput =
+  document.getElementById("postInput");
+
+const postButton =
+  document.getElementById("postButton");
 
 /*
  * IMPORTANT:
- * Your HTML uses id="postsList"
+ * Your HTML uses id="postsList".
  */
 const communityPosts =
   document.getElementById("postsList");
 
+const chatUsers =
+  document.getElementById("chatUsers");
 
-const chatUsers = document.getElementById("chatUsers");
-const chatTitle = document.getElementById("chatTitle");
-const chatMessages = document.getElementById("chatMessages");
-const chatForm = document.getElementById("chatForm");
-const messageInput = document.getElementById("messageInput");
+const chatTitle =
+  document.getElementById("chatTitle");
 
-const profileName = document.getElementById("profileName");
-const profileEmail = document.getElementById("profileEmail");
-const profileCountry = document.getElementById("profileCountry");
-const profileSchool = document.getElementById("profileSchool");
-const profileLevel = document.getElementById("profileLevel");
-const profileSubject = document.getElementById("profileSubject");
-const profileInterest = document.getElementById("profileInterest");
+const chatMessages =
+  document.getElementById("chatMessages");
 
-const aiBtn = document.getElementById("aiBtn");
-const aiArea = document.getElementById("aiArea");
-const aiInput = document.getElementById("aiInput");
-const aiAskButton = document.getElementById("aiAskButton");
-const aiResponse = document.getElementById("aiResponse");
+const chatForm =
+  document.getElementById("chatForm");
+
+const messageInput =
+  document.getElementById("messageInput");
+
+const profileName =
+  document.getElementById("profileName");
+
+const profileEmail =
+  document.getElementById("profileEmail");
+
+const profileCountry =
+  document.getElementById("profileCountry");
+
+const profileSchool =
+  document.getElementById("profileSchool");
+
+const profileLevel =
+  document.getElementById("profileLevel");
+
+const profileSubject =
+  document.getElementById("profileSubject");
+
+const profileInterest =
+  document.getElementById("profileInterest");
+
+const aiBtn =
+  document.getElementById("aiBtn");
+
+const aiArea =
+  document.getElementById("aiArea");
+
+const aiInput =
+  document.getElementById("aiInput");
+
+const aiAskButton =
+  document.getElementById("aiAskButton");
+
+const aiResponse =
+  document.getElementById("aiResponse");
 
 
-/* =========================
+/* =====================================================
    VARIABLES
-========================= */
+===================================================== */
 
 let signupMode = false;
 let currentUser = null;
 let currentCommunity = null;
 let selectedChatUser = null;
 
-let unsubscribeChat = null;
-let unsubscribeCommunity = null;
+let unsubscribeDiscover = null;
+let unsubscribeChatUsers = null;
+let unsubscribeMessages = null;
 
 
-/* =========================
-   LOGIN / SIGNUP SWITCH
-========================= */
+/* =====================================================
+   AUTH LOGIN / SIGNUP SWITCH
+===================================================== */
 
 if (switchAuth) {
 
@@ -125,9 +159,9 @@ if (switchAuth) {
 }
 
 
-/* =========================
+/* =====================================================
    SIGN UP
-========================= */
+===================================================== */
 
 if (signupForm) {
 
@@ -139,13 +173,21 @@ if (signupForm) {
       "Creating your account...";
 
     const name =
-      document.getElementById("signupName")?.value.trim();
+      document
+        .getElementById("signupName")
+        ?.value
+        .trim();
 
     const email =
-      document.getElementById("signupEmail")?.value.trim();
+      document
+        .getElementById("signupEmail")
+        ?.value
+        .trim();
 
     const password =
-      document.getElementById("signupPassword")?.value;
+      document
+        .getElementById("signupPassword")
+        ?.value;
 
     try {
 
@@ -167,17 +209,20 @@ if (signupForm) {
           profileComplete: false,
           createdAt: serverTimestamp()
         },
-        { merge: true }
+        {
+          merge: true
+        }
       );
 
-      /*
-       * Send new users to profile setup.
-       */
-      window.location.href = "profile.html";
+      window.location.href =
+        "profile.html";
 
     } catch (error) {
 
-      console.error(error);
+      console.error(
+        "Signup error:",
+        error
+      );
 
       authMessage.textContent =
         getFirebaseError(error);
@@ -188,9 +233,9 @@ if (signupForm) {
 }
 
 
-/* =========================
+/* =====================================================
    LOGIN
-========================= */
+===================================================== */
 
 if (loginForm) {
 
@@ -202,10 +247,15 @@ if (loginForm) {
       "Logging in...";
 
     const email =
-      document.getElementById("loginEmail")?.value.trim();
+      document
+        .getElementById("loginEmail")
+        ?.value
+        .trim();
 
     const password =
-      document.getElementById("loginPassword")?.value;
+      document
+        .getElementById("loginPassword")
+        ?.value;
 
     try {
 
@@ -220,7 +270,10 @@ if (loginForm) {
 
     } catch (error) {
 
-      console.error(error);
+      console.error(
+        "Login error:",
+        error
+      );
 
       authMessage.textContent =
         getFirebaseError(error);
@@ -231,111 +284,127 @@ if (loginForm) {
 }
 
 
-/* =========================
+/* =====================================================
    AUTH STATE
-========================= */
+===================================================== */
 
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(
+  auth,
+  async (user) => {
 
-  currentUser = user;
+    currentUser = user;
 
-  if (!user) {
-    return;
+    if (!user) {
+
+      cleanupListeners();
+
+      return;
+    }
+
+    console.log(
+      "Logged in user:",
+      user.uid,
+      user.email
+    );
+
+    await loadProfile();
+
+    startDiscoverListener();
+
+    loadCommunities();
+
+    startChatUsersListener();
+
   }
-
-  await loadProfile();
-  await loadDiscoverStudents();
-  await loadCommunities();
-  await loadChatUsers();
-
-});
+);
 
 
-/* =========================
+/* =====================================================
    LOGOUT
-========================= */
+===================================================== */
 
 if (logoutBtn) {
 
-  logoutBtn.addEventListener("click", async () => {
+  logoutBtn.addEventListener(
+    "click",
+    async () => {
 
-    try {
+      try {
 
-      if (unsubscribeChat) {
-        unsubscribeChat();
-        unsubscribeChat = null;
+        cleanupListeners();
+
+        await signOut(auth);
+
+        window.location.href =
+          "index.html";
+
+      } catch (error) {
+
+        console.error(
+          "Logout error:",
+          error
+        );
+
       }
-
-      if (unsubscribeCommunity) {
-        unsubscribeCommunity();
-        unsubscribeCommunity = null;
-      }
-
-      await signOut(auth);
-
-      window.location.href =
-        "index.html";
-
-    } catch (error) {
-
-      console.error(error);
 
     }
-
-  });
+  );
 
 }
 
 
-/* =========================
+/* =====================================================
    NAVIGATION
-========================= */
+===================================================== */
 
 document
   .querySelectorAll("[data-page]")
   .forEach(button => {
 
-    button.addEventListener("click", async () => {
+    button.addEventListener(
+      "click",
+      () => {
 
-      const page = button.dataset.page;
+        const page =
+          button.dataset.page;
 
-      document
-        .querySelectorAll(".page")
-        .forEach(section => {
-          section.classList.remove("active");
-        });
+        document
+          .querySelectorAll(".page")
+          .forEach(section => {
 
-      const target =
-        document.getElementById(`page-${page}`);
+            section.classList.remove(
+              "active"
+            );
 
-      if (target) {
+          });
 
-        target.classList.add("active");
+        const target =
+          document.getElementById(
+            `page-${page}`
+          );
 
-        window.scrollTo(0, 0);
+        if (target) {
+
+          target.classList.add(
+            "active"
+          );
+
+          window.scrollTo(
+            0,
+            0
+          );
+
+        }
 
       }
-
-      /*
-       * Reload students whenever Discover
-       * or Messages is opened.
-       */
-      if (page === "discover") {
-        await loadDiscoverStudents();
-      }
-
-      if (page === "messages") {
-        await loadChatUsers();
-      }
-
-    });
+    );
 
   });
 
 
-/* =========================
+/* =====================================================
    PROFILE
-========================= */
+===================================================== */
 
 async function loadProfile() {
 
@@ -345,55 +414,91 @@ async function loadProfile() {
 
     const profileSnapshot =
       await getDoc(
-        doc(db, "users", currentUser.uid)
+        doc(
+          db,
+          "users",
+          currentUser.uid
+        )
       );
 
-    if (!profileSnapshot.exists()) return;
+    if (!profileSnapshot.exists()) {
+
+      console.log(
+        "No profile document found."
+      );
+
+      return;
+    }
 
     const data =
       profileSnapshot.data();
 
     if (profileName) {
+
       profileName.textContent =
-        data.displayName || "Not set";
+        data.displayName ||
+        "Not set";
+
     }
 
     if (profileEmail) {
+
       profileEmail.textContent =
         data.email ||
         currentUser.email ||
         "";
+
     }
 
     if (profileCountry) {
+
       profileCountry.textContent =
-        data.country || "Not set";
+        data.country ||
+        "Not set";
+
     }
 
     if (profileSchool) {
+
       profileSchool.textContent =
-        data.school || "Not set";
+        data.school ||
+        "Not set";
+
     }
 
     if (profileLevel) {
+
       profileLevel.textContent =
-        data.level || "Not set";
+        data.level ||
+        "Not set";
+
     }
 
     if (profileSubject) {
+
       profileSubject.textContent =
-        data.subject || "Not set";
+        data.subject ||
+        "Not set";
+
     }
 
     if (profileInterest) {
+
       profileInterest.textContent =
-        data.interest || "Not set";
+        data.interest ||
+        "Not set";
+
     }
 
     const welcome =
-      document.getElementById("welcomeMessage");
+      document.getElementById(
+        "welcomeMessage"
+      );
 
-    if (welcome && data.displayName) {
+    if (
+      welcome &&
+      data.displayName
+    ) {
 
       welcome.textContent =
         `Welcome, ${data.displayName} 👋`;
@@ -412,168 +517,218 @@ async function loadProfile() {
 }
 
 
-/* =========================
-   DISCOVER STUDENTS
-========================= */
+/* =====================================================
+   DISCOVER STUDENTS - REAL TIME
+===================================================== */
 
-async function loadDiscoverStudents() {
+function startDiscoverListener() {
 
-  if (!discoverList || !currentUser) return;
+  if (!discoverList || !currentUser)
+    return;
+
+  if (unsubscribeDiscover) {
+
+    unsubscribeDiscover();
+
+  }
 
   discoverList.innerHTML =
-    `<div class="card">Loading students...</div>`;
+    `<div class="card">
+      Loading students...
+    </div>`;
 
-  try {
-
-    const q = query(
-      collection(db, "discoverableProfiles"),
-      where("discoverable", "==", true)
+  const q =
+    query(
+      collection(
+        db,
+        "discoverableProfiles"
+      ),
+      where(
+        "discoverable",
+        "==",
+        true
+      )
     );
 
-    const snapshot =
-      await getDocs(q);
+  unsubscribeDiscover =
+    onSnapshot(
+      q,
+      (snapshot) => {
 
-    discoverList.innerHTML = "";
+        discoverList.innerHTML = "";
 
-    let foundStudent = false;
+        let numberOfStudents = 0;
 
-    snapshot.forEach(studentDoc => {
+        snapshot.forEach(
+          studentDoc => {
 
-      /*
-       * Don't show yourself.
-       */
-      if (studentDoc.id === currentUser.uid) {
-        return;
+            /*
+             * Don't show yourself.
+             */
+
+            if (
+              studentDoc.id ===
+              currentUser.uid
+            ) {
+
+              return;
+
+            }
+
+            numberOfStudents++;
+
+            const student =
+              studentDoc.data();
+
+            const card =
+              document.createElement(
+                "div"
+              );
+
+            card.className =
+              "card student-card";
+
+            card.innerHTML = `
+
+              <div class="student-name">
+                👤 ${escapeHTML(
+                  student.displayName ||
+                  "Student"
+                )}
+              </div>
+
+              <div class="student-info">
+                🌍 ${escapeHTML(
+                  student.country ||
+                  "Country not listed"
+                )}
+              </div>
+
+              <div class="student-info">
+                📍 ${escapeHTML(
+                  student.region ||
+                  "Region not listed"
+                )}
+              </div>
+
+              <div class="student-info">
+                🏫 ${escapeHTML(
+                  student.school ||
+                  "School not listed"
+                )}
+              </div>
+
+              <div class="student-info">
+                🎓 ${escapeHTML(
+                  student.level ||
+                  "Level not listed"
+                )}
+              </div>
+
+              <div class="student-info">
+                📚 ${escapeHTML(
+                  student.subject ||
+                  "Subject not listed"
+                )}
+              </div>
+
+              <div class="student-info">
+                ⭐ ${escapeHTML(
+                  student.interest ||
+                  "Interest not listed"
+                )}
+              </div>
+
+              <button
+                class="action-btn message-student-btn"
+                data-chat="${studentDoc.id}"
+              >
+                💬 Message
+              </button>
+
+            `;
+
+            discoverList.appendChild(
+              card
+            );
+
+          }
+        );
+
+        if (numberOfStudents === 0) {
+
+          discoverList.innerHTML = `
+            <div class="card">
+
+              <h3>
+                No other students yet
+              </h3>
+
+              <p>
+                Ask another student to
+                create an account and
+                choose "Yes, let students
+                discover me" in their profile.
+              </p>
+
+            </div>
+          `;
+
+        }
+
+        document
+          .querySelectorAll(
+            ".message-student-btn"
+          )
+          .forEach(button => {
+
+            button.addEventListener(
+              "click",
+              () => {
+
+                openChatWith(
+                  button.dataset.chat
+                );
+
+              }
+            );
+
+          });
+
+      },
+
+      error => {
+
+        console.error(
+          "Discover listener error:",
+          error
+        );
+
+        discoverList.innerHTML = `
+          <div class="card">
+
+            <h3>
+              Unable to load students
+            </h3>
+
+            <p>
+              Check your Firestore
+              security rules and internet
+              connection.
+            </p>
+
+          </div>
+        `;
+
       }
-
-      foundStudent = true;
-
-      const student =
-        studentDoc.data();
-
-      const card =
-        document.createElement("div");
-
-      card.className =
-        "card student-card";
-
-      card.innerHTML = `
-        <div class="student-name">
-          👤 ${escapeHTML(student.displayName || "Student")}
-        </div>
-
-        <div class="student-info">
-          🌍 ${escapeHTML(student.country || "Unknown")}
-        </div>
-
-        <div class="student-info">
-          📍 ${escapeHTML(student.region || "Unknown")}
-        </div>
-
-        <div class="student-info">
-          🏫 ${escapeHTML(student.school || "School not listed")}
-        </div>
-
-        <div class="student-info">
-          🎓 ${escapeHTML(student.level || "Level not listed")}
-        </div>
-
-        <div class="student-info">
-          📚 ${escapeHTML(student.subject || "Subject not listed")}
-        </div>
-
-        <div class="student-info">
-          ⭐ ${escapeHTML(student.interest || "Interest not listed")}
-        </div>
-
-        <button
-          class="action-btn"
-          data-chat="${studentDoc.id}"
-          type="button"
-        >
-          💬 Message
-        </button>
-      `;
-
-      discoverList.appendChild(card);
-
-    });
-
-    if (!foundStudent) {
-
-      discoverList.innerHTML =
-        `<div class="card">
-
-          <h3>No other students found</h3>
-
-          <p>
-            Make sure another account has completed
-            its profile and selected
-            "Yes, let students discover me".
-          </p>
-
-        </div>`;
-
-      return;
-    }
-
-    /*
-     * Message buttons.
-     */
-    discoverList
-      .querySelectorAll("[data-chat]")
-      .forEach(button => {
-
-        button.addEventListener("click", () => {
-
-          openChatWith(
-            button.dataset.chat
-          );
-
-          /*
-           * Open Messages page.
-           */
-          document
-            .querySelectorAll(".page")
-            .forEach(section => {
-              section.classList.remove("active");
-            });
-
-          document
-            .getElementById("page-messages")
-            ?.classList.add("active");
-
-          window.scrollTo(0, 0);
-
-        });
-
-      });
-
-  } catch (error) {
-
-    console.error(
-      "Discover error:",
-      error
     );
-
-    discoverList.innerHTML =
-      `<div class="card">
-
-        <h3>Unable to load students</h3>
-
-        <p>
-          ${escapeHTML(error.message)}
-        </p>
-
-      </div>`;
-  }
 
 }
 
 
-/* =========================
+/* =====================================================
    COMMUNITIES
-========================= */
+===================================================== */
 
 const communities = [
 
@@ -622,44 +777,64 @@ const communities = [
 ];
 
 
-async function loadCommunities() {
+function loadCommunities() {
 
-  if (!communityList) return;
+  if (!communityList)
+    return;
 
   communityList.innerHTML = "";
 
-  communities.forEach(community => {
+  communities.forEach(
+    community => {
 
-    const card =
-      document.createElement("div");
+      const card =
+        document.createElement(
+          "div"
+        );
 
-    card.className =
-      "card community-card";
+      card.className =
+        "card community-card";
 
-    card.innerHTML = `
-      <h3>
-        ${escapeHTML(community.name)}
-      </h3>
+      card.innerHTML = `
 
-      <p>
-        ${escapeHTML(community.description)}
-      </p>
+        <div class="community-icon">
+          ${community.name.split(" ")[0]}
+        </div>
 
-      <button
-        class="action-btn"
-        data-community="${community.id}"
-        type="button"
-      >
-        Open Community
-      </button>
-    `;
+        <h3>
+          ${escapeHTML(
+            community.name.substring(
+              community.name.indexOf(" ") + 1
+            )
+          )}
+        </h3>
 
-    communityList.appendChild(card);
+        <p>
+          ${escapeHTML(
+            community.description
+          )}
+        </p>
 
-  });
+        <button
+          class="action-btn"
+          data-community="${community.id}"
+        >
+          Open Community
+        </button>
 
-  communityList
-    .querySelectorAll("[data-community]")
+      `;
+
+      communityList.appendChild(
+        card
+      );
+
+    }
+  );
+
+  document
+    .querySelectorAll(
+      "[data-community]"
+    )
     .forEach(button => {
 
       button.addEventListener(
@@ -678,6 +853,10 @@ async function loadCommunities() {
 }
 
 
+/* =====================================================
+   OPEN COMMUNITY
+===================================================== */
+
 async function openCommunity(id) {
 
   currentCommunity =
@@ -686,21 +865,39 @@ async function openCommunity(id) {
         community.id === id
     );
 
-  if (!currentCommunity) return;
+  if (!currentCommunity)
+    return;
 
-  communityList?.classList.add("hidden");
-  communityView?.classList.remove("hidden");
+  communityList?.classList.add(
+    "hidden"
+  );
 
-  communityTitle.textContent =
-    currentCommunity.name;
+  communityView?.classList.remove(
+    "hidden"
+  );
 
-  communityDescription.textContent =
-    currentCommunity.description;
+  if (communityTitle) {
+
+    communityTitle.textContent =
+      currentCommunity.name;
+
+  }
+
+  if (communityDescription) {
+
+    communityDescription.textContent =
+      currentCommunity.description;
+
+  }
 
   await loadCommunityPosts(id);
 
 }
 
+
+/* =====================================================
+   BACK TO COMMUNITIES
+===================================================== */
 
 if (backToCommunities) {
 
@@ -708,15 +905,15 @@ if (backToCommunities) {
     "click",
     () => {
 
-      communityView?.classList.add("hidden");
-      communityList?.classList.remove("hidden");
+      communityView?.classList.add(
+        "hidden"
+      );
+
+      communityList?.classList.remove(
+        "hidden"
+      );
 
       currentCommunity = null;
-
-      if (unsubscribeCommunity) {
-        unsubscribeCommunity();
-        unsubscribeCommunity = null;
-      }
 
     }
   );
@@ -724,9 +921,9 @@ if (backToCommunities) {
 }
 
 
-/* =========================
-   COMMUNITY POSTS
-========================= */
+/* =====================================================
+   CREATE COMMUNITY POST
+===================================================== */
 
 if (postButton) {
 
@@ -736,22 +933,36 @@ if (postButton) {
 
       if (!currentUser) {
 
-        alert("Please log in first.");
+        alert(
+          "Please log in first."
+        );
+
+        return;
+
+      }
+
+      if (!currentCommunity) {
+
+        alert(
+          "Please choose a community first."
+        );
+
         return;
 
       }
 
       const text =
-        postInput.value.trim();
+        postInput?.value.trim();
 
       if (!text) {
 
-        alert("Write something first.");
+        alert(
+          "Write something first."
+        );
+
         return;
 
       }
-
-      if (!currentCommunity) return;
 
       postButton.disabled = true;
 
@@ -796,19 +1007,32 @@ if (postButton) {
           }
         );
 
-        postInput.value = "";
+        if (postInput) {
+
+          postInput.value = "";
+
+        }
+
+        await loadCommunityPosts(
+          currentCommunity.id
+        );
 
       } catch (error) {
 
-        console.error(error);
+        console.error(
+          "Post error:",
+          error
+        );
 
         alert(
           "Could not publish your post."
         );
 
-      }
+      } finally {
 
-      postButton.disabled = false;
+        postButton.disabled = false;
+
+      }
 
     }
   );
@@ -816,18 +1040,14 @@ if (postButton) {
 }
 
 
-/* =========================
-   REAL-TIME COMMUNITY POSTS
-========================= */
+/* =====================================================
+   LOAD COMMUNITY POSTS
+===================================================== */
 
 async function loadCommunityPosts(id) {
 
-  if (!communityPosts) return;
-
-  if (unsubscribeCommunity) {
-    unsubscribeCommunity();
-    unsubscribeCommunity = null;
-  }
+  if (!communityPosts)
+    return;
 
   communityPosts.innerHTML =
     `<div class="card">
@@ -836,236 +1056,256 @@ async function loadCommunityPosts(id) {
 
   try {
 
-    const q = query(
-      collection(
-        db,
-        "communities",
-        id,
-        "posts"
-      ),
-      orderBy("createdAt", "desc")
-    );
-
-    unsubscribeCommunity =
-      onSnapshot(
-        q,
-        snapshot => {
-
-          communityPosts.innerHTML = "";
-
-          if (snapshot.empty) {
-
-            communityPosts.innerHTML =
-              `<div class="card">
-
-                <p>
-                  No discussions yet.
-                </p>
-
-                <p>
-                  Be the first student to start one!
-                </p>
-
-              </div>`;
-
-            return;
-          }
-
-          snapshot.forEach(postDoc => {
-
-            const post =
-              postDoc.data();
-
-            const article =
-              document.createElement("article");
-
-            article.className =
-              "post";
-
-            const date =
-              post.createdAt?.toDate
-                ? post.createdAt
-                    .toDate()
-                    .toLocaleString()
-                : "Just now";
-
-            article.innerHTML = `
-
-              <div class="post-meta">
-
-                👤 ${escapeHTML(
-                  post.displayName ||
-                  "Student"
-                )}
-
-                • ${escapeHTML(date)}
-
-              </div>
-
-              <div>
-                ${escapeHTML(
-                  post.text || ""
-                )}
-              </div>
-
-            `;
-
-            communityPosts.appendChild(
-              article
-            );
-
-          });
-
-        },
-        error => {
-
-          console.error(
-            "Community listener error:",
-            error
-          );
-
-          communityPosts.innerHTML =
-            `<div class="card">
-              Unable to load discussions.
-            </div>`;
-
-        }
+    const q =
+      query(
+        collection(
+          db,
+          "communities",
+          id,
+          "posts"
+        ),
+        orderBy(
+          "createdAt",
+          "desc"
+        )
       );
-
-  } catch (error) {
-
-    console.error(error);
-
-    communityPosts.innerHTML =
-      `<div class="card">
-        Unable to load discussions.
-      </div>`;
-
-  }
-
-}
-
-
-/* =========================
-   CHAT USERS
-========================= */
-
-async function loadChatUsers() {
-
-  if (!chatUsers || !currentUser) return;
-
-  chatUsers.innerHTML =
-    "Loading students...";
-
-  try {
-
-    const q = query(
-      collection(db, "discoverableProfiles"),
-      where("discoverable", "==", true)
-    );
 
     const snapshot =
       await getDocs(q);
 
-    chatUsers.innerHTML = "";
+    communityPosts.innerHTML = "";
 
-    let foundStudent = false;
+    if (snapshot.empty) {
 
-    snapshot.forEach(studentDoc => {
+      communityPosts.innerHTML = `
+        <div class="card">
 
-      /*
-       * Don't show yourself.
-       */
-      if (studentDoc.id === currentUser.uid) {
-        return;
-      }
+          <p>
+            No discussions yet.
+          </p>
 
-      foundStudent = true;
+          <p>
+            Be the first student to
+            start one!
+          </p>
 
-      const student =
-        studentDoc.data();
+        </div>
+      `;
 
-      const button =
-        document.createElement("button");
-
-      button.className =
-        "user-item";
-
-      button.type = "button";
-
-      button.textContent =
-        `👤 ${
-          student.displayName ||
-          "Student"
-        }`;
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          openChatWith(
-            studentDoc.id
-          );
-
-        }
-      );
-
-      chatUsers.appendChild(
-        button
-      );
-
-    });
-
-    if (!foundStudent) {
-
-      chatUsers.innerHTML =
-        `<p>
-          No other discoverable students yet.
-        </p>`;
+      return;
 
     }
 
+    snapshot.forEach(
+      postDoc => {
+
+        const post =
+          postDoc.data();
+
+        const article =
+          document.createElement(
+            "article"
+          );
+
+        article.className =
+          "post";
+
+        const date =
+          post.createdAt?.toDate
+            ? post.createdAt
+                .toDate()
+                .toLocaleString()
+            : "Just now";
+
+        article.innerHTML = `
+
+          <div class="post-meta">
+
+            👤 ${escapeHTML(
+              post.displayName ||
+              "Student"
+            )}
+
+            •
+
+            ${escapeHTML(date)}
+
+          </div>
+
+          <div>
+            ${escapeHTML(
+              post.text || ""
+            )}
+          </div>
+
+        `;
+
+        communityPosts.appendChild(
+          article
+        );
+
+      }
+    );
+
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Community posts error:",
+      error
+    );
 
-    chatUsers.innerHTML =
-      "Unable to load students.";
+    communityPosts.innerHTML = `
+      <div class="card">
+
+        <p>
+          Unable to load discussions.
+        </p>
+
+      </div>
+    `;
 
   }
 
 }
 
 
-/* =========================
-   OPEN CHAT
-========================= */
+/* =====================================================
+   CHAT USERS - REAL TIME
+===================================================== */
 
-async function openChatWith(uid) {
+function startChatUsersListener() {
 
-  if (!currentUser || !uid) return;
+  if (!chatUsers || !currentUser)
+    return;
 
-  selectedChatUser = uid;
+  if (unsubscribeChatUsers) {
 
-  messageInput.disabled = false;
-
-  chatTitle.textContent =
-    "💬 Loading chat...";
-
-  chatMessages.innerHTML =
-    "<p>Loading conversation...</p>";
-
-
-  /*
-   * Stop previous real-time listener.
-   */
-  if (unsubscribeChat) {
-
-    unsubscribeChat();
-    unsubscribeChat = null;
+    unsubscribeChatUsers();
 
   }
 
+  chatUsers.innerHTML =
+    "Loading students...";
+
+  const q =
+    query(
+      collection(
+        db,
+        "discoverableProfiles"
+      ),
+      where(
+        "discoverable",
+        "==",
+        true
+      )
+    );
+
+  unsubscribeChatUsers =
+    onSnapshot(
+      q,
+      snapshot => {
+
+        chatUsers.innerHTML = "";
+
+        let numberOfStudents = 0;
+
+        snapshot.forEach(
+          studentDoc => {
+
+            if (
+              studentDoc.id ===
+              currentUser.uid
+            ) {
+
+              return;
+
+            }
+
+            numberOfStudents++;
+
+            const student =
+              studentDoc.data();
+
+            const button =
+              document.createElement(
+                "button"
+              );
+
+            button.className =
+              "user-item";
+
+            button.textContent =
+              `👤 ${
+                student.displayName ||
+                "Student"
+              }`;
+
+            button.addEventListener(
+              "click",
+              () => {
+
+                openChatWith(
+                  studentDoc.id
+                );
+
+              }
+            );
+
+            chatUsers.appendChild(
+              button
+            );
+
+          }
+        );
+
+        if (
+          numberOfStudents === 0
+        ) {
+
+          chatUsers.innerHTML = `
+            <p>
+              No other discoverable
+              students yet.
+            </p>
+          `;
+
+        }
+
+      },
+
+      error => {
+
+        console.error(
+          "Chat users error:",
+          error
+        );
+
+        chatUsers.innerHTML =
+          "Unable to load students.";
+
+      }
+    );
+
+}
+
+
+/* =====================================================
+   OPEN CHAT
+===================================================== */
+
+async function openChatWith(uid) {
+
+  if (!currentUser)
+    return;
+
+  selectedChatUser = uid;
+
+  if (messageInput) {
+
+    messageInput.disabled =
+      false;
+
+  }
 
   try {
 
@@ -1080,9 +1320,12 @@ async function openChatWith(uid) {
 
     if (student.exists()) {
 
+      const data =
+        student.data();
+
       chatTitle.textContent =
         `💬 ${
-          student.data().displayName ||
+          data.displayName ||
           "Student"
         }`;
 
@@ -1095,116 +1338,151 @@ async function openChatWith(uid) {
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Chat profile error:",
+      error
+    );
 
     chatTitle.textContent =
       "💬 Student";
 
   }
 
+  loadChatMessages();
 
-  /*
-   * Create the same chat ID on both phones.
-   */
+}
+
+
+/* =====================================================
+   LOAD CHAT MESSAGES - REAL TIME
+===================================================== */
+
+function loadChatMessages() {
+
+  if (
+    !currentUser ||
+    !selectedChatUser ||
+    !chatMessages
+  ) {
+
+    return;
+
+  }
+
+  if (unsubscribeMessages) {
+
+    unsubscribeMessages();
+
+  }
+
+  chatMessages.innerHTML =
+    "<p>Loading conversation...</p>";
+
   const chatId =
-    [currentUser.uid, uid]
+    [
+      currentUser.uid,
+      selectedChatUser
+    ]
       .sort()
       .join("_");
 
-
-  /*
-   * Listen for messages in real time.
-   */
-  const messagesRef =
-    collection(
-      db,
-      "chats",
-      chatId,
-      "messages"
-    );
-
-
-  const messagesQuery =
+  const q =
     query(
-      messagesRef,
-      orderBy("createdAt", "asc")
+      collection(
+        db,
+        "chats",
+        chatId,
+        "messages"
+      ),
+      orderBy(
+        "createdAt",
+        "asc"
+      )
     );
 
-
-  unsubscribeChat =
+  unsubscribeMessages =
     onSnapshot(
-      messagesQuery,
+      q,
       snapshot => {
 
         chatMessages.innerHTML = "";
 
         if (snapshot.empty) {
 
-          chatMessages.innerHTML =
-            `<div class="card">
-              <p>No messages yet.</p>
-              <p>Say hello! 👋</p>
-            </div>`;
+          chatMessages.innerHTML = `
+            <div class="card">
+
+              <p>
+                No messages yet.
+              </p>
+
+              <p>
+                Start the conversation!
+              </p>
+
+            </div>
+          `;
 
           return;
+
         }
 
+        snapshot.forEach(
+          messageDoc => {
 
-        snapshot.forEach(messageDoc => {
+            const message =
+              messageDoc.data();
 
-          const message =
-            messageDoc.data();
+            const div =
+              document.createElement(
+                "div"
+              );
 
-          const messageElement =
-            document.createElement("div");
+            div.className =
+              "message";
 
-          messageElement.className =
-            "message";
+            if (
+              message.senderId ===
+              currentUser.uid
+            ) {
 
+              div.classList.add(
+                "mine"
+              );
 
-          if (
-            message.senderId ===
-            currentUser.uid
-          ) {
+            }
 
-            messageElement.classList.add(
-              "mine"
+            div.textContent =
+              message.text || "";
+
+            chatMessages.appendChild(
+              div
             );
 
           }
+        );
 
-
-          messageElement.textContent =
-            message.text || "";
-
-
-          chatMessages.appendChild(
-            messageElement
-          );
-
-        });
-
-
-        /*
-         * Scroll to newest message.
-         */
         chatMessages.scrollTop =
           chatMessages.scrollHeight;
 
       },
+
       error => {
 
         console.error(
-          "Chat listener error:",
+          "Messages error:",
           error
         );
 
-        chatMessages.innerHTML =
-          `<div class="card">
+        chatMessages.innerHTML = `
+          <div class="card">
+
             <p>
-              Unable to load this conversation.
+              Unable to load messages.
             </p>
-          </div>`;
+
+          </div>
+        `;
 
       }
     );
@@ -1212,9 +1490,9 @@ async function openChatWith(uid) {
 }
 
 
-/* =========================
-   SEND CHAT MESSAGE
-========================= */
+/* =====================================================
+   SEND MESSAGE
+===================================================== */
 
 if (chatForm) {
 
@@ -1230,7 +1508,7 @@ if (chatForm) {
       ) {
 
         alert(
-          "Please select a student first."
+          "Select a student first."
         );
 
         return;
@@ -1238,21 +1516,20 @@ if (chatForm) {
       }
 
       const text =
-        messageInput.value.trim();
+        messageInput?.value.trim();
 
-      if (!text) return;
-
-
-      const chatId =
-        [
-          currentUser.uid,
-          selectedChatUser
-        ]
-          .sort()
-          .join("_");
-
+      if (!text)
+        return;
 
       try {
+
+        const chatId =
+          [
+            currentUser.uid,
+            selectedChatUser
+          ]
+            .sort()
+            .join("_");
 
         await addDoc(
           collection(
@@ -1282,11 +1559,13 @@ if (chatForm) {
 
       } catch (error) {
 
-        console.error(error);
+        console.error(
+          "Send message error:",
+          error
+        );
 
         alert(
-          "Could not send message: " +
-          error.message
+          "Could not send message."
         );
 
       }
@@ -1297,9 +1576,9 @@ if (chatForm) {
 }
 
 
-/* =========================
+/* =====================================================
    AI STUDY ASSISTANT
-========================= */
+===================================================== */
 
 if (aiBtn) {
 
@@ -1310,6 +1589,8 @@ if (aiBtn) {
       aiArea?.classList.toggle(
         "hidden"
       );
+
+      aiInput?.focus();
 
     }
   );
@@ -1329,7 +1610,7 @@ if (aiAskButton) {
       if (!question) {
 
         alert(
-          "Please type a question first."
+          "Type a question first."
         );
 
         return;
@@ -1343,8 +1624,7 @@ if (aiAskButton) {
         );
 
         aiResponse.textContent =
-          "The AI Study Assistant has not been connected to an AI API yet. Your question was: " +
-          question;
+          "The AI Study Assistant is not connected to an AI service yet. This part can be connected next.";
 
       }
 
@@ -1354,9 +1634,9 @@ if (aiAskButton) {
 }
 
 
-/* =========================
+/* =====================================================
    SECURITY HELPER
-========================= */
+===================================================== */
 
 function escapeHTML(value) {
 
@@ -1390,9 +1670,9 @@ function escapeHTML(value) {
 }
 
 
-/* =========================
-   FIREBASE ERRORS
-========================= */
+/* =====================================================
+   FIREBASE ERROR MESSAGES
+===================================================== */
 
 function getFirebaseError(error) {
 
@@ -1403,36 +1683,82 @@ function getFirebaseError(error) {
 
     case "auth/email-already-in-use":
 
-      return "This email already has an account.";
+      return (
+        "This email already has an account."
+      );
 
     case "auth/invalid-email":
 
-      return "Please enter a valid email address.";
+      return (
+        "Please enter a valid email address."
+      );
 
     case "auth/weak-password":
 
-      return "Password must be at least 6 characters.";
+      return (
+        "Password must be at least 6 characters."
+      );
 
     case "auth/invalid-credential":
 
-      return "Incorrect email or password.";
+      return (
+        "Incorrect email or password."
+      );
 
     case "auth/user-not-found":
 
-      return "No account was found with this email.";
+      return (
+        "No account was found with this email."
+      );
 
     case "auth/wrong-password":
 
-      return "Incorrect password.";
+      return (
+        "Incorrect password."
+      );
 
     case "auth/network-request-failed":
 
-      return "Network connection problem. Check your internet and try again.";
+      return (
+        "Network connection problem. Check your internet and try again."
+      );
 
     default:
 
-      return error?.message ||
-        "Something went wrong. Please try again.";
+      return (
+        error?.message ||
+        "Something went wrong. Please try again."
+      );
+
+  }
+
+}
+
+
+/* =====================================================
+   CLEANUP REAL-TIME LISTENERS
+===================================================== */
+
+function cleanupListeners() {
+
+  if (unsubscribeDiscover) {
+
+    unsubscribeDiscover();
+    unsubscribeDiscover = null;
+
+  }
+
+  if (unsubscribeChatUsers) {
+
+    unsubscribeChatUsers();
+    unsubscribeChatUsers = null;
+
+  }
+
+  if (unsubscribeMessages) {
+
+    unsubscribeMessages();
+    unsubscribeMessages = null;
 
   }
 
