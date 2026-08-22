@@ -1057,4 +1057,376 @@
             <p>
               Talk about sports and
               favourite teams.
-            </
+            </p>
+
+            <button
+              class="action-btn community-open"
+              data-community="sports-club"
+            >
+              Join Community
+            </button>
+
+          </div>
+
+
+          <div
+            class="card community-card"
+          >
+
+            <div class="community-icon">
+              📖
+            </div>
+
+            <h3>
+              Exam Prep
+            </h3>
+
+            <p>
+              Prepare for exams and
+              exchange study strategies.
+            </p>
+
+            <button
+              class="action-btn community-open"
+              data-community="exam-prep"
+            >
+              Join Community
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- COMMUNITY VIEW -->
+
+        <div
+          id="communityView"
+          class="community-view hidden"
+        >
+
+          <button
+            id="backToCommunities"
+            class="secondary-btn"
+            type="button"
+          >
+            ← Back to Communities
+          </button>
+
+
+          <div class="hero">
+
+            <h2
+              id="communityTitle"
+            ></h2>
+
+            <p
+              id="communityDescription"
+            ></p>
+
+          </div>
+
+
+          <!-- NEW POST -->
+
+          <div class="card">
+
+            <h3>
+              Start a Discussion
+            </h3>
+
+            <textarea
+              id="postInput"
+              maxlength="500"
+              placeholder="Share something with this community..."
+            ></textarea>
+
+            <br><br>
+
+            <button
+              id="postButton"
+              class="action-btn"
+              type="button"
+            >
+              Post
+            </button>
+
+          </div>
+
+
+          <br>
+
+
+          <!-- POSTS -->
+
+          <div
+            id="postsList"
+          >
+
+            <div class="card">
+              Loading discussions...
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           MESSAGES
+      ========================= -->
+
+      <section
+        id="page-messages"
+        class="page"
+      >
+
+        <div class="hero">
+
+          <h1>
+            💬 Messages
+          </h1>
+
+          <p>
+            Select a discoverable student
+            to start a conversation.
+          </p>
+
+        </div>
+
+
+        <div class="chat-layout">
+
+
+          <!-- USERS -->
+
+          <div
+            id="chatUsers"
+            class="user-list"
+          >
+
+            Loading students...
+
+          </div>
+
+
+          <!-- CHAT -->
+
+          <div class="chat-box">
+
+            <h3
+              id="chatTitle"
+            >
+              Select a student
+            </h3>
+
+
+            <div
+              id="chatMessages"
+            >
+
+              <p>
+                Your conversation will
+                appear here.
+              </p>
+
+            </div>
+
+
+            <form
+              id="chatForm"
+              class="chat-form"
+            >
+
+              <input
+                id="messageInput"
+                type="text"
+                maxlength="500"
+                placeholder="Type a message..."
+                disabled
+              >
+
+
+              <button
+                class="action-btn"
+                type="submit"
+              >
+                Send
+              </button>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           PROFILE
+      ========================= -->
+
+      <section
+        id="page-profile"
+        class="page"
+      >
+
+        <div class="hero">
+
+          <h1>
+            👤 My Profile
+          </h1>
+
+          <p>
+            Manage your StudentConnect
+            profile.
+          </p>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="profile-row">
+
+            <strong>
+              Name
+            </strong>
+
+            <span
+              id="profileName"
+            >
+              Loading...
+            </span>
+
+          </div>
+
+
+          <div class="profile-row">
+
+            <strong>
+              Email
+            </strong>
+
+            <span
+              id="profileEmail"
+            >
+              Loading...
+            </span>
+
+          </div>
+
+
+          <div class="profile-row">
+
+            <strong>
+              Country
+            </strong>
+
+            <span
+              id="profileCountry"
+            >
+              Loading...
+            </span>
+
+          </div>
+
+
+          <div class="profile-row">
+
+            <strong>
+              School
+            </strong>
+
+            <span
+              id="profileSchool"
+            >
+              Loading...
+            </span>
+
+          </div>
+
+
+          <div class="profile-row">
+
+            <strong>
+              School Level
+            </strong>
+
+            <span
+              id="profileLevel"
+            >
+              Loading...
+            </span>
+
+          </div>
+
+
+          <div class="profile-row">
+
+            <strong>
+              Favorite Subject
+            </strong>
+
+            <span
+              id="profileSubject"
+            >
+              Loading...
+            </span>
+
+          </div>
+
+
+          <div class="profile-row">
+
+            <strong>
+              Main Interest
+            </strong>
+
+            <span
+              id="profileInterest"
+            >
+              Loading...
+            </span>
+
+          </div>
+
+
+          <br>
+
+
+          <button
+            class="action-btn"
+            id="editProfileBtn"
+            type="button"
+          >
+            Edit Profile
+          </button>
+
+        </div>
+
+      </section>
+
+
+    </main>
+
+  </section>
+
+</div>
+
+
+<!-- IMPORTANT:
+     app.js handles Firebase,
+     authentication and the app.
+-->
+
+<script
+  type="module"
+  src="js/app.js"
+></script>
+
+</body>
+</html>
