@@ -1,5 +1,8 @@
 import { auth, db } from "./firebase.js";
-import { onAuthStateChanged } from "firebase/auth";
+
+import {
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 import {
   collection,
@@ -9,7 +12,7 @@ import {
   orderBy,
   onSnapshot,
   serverTimestamp
-} from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
 const communityTitle =
@@ -25,7 +28,7 @@ const postButton =
   document.getElementById("postButton");
 
 const postsList =
-  document.getElementById("postsList");
+  document.getElementById("communityPosts");
 
 
 const communities = {
@@ -76,15 +79,24 @@ const communityId =
   params.get("community");
 
 
-if (!communityId || !communities[communityId]) {
+if (
+  !communityId ||
+  !communities[communityId]
+) {
 
-  communityTitle.textContent =
-    "Community not found";
+  if (communityTitle) {
+    communityTitle.textContent =
+      "Community not found";
+  }
 
-  communityDescription.textContent =
-    "Please return to the Communities page.";
+  if (communityDescription) {
+    communityDescription.textContent =
+      "Please return to the Communities page.";
+  }
 
-  postButton.disabled = true;
+  if (postButton) {
+    postButton.disabled = true;
+  }
 
 } else {
 
@@ -93,175 +105,29 @@ if (!communityId || !communities[communityId]) {
 
   communityDescription.textContent =
     communities[communityId].description;
-}
-
-
-onAuthStateChanged(auth, (user) => {
-
-  if (!user) {
-
-    window.location.href = "login.html";
-
-    return;
-  }
-
-  if (communityId && communities[communityId]) {
-
-    loadPosts();
-
-  }
-
-});
-
-
-function loadPosts() {
-
-  const postsRef =
-    collection(db, "communityPosts");
-
-  const postsQuery = query(
-    postsRef,
-    where("communityId", "==", communityId),
-    orderBy("createdAt", "desc")
-  );
-
-
-  onSnapshot(postsQuery, (snapshot) => {
-
-    postsList.innerHTML = "";
-
-
-    if (snapshot.empty) {
-
-      postsList.innerHTML = `
-        <div class="community-card">
-          <p>
-            No discussions yet.
-            Be the first to start one!
-          </p>
-        </div>
-      `;
-
-      return;
-    }
-
-
-    snapshot.forEach((postDoc) => {
-
-      const post =
-        postDoc.data();
-
-
-      const postCard =
-        document.createElement("div");
-
-      postCard.className =
-        "community-card";
-
-
-      const date =
-        post.createdAt?.toDate
-          ? post.createdAt.toDate()
-          : null;
-
-
-      postCard.innerHTML = `
-
-        <p>
-          <strong>
-            👤 Student
-          </strong>
-        </p>
-
-        <p>
-          ${escapeHTML(post.text)}
-        </p>
-
-        ${
-          date
-            ? `<small>${date.toLocaleString()}</small>`
-            : ""
-        }
-
-      `;
-
-
-      postsList.appendChild(postCard);
-
-    });
-
-  });
 
 }
 
 
-postButton.addEventListener(
-  "click",
-  async () => {
-
-    const text =
-      postInput.value.trim();
-
-
-    if (!text) {
-
-      alert(
-        "Please write something first."
-      );
-
-      return;
-    }
-
-
-    const user =
-      auth.currentUser;
-
+onAuthStateChanged(
+  auth,
+  (user) => {
 
     if (!user) {
 
       window.location.href =
-        "login.html";
+        "index.html";
 
       return;
+
     }
 
+    if (
+      communityId &&
+      communities[communityId]
+    ) {
 
-    try {
-
-      await addDoc(
-        collection(
-          db,
-          "communityPosts"
-        ),
-        {
-          communityId:
-            communityId,
-
-          userId:
-            user.uid,
-
-          text:
-            text,
-
-          createdAt:
-            serverTimestamp()
-        }
-      );
-
-
-      postInput.value = "";
-
-
-    } catch (error) {
-
-      console.error(
-        "Post error:",
-        error
-      );
-
-      alert(
-        "Your post could not be created. Please try again."
-      );
+      loadPosts();
 
     }
 
@@ -269,13 +135,248 @@ postButton.addEventListener(
 );
 
 
+function loadPosts() {
+
+  if (!postsList) {
+    console.error(
+      "communityPosts element was not found."
+    );
+    return;
+  }
+
+
+  const postsRef =
+    collection(
+      db,
+      "communityPosts"
+    );
+
+
+  const postsQuery =
+    query(
+      postsRef,
+      where(
+        "communityId",
+        "==",
+        communityId
+      ),
+      orderBy(
+        "createdAt",
+        "desc"
+      )
+    );
+
+
+  onSnapshot(
+    postsQuery,
+    (snapshot) => {
+
+      postsList.innerHTML = "";
+
+
+      if (snapshot.empty) {
+
+        postsList.innerHTML = `
+          <div class="community-card">
+            <p>
+              No discussions yet.
+              Be the first to start one!
+            </p>
+          </div>
+        `;
+
+        return;
+      }
+
+
+      snapshot.forEach(
+        (postDoc) => {
+
+          const post =
+            postDoc.data();
+
+
+          const postCard =
+            document.createElement(
+              "div"
+            );
+
+          postCard.className =
+            "community-card";
+
+
+          const date =
+            post.createdAt?.toDate
+              ? post.createdAt.toDate()
+              : null;
+
+
+          postCard.innerHTML = `
+
+            <p>
+              <strong>
+                👤 Student
+              </strong>
+            </p>
+
+            <p>
+              ${escapeHTML(post.text || "")}
+            </p>
+
+            ${
+              date
+                ? `<small>${date.toLocaleString()}</small>`
+                : ""
+            }
+
+          `;
+
+
+          postsList.appendChild(
+            postCard
+          );
+
+        }
+      );
+
+    },
+    (error) => {
+
+      console.error(
+        "Community loading error:",
+        error
+      );
+
+      postsList.innerHTML = `
+        <div class="community-card">
+          <p>
+            We couldn't load the discussions.
+          </p>
+        </div>
+      `;
+
+    }
+  );
+
+}
+
+
+if (postButton) {
+
+  postButton.addEventListener(
+    "click",
+    async () => {
+
+      const text =
+        postInput.value.trim();
+
+
+      if (!text) {
+
+        alert(
+          "Please write something first."
+        );
+
+        return;
+
+      }
+
+
+      if (text.length > 500) {
+
+        alert(
+          "Your post is too long."
+        );
+
+        return;
+
+      }
+
+
+      const user =
+        auth.currentUser;
+
+
+      if (!user) {
+
+        window.location.href =
+          "index.html";
+
+        return;
+
+      }
+
+
+      try {
+
+        postButton.disabled = true;
+
+        postButton.textContent =
+          "Posting...";
+
+
+        await addDoc(
+          collection(
+            db,
+            "communityPosts"
+          ),
+          {
+
+            communityId:
+              communityId,
+
+            userId:
+              user.uid,
+
+            text:
+              text,
+
+            createdAt:
+              serverTimestamp()
+
+          }
+        );
+
+
+        postInput.value = "";
+
+
+      } catch (error) {
+
+        console.error(
+          "Post error:",
+          error
+        );
+
+        alert(
+          "Your post could not be created. Please try again."
+        );
+
+      } finally {
+
+        postButton.disabled = false;
+
+        postButton.textContent =
+          "Post";
+
+      }
+
+    }
+  );
+
+}
+
+
 function escapeHTML(text) {
 
   const div =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   div.textContent =
     text;
 
   return div.innerHTML;
+
 }
