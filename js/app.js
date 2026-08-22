@@ -17,7 +17,8 @@ import {
   query,
   where,
   orderBy,
-  serverTimestamp
+  serverTimestamp,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
@@ -25,61 +26,106 @@ import {
    ELEMENTS
 ========================= */
 
-const authScreen = document.getElementById("authScreen");
-const appScreen = document.getElementById("appScreen");
-
 const loginForm = document.getElementById("loginForm");
 const signupForm = document.getElementById("signupForm");
 const switchAuth = document.getElementById("switchAuth");
 const authMessage = document.getElementById("authMessage");
 const logoutBtn = document.getElementById("logoutBtn");
 
-const discoverList = document.getElementById("discoverList");
+const discoverList =
+  document.getElementById("discoverList");
 
-const communityList = document.getElementById("communityList");
-const communityView = document.getElementById("communityView");
-const communityTitle = document.getElementById("communityTitle");
+const communityList =
+  document.getElementById("communityList");
+
+const communityView =
+  document.getElementById("communityView");
+
+const communityTitle =
+  document.getElementById("communityTitle");
+
 const communityDescription =
   document.getElementById("communityDescription");
 
 const backToCommunities =
   document.getElementById("backToCommunities");
 
-const postInput = document.getElementById("postInput");
-const postButton = document.getElementById("postButton");
+const postInput =
+  document.getElementById("postInput");
 
-/* IMPORTANT:
-   Your HTML uses postsList.
+const postButton =
+  document.getElementById("postButton");
+
+/*
+  IMPORTANT:
+  Your HTML uses id="postsList"
 */
 const communityPosts =
   document.getElementById("postsList");
 
-const chatUsers = document.getElementById("chatUsers");
-const chatTitle = document.getElementById("chatTitle");
-const chatMessages = document.getElementById("chatMessages");
-const chatForm = document.getElementById("chatForm");
-const messageInput = document.getElementById("messageInput");
 
-const profileName = document.getElementById("profileName");
-const profileEmail = document.getElementById("profileEmail");
-const profileCountry = document.getElementById("profileCountry");
-const profileSchool = document.getElementById("profileSchool");
-const profileLevel = document.getElementById("profileLevel");
-const profileSubject = document.getElementById("profileSubject");
-const profileInterest = document.getElementById("profileInterest");
+/* CHAT */
 
-const editProfileBtn =
-  document.getElementById("editProfileBtn");
+const chatUsers =
+  document.getElementById("chatUsers");
 
-const aiBtn = document.getElementById("aiBtn");
-const aiArea = document.getElementById("aiArea");
-const aiInput = document.getElementById("aiInput");
-const aiAskButton = document.getElementById("aiAskButton");
-const aiResponse = document.getElementById("aiResponse");
+const chatTitle =
+  document.getElementById("chatTitle");
+
+const chatMessages =
+  document.getElementById("chatMessages");
+
+const chatForm =
+  document.getElementById("chatForm");
+
+const messageInput =
+  document.getElementById("messageInput");
+
+
+/* PROFILE */
+
+const profileName =
+  document.getElementById("profileName");
+
+const profileEmail =
+  document.getElementById("profileEmail");
+
+const profileCountry =
+  document.getElementById("profileCountry");
+
+const profileSchool =
+  document.getElementById("profileSchool");
+
+const profileLevel =
+  document.getElementById("profileLevel");
+
+const profileSubject =
+  document.getElementById("profileSubject");
+
+const profileInterest =
+  document.getElementById("profileInterest");
+
+
+/* AI */
+
+const aiBtn =
+  document.getElementById("aiBtn");
+
+const aiArea =
+  document.getElementById("aiArea");
+
+const aiInput =
+  document.getElementById("aiInput");
+
+const aiAskButton =
+  document.getElementById("aiAskButton");
+
+const aiResponse =
+  document.getElementById("aiResponse");
 
 
 /* =========================
-   STATE
+   VARIABLES
 ========================= */
 
 let signupMode = false;
@@ -87,74 +133,12 @@ let currentUser = null;
 let currentCommunity = null;
 let selectedChatUser = null;
 
-
-/* =========================
-   COMMUNITY DATA
-========================= */
-
-const communities = [
-  {
-    id: "study-hub",
-    name: "📚 Study Hub",
-    description:
-      "Ask questions, explain topics and study together."
-  },
-
-  {
-    id: "coding-club",
-    name: "💻 Coding Club",
-    description:
-      "Learn programming, build projects and share ideas."
-  },
-
-  {
-    id: "science-zone",
-    name: "🔬 Science Zone",
-    description:
-      "Discuss Biology, Chemistry, Physics and other sciences."
-  },
-
-  {
-    id: "creative-corner",
-    name: "🎨 Creative Corner",
-    description:
-      "Art, writing, music and creative projects."
-  },
-
-  {
-    id: "sports-club",
-    name: "⚽ Sports Club",
-    description:
-      "Talk about sports and connect with students who enjoy them."
-  },
-
-  {
-    id: "exam-prep",
-    name: "📖 Exam Prep",
-    description:
-      "Prepare for exams and exchange study strategies."
-  }
-];
-
-
-/* =========================
-   INITIAL UI
-========================= */
-
-function showLoggedOutScreen() {
-
-  authScreen?.classList.remove("hidden");
-  appScreen?.classList.add("hidden");
-
-}
-
-
-function showLoggedInScreen() {
-
-  authScreen?.classList.add("hidden");
-  appScreen?.classList.remove("hidden");
-
-}
+/*
+  This stores the active chat listener.
+  It prevents multiple listeners from
+  running at the same time.
+*/
+let unsubscribeChat = null;
 
 
 /* =========================
@@ -186,6 +170,7 @@ if (switchAuth) {
 
       switchAuth.textContent =
         "Create an account";
+
     }
 
   });
@@ -199,70 +184,90 @@ if (switchAuth) {
 
 if (signupForm) {
 
-  signupForm.addEventListener("submit", async event => {
+  signupForm.addEventListener(
+    "submit",
+    async (event) => {
 
-    event.preventDefault();
+      event.preventDefault();
 
-    const name =
-      document.getElementById("signupName")?.value.trim();
+      if (authMessage) {
+        authMessage.textContent =
+          "Creating your account...";
+      }
 
-    const email =
-      document.getElementById("signupEmail")?.value.trim();
+      const name =
+        document
+          .getElementById("signupName")
+          ?.value
+          .trim();
 
-    const password =
-      document.getElementById("signupPassword")?.value;
+      const email =
+        document
+          .getElementById("signupEmail")
+          ?.value
+          .trim();
 
-    if (!name || !email || !password) {
-      authMessage.textContent =
-        "Please complete all fields.";
-      return;
-    }
+      const password =
+        document
+          .getElementById("signupPassword")
+          ?.value;
 
-    authMessage.textContent =
-      "Creating your account...";
+      if (!name || !email || !password) {
 
-    try {
+        authMessage.textContent =
+          "Please complete all fields.";
 
-      const result =
-        await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
+        return;
+      }
+
+      try {
+
+        const result =
+          await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+
+        const user = result.user;
+
+        await setDoc(
+          doc(db, "users", user.uid),
+          {
+            uid: user.uid,
+            displayName: name,
+            email: email,
+            profileComplete: false,
+            discoverable: false,
+            createdAt: serverTimestamp()
+          },
+          {
+            merge: true
+          }
         );
 
-      const user = result.user;
+        /*
+          After signup, send the user
+          to the profile page.
+        */
 
-      await setDoc(
-        doc(db, "users", user.uid),
-        {
-          uid: user.uid,
-          displayName: name,
-          email: email,
-          profileComplete: false,
-          discoverable: false,
-          createdAt: serverTimestamp()
-        },
-        { merge: true }
-      );
+        window.location.href =
+          "profile.html";
 
-      authMessage.textContent =
-        "Account created successfully!";
+      } catch (error) {
 
-      /*
-        We don't redirect to dashboard.html
-        because your current HTML contains
-        the complete application.
-      */
+        console.error(
+          "Signup error:",
+          error
+        );
 
-    } catch (error) {
+        authMessage.textContent =
+          getFirebaseError(error);
 
-      console.error(error);
+      }
 
-      authMessage.textContent =
-        getFirebaseError(error);
     }
-
-  });
+  );
 
 }
 
@@ -273,44 +278,68 @@ if (signupForm) {
 
 if (loginForm) {
 
-  loginForm.addEventListener("submit", async event => {
+  loginForm.addEventListener(
+    "submit",
+    async (event) => {
 
-    event.preventDefault();
+      event.preventDefault();
 
-    const email =
-      document.getElementById("loginEmail")?.value.trim();
+      if (authMessage) {
+        authMessage.textContent =
+          "Logging in...";
+      }
 
-    const password =
-      document.getElementById("loginPassword")?.value;
+      const email =
+        document
+          .getElementById("loginEmail")
+          ?.value
+          .trim();
 
-    if (!email || !password) {
+      const password =
+        document
+          .getElementById("loginPassword")
+          ?.value;
 
-      authMessage.textContent =
-        "Enter your email and password.";
+      try {
 
-      return;
+        await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+        /*
+          Your current project uses the
+          main HTML as the app screen.
+        */
+
+        if (
+          document.getElementById("appScreen")
+        ) {
+
+          showApp();
+
+        } else {
+
+          window.location.href =
+            "index.html";
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Login error:",
+          error
+        );
+
+        authMessage.textContent =
+          getFirebaseError(error);
+
+      }
+
     }
-
-    authMessage.textContent =
-      "Logging in...";
-
-    try {
-
-      await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
-    } catch (error) {
-
-      console.error(error);
-
-      authMessage.textContent =
-        getFirebaseError(error);
-    }
-
-  });
+  );
 
 }
 
@@ -319,25 +348,66 @@ if (loginForm) {
    AUTH STATE
 ========================= */
 
-onAuthStateChanged(auth, async user => {
+onAuthStateChanged(
+  auth,
+  async (user) => {
 
-  currentUser = user;
+    currentUser = user;
 
-  if (!user) {
+    if (!user) {
 
-    showLoggedOutScreen();
+      showAuth();
 
-    return;
+      return;
+    }
+
+    showApp();
+
+    await loadProfile();
+    await loadDiscoverStudents();
+    await loadCommunities();
+    await loadChatUsers();
+
   }
+);
 
-  showLoggedInScreen();
 
-  await loadProfile();
-  await loadDiscoverStudents();
-  await loadCommunities();
-  await loadChatUsers();
+/* =========================
+   SHOW AUTH
+========================= */
 
-});
+function showAuth() {
+
+  const authScreen =
+    document.getElementById("authScreen");
+
+  const appScreen =
+    document.getElementById("appScreen");
+
+  authScreen?.classList.remove("hidden");
+
+  appScreen?.classList.add("hidden");
+
+}
+
+
+/* =========================
+   SHOW APP
+========================= */
+
+function showApp() {
+
+  const authScreen =
+    document.getElementById("authScreen");
+
+  const appScreen =
+    document.getElementById("appScreen");
+
+  authScreen?.classList.add("hidden");
+
+  appScreen?.classList.remove("hidden");
+
+}
 
 
 /* =========================
@@ -346,22 +416,40 @@ onAuthStateChanged(auth, async user => {
 
 if (logoutBtn) {
 
-  logoutBtn.addEventListener("click", async () => {
+  logoutBtn.addEventListener(
+    "click",
+    async () => {
 
-    try {
+      try {
 
-      await signOut(auth);
+        /*
+          Stop chat listener before logout.
+        */
 
-    } catch (error) {
+        if (unsubscribeChat) {
 
-      console.error(
-        "Logout error:",
-        error
-      );
+          unsubscribeChat();
+
+          unsubscribeChat = null;
+
+        }
+
+        await signOut(auth);
+
+        window.location.href =
+          "index.html";
+
+      } catch (error) {
+
+        console.error(
+          "Logout error:",
+          error
+        );
+
+      }
 
     }
-
-  });
+  );
 
 }
 
@@ -374,34 +462,43 @@ document
   .querySelectorAll("[data-page]")
   .forEach(button => {
 
-    button.addEventListener("click", () => {
+    button.addEventListener(
+      "click",
+      () => {
 
-      const page =
-        button.dataset.page;
+        const page =
+          button.dataset.page;
 
-      document
-        .querySelectorAll(".page")
-        .forEach(section => {
-          section.classList.remove("active");
-        });
+        document
+          .querySelectorAll(".page")
+          .forEach(section => {
 
-      const target =
-        document.getElementById(
-          `page-${page}`
-        );
+            section.classList.remove(
+              "active"
+            );
 
-      if (target) {
+          });
 
-        target.classList.add("active");
+        const target =
+          document.getElementById(
+            `page-${page}`
+          );
 
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth"
-        });
+        if (target) {
+
+          target.classList.add(
+            "active"
+          );
+
+          window.scrollTo(
+            0,
+            0
+          );
+
+        }
 
       }
-
-    });
+    );
 
   });
 
@@ -427,8 +524,9 @@ async function loadProfile() {
 
     if (!profileSnapshot.exists()) {
 
-      profileEmail.textContent =
-        currentUser.email || "Not set";
+      console.log(
+        "No profile document found."
+      );
 
       return;
     }
@@ -436,42 +534,96 @@ async function loadProfile() {
     const data =
       profileSnapshot.data();
 
-    if (profileName)
-      profileName.textContent =
-        data.displayName || "Not set";
 
-    if (profileEmail)
+    /* NAME */
+
+    if (profileName) {
+
+      profileName.textContent =
+        data.displayName ||
+        "Not set";
+
+    }
+
+
+    /* EMAIL */
+
+    if (profileEmail) {
+
       profileEmail.textContent =
         data.email ||
         currentUser.email ||
         "Not set";
 
-    if (profileCountry)
+    }
+
+
+    /* COUNTRY */
+
+    if (profileCountry) {
+
       profileCountry.textContent =
-        data.country || "Not set";
+        data.country ||
+        "Not set";
 
-    if (profileSchool)
+    }
+
+
+    /* SCHOOL */
+
+    if (profileSchool) {
+
       profileSchool.textContent =
-        data.school || "Not set";
+        data.school ||
+        "Not set";
 
-    if (profileLevel)
+    }
+
+
+    /* LEVEL */
+
+    if (profileLevel) {
+
       profileLevel.textContent =
-        data.level || "Not set";
+        data.level ||
+        "Not set";
 
-    if (profileSubject)
+    }
+
+
+    /* SUBJECT */
+
+    if (profileSubject) {
+
       profileSubject.textContent =
-        data.subject || "Not set";
+        data.subject ||
+        "Not set";
 
-    if (profileInterest)
+    }
+
+
+    /* INTEREST */
+
+    if (profileInterest) {
+
       profileInterest.textContent =
-        data.interest || "Not set";
+        data.interest ||
+        "Not set";
+
+    }
+
+
+    /* WELCOME MESSAGE */
 
     const welcome =
       document.getElementById(
         "welcomeMessage"
       );
 
-    if (welcome && data.displayName) {
+    if (
+      welcome &&
+      data.displayName
+    ) {
 
       welcome.textContent =
         `Welcome, ${data.displayName} 👋`;
@@ -496,13 +648,14 @@ async function loadProfile() {
 
 async function loadDiscoverStudents() {
 
-  if (!discoverList || !currentUser)
-    return;
+  if (!discoverList) return;
 
   discoverList.innerHTML =
-    `<div class="card">
-      Loading students...
-    </div>`;
+    `
+      <div class="card">
+        Loading students...
+      </div>
+    `;
 
   try {
 
@@ -524,128 +677,156 @@ async function loadDiscoverStudents() {
 
     discoverList.innerHTML = "";
 
-    let foundStudent = false;
+    let studentsFound = 0;
 
-    snapshot.forEach(studentDoc => {
+    snapshot.forEach(
+      studentDoc => {
 
-      if (
-        studentDoc.id ===
-        currentUser.uid
-      ) {
-        return;
-      }
+        /*
+          Don't display yourself.
+        */
 
-      foundStudent = true;
+        if (
+          studentDoc.id ===
+          currentUser?.uid
+        ) {
 
-      const student =
-        studentDoc.data();
-
-      const card =
-        document.createElement("div");
-
-      card.className =
-        "card student-card";
-
-      const name =
-        document.createElement("div");
-
-      name.className =
-        "student-name";
-
-      name.textContent =
-        `👤 ${student.displayName || "Student"}`;
-
-      const country =
-        createStudentInfo(
-          "🌍",
-          student.country,
-          "Unknown"
-        );
-
-      const region =
-        createStudentInfo(
-          "📍",
-          student.region,
-          "Unknown"
-        );
-
-      const school =
-        createStudentInfo(
-          "🏫",
-          student.school,
-          "School not listed"
-        );
-
-      const level =
-        createStudentInfo(
-          "🎓",
-          student.level,
-          "Level not listed"
-        );
-
-      const subject =
-        createStudentInfo(
-          "📚",
-          student.subject,
-          "Subject not listed"
-        );
-
-      const interest =
-        createStudentInfo(
-          "⭐",
-          student.interest,
-          "Interest not listed"
-        );
-
-      const messageButton =
-        document.createElement("button");
-
-      messageButton.className =
-        "action-btn";
-
-      messageButton.textContent =
-        "Message";
-
-      messageButton.addEventListener(
-        "click",
-        () => {
-
-          openChatWith(
-            studentDoc.id
-          );
-
-          openPage("messages");
+          return;
 
         }
-      );
 
-      card.append(
-        name,
-        country,
-        region,
-        school,
-        level,
-        subject,
-        interest,
-        messageButton
-      );
+        studentsFound++;
 
-      discoverList.appendChild(card);
+        const student =
+          studentDoc.data();
 
-    });
+        const card =
+          document.createElement(
+            "div"
+          );
 
-    if (!foundStudent) {
+        card.className =
+          "card student-card";
+
+        card.innerHTML = `
+
+          <h3 class="student-name">
+            👤 ${escapeHTML(
+              student.displayName ||
+              "Student"
+            )}
+          </h3>
+
+          <p class="student-info">
+            🌍 ${escapeHTML(
+              student.country ||
+              "Country not listed"
+            )}
+          </p>
+
+          <p class="student-info">
+            📍 ${escapeHTML(
+              student.region ||
+              "Region not listed"
+            )}
+          </p>
+
+          <p class="student-info">
+            🏫 ${escapeHTML(
+              student.school ||
+              "School not listed"
+            )}
+          </p>
+
+          <p class="student-info">
+            🎓 ${escapeHTML(
+              student.level ||
+              "Level not listed"
+            )}
+          </p>
+
+          <p class="student-info">
+            📚 ${escapeHTML(
+              student.subject ||
+              "Subject not listed"
+            )}
+          </p>
+
+          <p class="student-info">
+            ⭐ ${escapeHTML(
+              student.interest ||
+              "Interest not listed"
+            )}
+          </p>
+
+          <button
+            class="action-btn"
+            data-chat="${studentDoc.id}"
+            type="button"
+          >
+            💬 Message
+          </button>
+
+        `;
+
+        discoverList.appendChild(
+          card
+        );
+
+      }
+    );
+
+
+    if (studentsFound === 0) {
 
       discoverList.innerHTML =
-        `<div class="card">
-          <h3>No students yet</h3>
-          <p>
-            More students will appear here
-            as they become discoverable.
-          </p>
-        </div>`;
+        `
+          <div class="card">
+
+            <h3>
+              No students yet
+            </h3>
+
+            <p>
+              More students will appear
+              here as they join
+              StudentConnect.
+            </p>
+
+          </div>
+        `;
+
+      return;
 
     }
+
+
+    /*
+      Message buttons.
+    */
+
+    discoverList
+      .querySelectorAll(
+        "[data-chat]"
+      )
+      .forEach(button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            openChatWith(
+              button.dataset.chat
+            );
+
+            navigateToPage(
+              "messages"
+            );
+
+          }
+        );
+
+      });
 
   } catch (error) {
 
@@ -655,31 +836,23 @@ async function loadDiscoverStudents() {
     );
 
     discoverList.innerHTML =
-      `<div class="card">
-        Unable to load students.
-      </div>`;
+      `
+        <div class="card">
+
+          <h3>
+            Unable to load students
+          </h3>
+
+          <p>
+            Please check your Firebase
+            Firestore rules and internet
+            connection.
+          </p>
+
+        </div>
+      `;
 
   }
-
-}
-
-
-function createStudentInfo(
-  icon,
-  value,
-  fallback
-) {
-
-  const p =
-    document.createElement("p");
-
-  p.className =
-    "student-info";
-
-  p.textContent =
-    `${icon} ${value || fallback}`;
-
-  return p;
 
 }
 
@@ -688,71 +861,131 @@ function createStudentInfo(
    COMMUNITIES
 ========================= */
 
+const communities = [
+
+  {
+    id: "study-hub",
+    name: "📚 Study Hub",
+    description:
+      "Ask questions, explain topics and study together."
+  },
+
+  {
+    id: "coding-club",
+    name: "💻 Coding Club",
+    description:
+      "Learn programming, build projects and share ideas."
+  },
+
+  {
+    id: "science-zone",
+    name: "🔬 Science Zone",
+    description:
+      "Discuss Biology, Chemistry, Physics and other sciences."
+  },
+
+  {
+    id: "exam-prep",
+    name: "📝 Exam Prep",
+    description:
+      "Share study strategies and prepare for exams together."
+  },
+
+  {
+    id: "creative-corner",
+    name: "🎨 Creative Corner",
+    description:
+      "Art, writing, music and creative projects."
+  },
+
+  {
+    id: "sports-club",
+    name: "⚽ Sports Club",
+    description:
+      "Talk about sports and connect with students who enjoy them."
+  }
+
+];
+
+
 async function loadCommunities() {
 
   if (!communityList) return;
 
   communityList.innerHTML = "";
 
-  communities.forEach(community => {
+  communities.forEach(
+    community => {
 
-    const card =
-      document.createElement("div");
+      const card =
+        document.createElement(
+          "div"
+        );
 
-    card.className =
-      "card community-card";
+      card.className =
+        "card community-card";
 
-    const icon =
-      document.createElement("div");
+      card.innerHTML = `
 
-    icon.className =
-      "community-icon";
+        <div class="community-icon">
+          ${community.name.split(" ")[0]}
+        </div>
 
-    icon.textContent =
-      community.name.split(" ")[0];
+        <h3>
+          ${escapeHTML(
+            community.name
+          )}
+        </h3>
 
-    const title =
-      document.createElement("h3");
+        <p>
+          ${escapeHTML(
+            community.description
+          )}
+        </p>
 
-    title.textContent =
-      community.name
-        .replace(/^[^\s]+\s/, "");
+        <button
+          class="action-btn"
+          data-community="${community.id}"
+          type="button"
+        >
+          Open Community
+        </button>
 
-    const description =
-      document.createElement("p");
+      `;
 
-    description.textContent =
-      community.description;
+      communityList.appendChild(
+        card
+      );
 
-    const button =
-      document.createElement("button");
+    }
+  );
 
-    button.className =
-      "action-btn";
 
-    button.textContent =
-      "Open Community";
+  communityList
+    .querySelectorAll(
+      "[data-community]"
+    )
+    .forEach(button => {
 
-    button.addEventListener(
-      "click",
-      () => openCommunity(
-        community.id
-      )
-    );
+      button.addEventListener(
+        "click",
+        () => {
 
-    card.append(
-      icon,
-      title,
-      description,
-      button
-    );
+          openCommunity(
+            button.dataset.community
+          );
 
-    communityList.appendChild(card);
+        }
+      );
 
-  });
+    });
 
 }
 
+
+/* =========================
+   OPEN COMMUNITY
+========================= */
 
 async function openCommunity(id) {
 
@@ -762,8 +995,7 @@ async function openCommunity(id) {
         community.id === id
     );
 
-  if (!currentCommunity)
-    return;
+  if (!currentCommunity) return;
 
   communityList?.classList.add(
     "hidden"
@@ -773,18 +1005,28 @@ async function openCommunity(id) {
     "hidden"
   );
 
-  if (communityTitle)
+  if (communityTitle) {
+
     communityTitle.textContent =
       currentCommunity.name;
 
-  if (communityDescription)
+  }
+
+  if (communityDescription) {
+
     communityDescription.textContent =
       currentCommunity.description;
+
+  }
 
   await loadCommunityPosts(id);
 
 }
 
+
+/* =========================
+   BACK TO COMMUNITIES
+========================= */
 
 if (backToCommunities) {
 
@@ -825,15 +1067,7 @@ if (postButton) {
         );
 
         return;
-      }
 
-      if (!currentCommunity) {
-
-        alert(
-          "Please choose a community."
-        );
-
-        return;
       }
 
       const text =
@@ -846,6 +1080,17 @@ if (postButton) {
         );
 
         return;
+
+      }
+
+      if (!currentCommunity) {
+
+        alert(
+          "Please select a community."
+        );
+
+        return;
+
       }
 
       postButton.disabled = true;
@@ -866,6 +1111,7 @@ if (postButton) {
             ? profile.data()
             : {};
 
+
         await addDoc(
           collection(
             db,
@@ -874,7 +1120,8 @@ if (postButton) {
             "posts"
           ),
           {
-            text,
+
+            text: text,
 
             uid:
               currentUser.uid,
@@ -886,10 +1133,17 @@ if (postButton) {
 
             createdAt:
               serverTimestamp()
+
           }
         );
 
-        postInput.value = "";
+
+        if (postInput) {
+
+          postInput.value = "";
+
+        }
+
 
         await loadCommunityPosts(
           currentCommunity.id
@@ -918,14 +1172,20 @@ if (postButton) {
 }
 
 
+/* =========================
+   LOAD COMMUNITY POSTS
+========================= */
+
 async function loadCommunityPosts(id) {
 
   if (!communityPosts) return;
 
   communityPosts.innerHTML =
-    `<div class="card">
-      Loading discussions...
-    </div>`;
+    `
+      <div class="card">
+        Loading discussions...
+      </div>
+    `;
 
   try {
 
@@ -951,62 +1211,82 @@ async function loadCommunityPosts(id) {
     if (snapshot.empty) {
 
       communityPosts.innerHTML =
-        `<div class="card">
-          <p>No discussions yet.</p>
-          <p>
-            Be the first student to
-            start one!
-          </p>
-        </div>`;
+        `
+          <div class="card">
+
+            <p>
+              No discussions yet.
+            </p>
+
+            <p>
+              Be the first student
+              to start one!
+            </p>
+
+          </div>
+        `;
 
       return;
+
     }
 
-    snapshot.forEach(postDoc => {
 
-      const post =
-        postDoc.data();
+    snapshot.forEach(
+      postDoc => {
 
-      const article =
-        document.createElement(
-          "article"
+        const post =
+          postDoc.data();
+
+        const article =
+          document.createElement(
+            "article"
+          );
+
+        article.className =
+          "post";
+
+
+        const date =
+          post.createdAt?.toDate
+            ? post.createdAt
+                .toDate()
+                .toLocaleString()
+            : "Just now";
+
+
+        article.innerHTML = `
+
+          <div class="post-meta">
+
+            👤 ${escapeHTML(
+              post.displayName ||
+              "Student"
+            )}
+
+            •
+
+            ${escapeHTML(
+              date
+            )}
+
+          </div>
+
+          <div>
+            ${escapeHTML(
+              post.text ||
+              ""
+            )}
+          </div>
+
+        `;
+
+
+        communityPosts.appendChild(
+          article
         );
 
-      article.className =
-        "post";
-
-      const meta =
-        document.createElement("div");
-
-      meta.className =
-        "post-meta";
-
-      const date =
-        post.createdAt?.toDate
-          ? post.createdAt
-              .toDate()
-              .toLocaleString()
-          : "Just now";
-
-      meta.textContent =
-        `👤 ${post.displayName || "Student"} • ${date}`;
-
-      const content =
-        document.createElement("div");
-
-      content.textContent =
-        post.text || "";
-
-      article.append(
-        meta,
-        content
-      );
-
-      communityPosts.appendChild(
-        article
-      );
-
-    });
+      }
+    );
 
   } catch (error) {
 
@@ -1016,9 +1296,20 @@ async function loadCommunityPosts(id) {
     );
 
     communityPosts.innerHTML =
-      `<div class="card">
-        Unable to load discussions.
-      </div>`;
+      `
+        <div class="card">
+
+          <h3>
+            Unable to load discussions
+          </h3>
+
+          <p>
+            Check your Firestore rules
+            and try again.
+          </p>
+
+        </div>
+      `;
 
   }
 
@@ -1031,8 +1322,7 @@ async function loadCommunityPosts(id) {
 
 async function loadChatUsers() {
 
-  if (!chatUsers || !currentUser)
-    return;
+  if (!chatUsers) return;
 
   chatUsers.innerHTML =
     "Loading students...";
@@ -1057,50 +1347,70 @@ async function loadChatUsers() {
 
     chatUsers.innerHTML = "";
 
-    let found = false;
+    let usersFound = 0;
 
-    snapshot.forEach(studentDoc => {
 
-      if (
-        studentDoc.id ===
-        currentUser.uid
-      ) {
-        return;
-      }
+    snapshot.forEach(
+      studentDoc => {
 
-      found = true;
+        if (
+          studentDoc.id ===
+          currentUser?.uid
+        ) {
 
-      const student =
-        studentDoc.data();
+          return;
 
-      const button =
-        document.createElement(
-          "button"
+        }
+
+        usersFound++;
+
+        const student =
+          studentDoc.data();
+
+        const button =
+          document.createElement(
+            "button"
+          );
+
+        button.className =
+          "user-item";
+
+        button.type =
+          "button";
+
+        button.textContent =
+          `👤 ${
+            student.displayName ||
+            "Student"
+          }`;
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            openChatWith(
+              studentDoc.id
+            );
+
+          }
         );
 
-      button.className =
-        "user-item";
+        chatUsers.appendChild(
+          button
+        );
 
-      button.textContent =
-        `👤 ${student.displayName || "Student"}`;
+      }
+    );
 
-      button.addEventListener(
-        "click",
-        () => openChatWith(
-          studentDoc.id
-        )
-      );
 
-      chatUsers.appendChild(
-        button
-      );
+    if (usersFound === 0) {
 
-    });
-
-    if (!found) {
-
-      chatUsers.textContent =
-        "No discoverable students yet.";
+      chatUsers.innerHTML =
+        `
+          <p>
+            No discoverable students yet.
+          </p>
+        `;
 
     }
 
@@ -1111,7 +1421,7 @@ async function loadChatUsers() {
       error
     );
 
-    chatUsers.textContent =
+    chatUsers.innerHTML =
       "Unable to load students.";
 
   }
@@ -1125,19 +1435,56 @@ async function loadChatUsers() {
 
 async function openChatWith(uid) {
 
-  if (!currentUser)
-    return;
+  if (!currentUser) return;
 
   selectedChatUser = uid;
 
-  if (messageInput)
-    messageInput.disabled = false;
+  /*
+    Stop the previous real-time listener.
+  */
 
-  chatTitle.textContent =
-    "💬 Loading...";
+  if (unsubscribeChat) {
 
-  chatMessages.innerHTML =
-    "<p>Loading conversation...</p>";
+    unsubscribeChat();
+
+    unsubscribeChat = null;
+
+  }
+
+
+  if (messageInput) {
+
+    messageInput.disabled =
+      false;
+
+    messageInput.focus();
+
+  }
+
+
+  if (chatTitle) {
+
+    chatTitle.textContent =
+      "💬 Loading chat...";
+
+  }
+
+
+  if (chatMessages) {
+
+    chatMessages.innerHTML =
+      `
+        <p>
+          Loading conversation...
+        </p>
+      `;
+
+  }
+
+
+  /*
+    Get the student's profile.
+  */
 
   try {
 
@@ -1150,50 +1497,70 @@ async function openChatWith(uid) {
         )
       );
 
-    if (student.exists()) {
+    if (
+      student.exists() &&
+      chatTitle
+    ) {
 
       const data =
         student.data();
 
       chatTitle.textContent =
-        `💬 ${data.displayName || "Student"}`;
+        `💬 ${
+          data.displayName ||
+          "Student"
+        }`;
 
     }
-
-    await loadChatMessages(uid);
 
   } catch (error) {
 
     console.error(
-      "Open chat error:",
+      "Student profile error:",
       error
     );
 
-    chatMessages.innerHTML =
-      `<p>Unable to load conversation.</p>`;
+    if (chatTitle) {
+
+      chatTitle.textContent =
+        "💬 Chat";
+
+    }
 
   }
 
-}
 
+  /*
+    Create a consistent chat ID.
 
-/* =========================
-   LOAD CHAT HISTORY
-========================= */
+    Example:
 
-async function loadChatMessages(uid) {
+    User A + User B
 
-  if (!currentUser)
-    return;
+    becomes:
+
+    smallerUID_largerUID
+
+    This means both users use
+    the same chat.
+  */
 
   const chatId =
-    [currentUser.uid, uid]
+    [
+      currentUser.uid,
+      selectedChatUser
+    ]
       .sort()
       .join("_");
 
+
+  /*
+    Listen for messages in real time.
+  */
+
   try {
 
-    const q =
+    const messagesQuery =
       query(
         collection(
           db,
@@ -1207,64 +1574,120 @@ async function loadChatMessages(uid) {
         )
       );
 
-    const snapshot =
-      await getDocs(q);
 
-    chatMessages.innerHTML = "";
+    unsubscribeChat =
+      onSnapshot(
+        messagesQuery,
+        snapshot => {
 
-    if (snapshot.empty) {
+          if (!chatMessages) return;
 
-      chatMessages.innerHTML =
-        `<div class="card">
-          <p>No messages yet.</p>
-          <p>Start the conversation below.</p>
-        </div>`;
+          chatMessages.innerHTML = "";
 
-      return;
 
-    }
+          if (snapshot.empty) {
 
-    snapshot.forEach(messageDoc => {
+            chatMessages.innerHTML =
+              `
+                <div class="card">
 
-      const message =
-        messageDoc.data();
+                  <p>
+                    No messages yet.
+                  </p>
 
-      const div =
-        document.createElement("div");
+                  <p>
+                    Start the conversation below.
+                  </p>
 
-      div.className =
-        "message";
+                </div>
+              `;
 
-      if (
-        message.senderId ===
-        currentUser.uid
-      ) {
+            return;
 
-        div.classList.add("mine");
+          }
 
-      }
 
-      div.textContent =
-        message.text || "";
+          snapshot.forEach(
+            messageDoc => {
 
-      chatMessages.appendChild(div);
+              const message =
+                messageDoc.data();
 
-    });
+              const div =
+                document.createElement(
+                  "div"
+                );
 
-    chatMessages.scrollTop =
-      chatMessages.scrollHeight;
+              div.className =
+                "message";
+
+
+              if (
+                message.senderId ===
+                currentUser.uid
+              ) {
+
+                div.classList.add(
+                  "mine"
+                );
+
+              }
+
+
+              div.textContent =
+                message.text ||
+                "";
+
+
+              chatMessages.appendChild(
+                div
+              );
+
+            }
+          );
+
+
+          /*
+            Automatically scroll to
+            the newest message.
+          */
+
+          chatMessages.scrollTop =
+            chatMessages.scrollHeight;
+
+        },
+
+        error => {
+
+          console.error(
+            "Chat listener error:",
+            error
+          );
+
+          if (chatMessages) {
+
+            chatMessages.innerHTML =
+              `
+                <div class="card">
+
+                  <p>
+                    Unable to load this chat.
+                  </p>
+
+                </div>
+              `;
+
+          }
+
+        }
+      );
 
   } catch (error) {
 
     console.error(
-      "Chat history error:",
+      "Chat setup error:",
       error
     );
-
-    chatMessages.innerHTML =
-      `<p>
-        Unable to load messages.
-      </p>`;
 
   }
 
@@ -1272,7 +1695,7 @@ async function loadChatMessages(uid) {
 
 
 /* =========================
-   SEND MESSAGE
+   SEND CHAT MESSAGE
 ========================= */
 
 if (chatForm) {
@@ -1288,26 +1711,45 @@ if (chatForm) {
         !selectedChatUser
       ) {
 
+        alert(
+          "Select a student first."
+        );
+
         return;
+
       }
 
+
       const text =
-        messageInput.value.trim();
+        messageInput?.value.trim();
 
-      if (!text)
-        return;
 
-      const chatId =
-        [
-          currentUser.uid,
-          selectedChatUser
-        ]
-          .sort()
-          .join("_");
+      if (!text) return;
+
+
+      const sendButton =
+        chatForm.querySelector(
+          "button[type='submit']"
+        );
+
+      if (sendButton) {
+
+        sendButton.disabled =
+          true;
+
+      }
+
 
       try {
 
-        messageInput.disabled = true;
+        const chatId =
+          [
+            currentUser.uid,
+            selectedChatUser
+          ]
+            .sort()
+            .join("_");
+
 
         await addDoc(
           collection(
@@ -1317,24 +1759,38 @@ if (chatForm) {
             "messages"
           ),
           {
+
             senderId:
               currentUser.uid,
 
             receiverId:
               selectedChatUser,
 
-            text,
+            text:
+              text,
 
             createdAt:
               serverTimestamp()
+
           }
         );
 
-        messageInput.value = "";
 
-        await loadChatMessages(
-          selectedChatUser
-        );
+        /*
+          Do NOT manually add the message
+          to the screen here.
+
+          onSnapshot() will automatically
+          display it.
+        */
+
+        if (messageInput) {
+
+          messageInput.value = "";
+
+          messageInput.focus();
+
+        }
 
       } catch (error) {
 
@@ -1349,9 +1805,12 @@ if (chatForm) {
 
       } finally {
 
-        messageInput.disabled = false;
+        if (sendButton) {
 
-        messageInput.focus();
+          sendButton.disabled =
+            false;
+
+        }
 
       }
 
@@ -1371,13 +1830,20 @@ if (aiBtn) {
     "click",
     () => {
 
-      aiArea?.classList.toggle(
-        "hidden"
-      );
+      if (aiArea) {
 
-      if (!aiArea?.classList.contains(
-        "hidden"
-      )) {
+        aiArea.classList.toggle(
+          "hidden"
+        );
+
+      }
+
+      if (
+        aiArea &&
+        !aiArea.classList.contains(
+          "hidden"
+        )
+      ) {
 
         aiInput?.focus();
 
@@ -1400,30 +1866,28 @@ if (aiAskButton) {
 
       if (!question) {
 
-        aiResponse.textContent =
-          "Please enter a question.";
+        alert(
+          "Enter a question first."
+        );
+
+        return;
+
+      }
+
+
+      if (aiResponse) {
 
         aiResponse.classList.remove(
           "hidden"
         );
 
-        return;
+        aiResponse.textContent =
+          "🤖 AI Study Assistant is not connected to an AI service yet.\n\nYour question was:\n" +
+          question +
+          "\n\nThe next step is connecting StudentConnect to an AI API securely.";
+
       }
 
-      /*
-        AI API connection should be
-        added through a secure backend.
-        Never put a secret API key
-        directly inside this JavaScript.
-      */
-
-      aiResponse.textContent =
-        "Your AI Study Assistant is ready for connection. The secure AI backend will be added next.";
-
-      aiResponse.classList.remove(
-        "hidden"
-      );
-
     }
   );
 
@@ -1431,43 +1895,27 @@ if (aiAskButton) {
 
 
 /* =========================
-   EDIT PROFILE
+   NAVIGATION HELPER
 ========================= */
 
-if (editProfileBtn) {
-
-  editProfileBtn.addEventListener(
-    "click",
-    () => {
-
-      alert(
-        "Profile editing will be added next."
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================
-   PAGE HELPER
-========================= */
-
-function openPage(page) {
+function navigateToPage(page) {
 
   document
     .querySelectorAll(".page")
     .forEach(section => {
+
       section.classList.remove(
         "active"
       );
+
     });
+
 
   const target =
     document.getElementById(
       `page-${page}`
     );
+
 
   if (target) {
 
@@ -1475,10 +1923,10 @@ function openPage(page) {
       "active"
     );
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
+    window.scrollTo(
+      0,
+      0
+    );
 
   }
 
@@ -1486,38 +1934,96 @@ function openPage(page) {
 
 
 /* =========================
-   FIREBASE ERROR HANDLER
+   SECURITY HELPER
+========================= */
+
+function escapeHTML(value) {
+
+  return String(value)
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
+}
+
+
+/* =========================
+   FIREBASE ERRORS
 ========================= */
 
 function getFirebaseError(error) {
 
   const code =
-    error?.code || "";
+    error?.code ||
+    "";
+
 
   switch (code) {
 
     case "auth/email-already-in-use":
+
       return "This email already has an account.";
 
+
     case "auth/invalid-email":
+
       return "Please enter a valid email address.";
 
+
     case "auth/weak-password":
+
       return "Password must be at least 6 characters.";
 
+
     case "auth/invalid-credential":
+
       return "Incorrect email or password.";
 
+
     case "auth/user-not-found":
+
       return "No account was found with this email.";
 
+
     case "auth/wrong-password":
+
       return "Incorrect password.";
 
+
     case "auth/network-request-failed":
+
       return "Network connection problem. Check your internet and try again.";
 
+
+    case "permission-denied":
+
+      return "Firebase permission denied. Check your Firestore security rules.";
+
+
     default:
+
       return (
         error?.message ||
         "Something went wrong. Please try again."
