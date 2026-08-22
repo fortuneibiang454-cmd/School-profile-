@@ -25,6 +25,9 @@ import {
    ELEMENTS
 ========================= */
 
+const authScreen = document.getElementById("authScreen");
+const appScreen = document.getElementById("appScreen");
+
 const loginForm = document.getElementById("loginForm");
 const signupForm = document.getElementById("signupForm");
 const switchAuth = document.getElementById("switchAuth");
@@ -44,8 +47,12 @@ const backToCommunities =
 
 const postInput = document.getElementById("postInput");
 const postButton = document.getElementById("postButton");
+
+/* IMPORTANT:
+   Your HTML uses postsList.
+*/
 const communityPosts =
-  document.getElementById("communityPosts");
+  document.getElementById("postsList");
 
 const chatUsers = document.getElementById("chatUsers");
 const chatTitle = document.getElementById("chatTitle");
@@ -55,17 +62,99 @@ const messageInput = document.getElementById("messageInput");
 
 const profileName = document.getElementById("profileName");
 const profileEmail = document.getElementById("profileEmail");
+const profileCountry = document.getElementById("profileCountry");
+const profileSchool = document.getElementById("profileSchool");
 const profileLevel = document.getElementById("profileLevel");
 const profileSubject = document.getElementById("profileSubject");
 const profileInterest = document.getElementById("profileInterest");
 
-const aiBtn = document.getElementById("aiBtn");
+const editProfileBtn =
+  document.getElementById("editProfileBtn");
 
+const aiBtn = document.getElementById("aiBtn");
+const aiArea = document.getElementById("aiArea");
+const aiInput = document.getElementById("aiInput");
+const aiAskButton = document.getElementById("aiAskButton");
+const aiResponse = document.getElementById("aiResponse");
+
+
+/* =========================
+   STATE
+========================= */
 
 let signupMode = false;
 let currentUser = null;
 let currentCommunity = null;
 let selectedChatUser = null;
+
+
+/* =========================
+   COMMUNITY DATA
+========================= */
+
+const communities = [
+  {
+    id: "study-hub",
+    name: "📚 Study Hub",
+    description:
+      "Ask questions, explain topics and study together."
+  },
+
+  {
+    id: "coding-club",
+    name: "💻 Coding Club",
+    description:
+      "Learn programming, build projects and share ideas."
+  },
+
+  {
+    id: "science-zone",
+    name: "🔬 Science Zone",
+    description:
+      "Discuss Biology, Chemistry, Physics and other sciences."
+  },
+
+  {
+    id: "creative-corner",
+    name: "🎨 Creative Corner",
+    description:
+      "Art, writing, music and creative projects."
+  },
+
+  {
+    id: "sports-club",
+    name: "⚽ Sports Club",
+    description:
+      "Talk about sports and connect with students who enjoy them."
+  },
+
+  {
+    id: "exam-prep",
+    name: "📖 Exam Prep",
+    description:
+      "Prepare for exams and exchange study strategies."
+  }
+];
+
+
+/* =========================
+   INITIAL UI
+========================= */
+
+function showLoggedOutScreen() {
+
+  authScreen?.classList.remove("hidden");
+  appScreen?.classList.add("hidden");
+
+}
+
+
+function showLoggedInScreen() {
+
+  authScreen?.classList.add("hidden");
+  appScreen?.classList.remove("hidden");
+
+}
 
 
 /* =========================
@@ -110,12 +199,9 @@ if (switchAuth) {
 
 if (signupForm) {
 
-  signupForm.addEventListener("submit", async (event) => {
+  signupForm.addEventListener("submit", async event => {
 
     event.preventDefault();
-
-    authMessage.textContent =
-      "Creating your account...";
 
     const name =
       document.getElementById("signupName")?.value.trim();
@@ -125,6 +211,15 @@ if (signupForm) {
 
     const password =
       document.getElementById("signupPassword")?.value;
+
+    if (!name || !email || !password) {
+      authMessage.textContent =
+        "Please complete all fields.";
+      return;
+    }
+
+    authMessage.textContent =
+      "Creating your account...";
 
     try {
 
@@ -144,12 +239,20 @@ if (signupForm) {
           displayName: name,
           email: email,
           profileComplete: false,
+          discoverable: false,
           createdAt: serverTimestamp()
         },
         { merge: true }
       );
 
-      window.location.href = "profile.html";
+      authMessage.textContent =
+        "Account created successfully!";
+
+      /*
+        We don't redirect to dashboard.html
+        because your current HTML contains
+        the complete application.
+      */
 
     } catch (error) {
 
@@ -170,18 +273,26 @@ if (signupForm) {
 
 if (loginForm) {
 
-  loginForm.addEventListener("submit", async (event) => {
+  loginForm.addEventListener("submit", async event => {
 
     event.preventDefault();
-
-    authMessage.textContent =
-      "Logging in...";
 
     const email =
       document.getElementById("loginEmail")?.value.trim();
 
     const password =
       document.getElementById("loginPassword")?.value;
+
+    if (!email || !password) {
+
+      authMessage.textContent =
+        "Enter your email and password.";
+
+      return;
+    }
+
+    authMessage.textContent =
+      "Logging in...";
 
     try {
 
@@ -190,8 +301,6 @@ if (loginForm) {
         email,
         password
       );
-
-      window.location.href = "dashboard.html";
 
     } catch (error) {
 
@@ -210,11 +319,18 @@ if (loginForm) {
    AUTH STATE
 ========================= */
 
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, async user => {
 
   currentUser = user;
 
-  if (!user) return;
+  if (!user) {
+
+    showLoggedOutScreen();
+
+    return;
+  }
+
+  showLoggedInScreen();
 
   await loadProfile();
   await loadDiscoverStudents();
@@ -236,11 +352,12 @@ if (logoutBtn) {
 
       await signOut(auth);
 
-      window.location.href = "index.html";
-
     } catch (error) {
 
-      console.error(error);
+      console.error(
+        "Logout error:",
+        error
+      );
 
     }
 
@@ -259,7 +376,8 @@ document
 
     button.addEventListener("click", () => {
 
-      const page = button.dataset.page;
+      const page =
+        button.dataset.page;
 
       document
         .querySelectorAll(".page")
@@ -268,13 +386,18 @@ document
         });
 
       const target =
-        document.getElementById(`page-${page}`);
+        document.getElementById(
+          `page-${page}`
+        );
 
       if (target) {
 
         target.classList.add("active");
 
-        window.scrollTo(0, 0);
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
 
       }
 
@@ -295,12 +418,23 @@ async function loadProfile() {
 
     const profileSnapshot =
       await getDoc(
-        doc(db, "users", currentUser.uid)
+        doc(
+          db,
+          "users",
+          currentUser.uid
+        )
       );
 
-    if (!profileSnapshot.exists()) return;
+    if (!profileSnapshot.exists()) {
 
-    const data = profileSnapshot.data();
+      profileEmail.textContent =
+        currentUser.email || "Not set";
+
+      return;
+    }
+
+    const data =
+      profileSnapshot.data();
 
     if (profileName)
       profileName.textContent =
@@ -308,7 +442,17 @@ async function loadProfile() {
 
     if (profileEmail)
       profileEmail.textContent =
-        data.email || currentUser.email || "";
+        data.email ||
+        currentUser.email ||
+        "Not set";
+
+    if (profileCountry)
+      profileCountry.textContent =
+        data.country || "Not set";
+
+    if (profileSchool)
+      profileSchool.textContent =
+        data.school || "Not set";
 
     if (profileLevel)
       profileLevel.textContent =
@@ -323,7 +467,9 @@ async function loadProfile() {
         data.interest || "Not set";
 
     const welcome =
-      document.getElementById("welcomeMessage");
+      document.getElementById(
+        "welcomeMessage"
+      );
 
     if (welcome && data.displayName) {
 
@@ -350,39 +496,49 @@ async function loadProfile() {
 
 async function loadDiscoverStudents() {
 
-  if (!discoverList) return;
+  if (!discoverList || !currentUser)
+    return;
 
   discoverList.innerHTML =
-    `<div class="card">Loading students...</div>`;
+    `<div class="card">
+      Loading students...
+    </div>`;
 
   try {
 
-    const q = query(
-      collection(db, "discoverableProfiles"),
-      where("discoverable", "==", true)
-    );
+    const q =
+      query(
+        collection(
+          db,
+          "discoverableProfiles"
+        ),
+        where(
+          "discoverable",
+          "==",
+          true
+        )
+      );
 
-    const snapshot = await getDocs(q);
+    const snapshot =
+      await getDocs(q);
 
     discoverList.innerHTML = "";
 
-    if (snapshot.empty) {
-
-      discoverList.innerHTML =
-        `<div class="card">
-          <h3>No students yet</h3>
-          <p>More students will appear here as they join StudentConnect.</p>
-        </div>`;
-
-      return;
-    }
+    let foundStudent = false;
 
     snapshot.forEach(studentDoc => {
 
-      const student = studentDoc.data();
-
-      if (studentDoc.id === currentUser?.uid)
+      if (
+        studentDoc.id ===
+        currentUser.uid
+      ) {
         return;
+      }
+
+      foundStudent = true;
+
+      const student =
+        studentDoc.data();
 
       const card =
         document.createElement("div");
@@ -390,56 +546,106 @@ async function loadDiscoverStudents() {
       card.className =
         "card student-card";
 
-      card.innerHTML = `
-        <h3>👤 ${escapeHTML(student.displayName || "Student")}</h3>
+      const name =
+        document.createElement("div");
 
-        <p>
-          🌍 ${escapeHTML(student.country || "Unknown")}
-        </p>
+      name.className =
+        "student-name";
 
-        <p>
-          📍 ${escapeHTML(student.region || "Unknown")}
-        </p>
+      name.textContent =
+        `👤 ${student.displayName || "Student"}`;
 
-        <p>
-          🏫 ${escapeHTML(student.school || "School not listed")}
-        </p>
+      const country =
+        createStudentInfo(
+          "🌍",
+          student.country,
+          "Unknown"
+        );
 
-        <p>
-          🎓 ${escapeHTML(student.level || "Level not listed")}
-        </p>
+      const region =
+        createStudentInfo(
+          "📍",
+          student.region,
+          "Unknown"
+        );
 
-        <p>
-          📚 ${escapeHTML(student.subject || "Subject not listed")}
-        </p>
+      const school =
+        createStudentInfo(
+          "🏫",
+          student.school,
+          "School not listed"
+        );
 
-        <p>
-          ⭐ ${escapeHTML(student.interest || "Interest not listed")}
-        </p>
+      const level =
+        createStudentInfo(
+          "🎓",
+          student.level,
+          "Level not listed"
+        );
 
-        <button
-          class="action-btn"
-          data-chat="${studentDoc.id}"
-        >
-          Message
-        </button>
-      `;
+      const subject =
+        createStudentInfo(
+          "📚",
+          student.subject,
+          "Subject not listed"
+        );
+
+      const interest =
+        createStudentInfo(
+          "⭐",
+          student.interest,
+          "Interest not listed"
+        );
+
+      const messageButton =
+        document.createElement("button");
+
+      messageButton.className =
+        "action-btn";
+
+      messageButton.textContent =
+        "Message";
+
+      messageButton.addEventListener(
+        "click",
+        () => {
+
+          openChatWith(
+            studentDoc.id
+          );
+
+          openPage("messages");
+
+        }
+      );
+
+      card.append(
+        name,
+        country,
+        region,
+        school,
+        level,
+        subject,
+        interest,
+        messageButton
+      );
 
       discoverList.appendChild(card);
 
     });
 
-    document
-      .querySelectorAll("[data-chat]")
-      .forEach(button => {
+    if (!foundStudent) {
 
-        button.addEventListener("click", () => {
+      discoverList.innerHTML =
+        `<div class="card">
+          <h3>No students yet</h3>
+          <p>
+            More students will appear here
+            as they become discoverable.
+          </p>
+        </div>`;
 
-          openChatWith(button.dataset.chat);
-
-        });
-
-      });
+    }
 
   } catch (error) {
 
@@ -452,7 +658,28 @@ async function loadDiscoverStudents() {
       `<div class="card">
         Unable to load students.
       </div>`;
+
   }
+
+}
+
+
+function createStudentInfo(
+  icon,
+  value,
+  fallback
+) {
+
+  const p =
+    document.createElement("p");
+
+  p.className =
+    "student-info";
+
+  p.textContent =
+    `${icon} ${value || fallback}`;
+
+  return p;
 
 }
 
@@ -460,53 +687,6 @@ async function loadDiscoverStudents() {
 /* =========================
    COMMUNITIES
 ========================= */
-
-const communities = [
-
-  {
-    id: "study-hub",
-    name: "📚 Study Hub",
-    description:
-      "Ask questions, explain topics and study together."
-  },
-
-  {
-    id: "coding-club",
-    name: "💻 Coding Club",
-    description:
-      "Learn programming, build projects and share ideas."
-  },
-
-  {
-    id: "science-zone",
-    name: "🔬 Science Zone",
-    description:
-      "Discuss Biology, Chemistry, Physics and other sciences."
-  },
-
-  {
-    id: "exam-prep",
-    name: "📝 Exam Prep",
-    description:
-      "Share study strategies and prepare for exams together."
-  },
-
-  {
-    id: "creative-corner",
-    name: "🎨 Creative Corner",
-    description:
-      "Art, writing, music and creative projects."
-  },
-
-  {
-    id: "sports-club",
-    name: "⚽ Sports Club",
-    description:
-      "Talk about sports and connect with students who enjoy them."
-  }
-
-];
-
 
 async function loadCommunities() {
 
@@ -522,41 +702,54 @@ async function loadCommunities() {
     card.className =
       "card community-card";
 
-    card.innerHTML = `
-      <h3>${community.name}</h3>
+    const icon =
+      document.createElement("div");
 
-      <p>
-        ${community.description}
-      </p>
+    icon.className =
+      "community-icon";
 
-      <button
-        class="action-btn"
-        data-community="${community.id}"
-      >
-        Open Community
-      </button>
-    `;
+    icon.textContent =
+      community.name.split(" ")[0];
+
+    const title =
+      document.createElement("h3");
+
+    title.textContent =
+      community.name
+        .replace(/^[^\s]+\s/, "");
+
+    const description =
+      document.createElement("p");
+
+    description.textContent =
+      community.description;
+
+    const button =
+      document.createElement("button");
+
+    button.className =
+      "action-btn";
+
+    button.textContent =
+      "Open Community";
+
+    button.addEventListener(
+      "click",
+      () => openCommunity(
+        community.id
+      )
+    );
+
+    card.append(
+      icon,
+      title,
+      description,
+      button
+    );
 
     communityList.appendChild(card);
 
   });
-
-  document
-    .querySelectorAll("[data-community]")
-    .forEach(button => {
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          openCommunity(
-            button.dataset.community
-          );
-
-        }
-      );
-
-    });
 
 }
 
@@ -565,19 +758,28 @@ async function openCommunity(id) {
 
   currentCommunity =
     communities.find(
-      community => community.id === id
+      community =>
+        community.id === id
     );
 
-  if (!currentCommunity) return;
+  if (!currentCommunity)
+    return;
 
-  communityList?.classList.add("hidden");
-  communityView?.classList.remove("hidden");
+  communityList?.classList.add(
+    "hidden"
+  );
 
-  communityTitle.textContent =
-    currentCommunity.name;
+  communityView?.classList.remove(
+    "hidden"
+  );
 
-  communityDescription.textContent =
-    currentCommunity.description;
+  if (communityTitle)
+    communityTitle.textContent =
+      currentCommunity.name;
+
+  if (communityDescription)
+    communityDescription.textContent =
+      currentCommunity.description;
 
   await loadCommunityPosts(id);
 
@@ -590,8 +792,13 @@ if (backToCommunities) {
     "click",
     () => {
 
-      communityView?.classList.add("hidden");
-      communityList?.classList.remove("hidden");
+      communityView?.classList.add(
+        "hidden"
+      );
+
+      communityList?.classList.remove(
+        "hidden"
+      );
 
       currentCommunity = null;
 
@@ -613,22 +820,33 @@ if (postButton) {
 
       if (!currentUser) {
 
-        alert("Please log in first.");
-        return;
+        alert(
+          "Please log in first."
+        );
 
+        return;
+      }
+
+      if (!currentCommunity) {
+
+        alert(
+          "Please choose a community."
+        );
+
+        return;
       }
 
       const text =
-        postInput.value.trim();
+        postInput?.value.trim();
 
       if (!text) {
 
-        alert("Write something first.");
+        alert(
+          "Write something first."
+        );
+
         return;
-
       }
-
-      if (!currentCommunity) return;
 
       postButton.disabled = true;
 
@@ -656,8 +874,7 @@ if (postButton) {
             "posts"
           ),
           {
-
-            text: text,
+            text,
 
             uid:
               currentUser.uid,
@@ -669,7 +886,6 @@ if (postButton) {
 
             createdAt:
               serverTimestamp()
-
           }
         );
 
@@ -681,15 +897,20 @@ if (postButton) {
 
       } catch (error) {
 
-        console.error(error);
+        console.error(
+          "Post error:",
+          error
+        );
 
         alert(
           "Could not publish your post."
         );
 
-      }
+      } finally {
 
-      postButton.disabled = false;
+        postButton.disabled = false;
+
+      }
 
     }
   );
@@ -702,19 +923,25 @@ async function loadCommunityPosts(id) {
   if (!communityPosts) return;
 
   communityPosts.innerHTML =
-    `<div class="card">Loading discussions...</div>`;
+    `<div class="card">
+      Loading discussions...
+    </div>`;
 
   try {
 
-    const q = query(
-      collection(
-        db,
-        "communities",
-        id,
-        "posts"
-      ),
-      orderBy("createdAt", "desc")
-    );
+    const q =
+      query(
+        collection(
+          db,
+          "communities",
+          id,
+          "posts"
+        ),
+        orderBy(
+          "createdAt",
+          "desc"
+        )
+      );
 
     const snapshot =
       await getDocs(q);
@@ -726,7 +953,10 @@ async function loadCommunityPosts(id) {
       communityPosts.innerHTML =
         `<div class="card">
           <p>No discussions yet.</p>
-          <p>Be the first student to start one!</p>
+          <p>
+            Be the first student to
+            start one!
+          </p>
         </div>`;
 
       return;
@@ -738,36 +968,52 @@ async function loadCommunityPosts(id) {
         postDoc.data();
 
       const article =
-        document.createElement("article");
+        document.createElement(
+          "article"
+        );
 
-      article.className = "post";
+      article.className =
+        "post";
+
+      const meta =
+        document.createElement("div");
+
+      meta.className =
+        "post-meta";
 
       const date =
         post.createdAt?.toDate
-          ? post.createdAt.toDate()
+          ? post.createdAt
+              .toDate()
               .toLocaleString()
           : "Just now";
 
-      article.innerHTML = `
+      meta.textContent =
+        `👤 ${post.displayName || "Student"} • ${date}`;
 
-        <div class="post-meta">
-          👤 ${escapeHTML(post.displayName || "Student")}
-          • ${escapeHTML(date)}
-        </div>
+      const content =
+        document.createElement("div");
 
-        <div>
-          ${escapeHTML(post.text || "")}
-        </div>
+      content.textContent =
+        post.text || "";
 
-      `;
+      article.append(
+        meta,
+        content
+      );
 
-      communityPosts.appendChild(article);
+      communityPosts.appendChild(
+        article
+      );
 
     });
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Community posts error:",
+      error
+    );
 
     communityPosts.innerHTML =
       `<div class="card">
@@ -785,35 +1031,52 @@ async function loadCommunityPosts(id) {
 
 async function loadChatUsers() {
 
-  if (!chatUsers) return;
+  if (!chatUsers || !currentUser)
+    return;
 
   chatUsers.innerHTML =
     "Loading students...";
 
   try {
 
-    const q = query(
-      collection(db, "discoverableProfiles"),
-      where("discoverable", "==", true)
-    );
+    const q =
+      query(
+        collection(
+          db,
+          "discoverableProfiles"
+        ),
+        where(
+          "discoverable",
+          "==",
+          true
+        )
+      );
 
     const snapshot =
       await getDocs(q);
 
     chatUsers.innerHTML = "";
 
+    let found = false;
+
     snapshot.forEach(studentDoc => {
 
       if (
         studentDoc.id ===
-        currentUser?.uid
-      ) return;
+        currentUser.uid
+      ) {
+        return;
+      }
+
+      found = true;
 
       const student =
         studentDoc.data();
 
       const button =
-        document.createElement("button");
+        document.createElement(
+          "button"
+        );
 
       button.className =
         "user-item";
@@ -823,24 +1086,32 @@ async function loadChatUsers() {
 
       button.addEventListener(
         "click",
-        () => {
-
-          openChatWith(
-            studentDoc.id
-          );
-
-        }
+        () => openChatWith(
+          studentDoc.id
+        )
       );
 
-      chatUsers.appendChild(button);
+      chatUsers.appendChild(
+        button
+      );
 
     });
 
+    if (!found) {
+
+      chatUsers.textContent =
+        "No discoverable students yet.";
+
+    }
+
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Chat users error:",
+      error
+    );
 
-    chatUsers.innerHTML =
+    chatUsers.textContent =
       "Unable to load students.";
 
   }
@@ -849,19 +1120,21 @@ async function loadChatUsers() {
 
 
 /* =========================
-   CHAT
+   OPEN CHAT
 ========================= */
 
 async function openChatWith(uid) {
 
+  if (!currentUser)
+    return;
+
   selectedChatUser = uid;
 
-  if (!messageInput) return;
-
-  messageInput.disabled = false;
+  if (messageInput)
+    messageInput.disabled = false;
 
   chatTitle.textContent =
-    "💬 Chat";
+    "💬 Loading...";
 
   chatMessages.innerHTML =
     "<p>Loading conversation...</p>";
@@ -879,26 +1152,128 @@ async function openChatWith(uid) {
 
     if (student.exists()) {
 
+      const data =
+        student.data();
+
       chatTitle.textContent =
-        `💬 ${student.data().displayName || "Student"}`;
+        `💬 ${data.displayName || "Student"}`;
 
     }
 
+    await loadChatMessages(uid);
+
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Open chat error:",
+      error
+    );
+
+    chatMessages.innerHTML =
+      `<p>Unable to load conversation.</p>`;
 
   }
 
-  chatMessages.innerHTML = `
-    <div class="card">
-      <p>Chat is ready.</p>
-      <p>Send a message below.</p>
-    </div>
-  `;
+}
+
+
+/* =========================
+   LOAD CHAT HISTORY
+========================= */
+
+async function loadChatMessages(uid) {
+
+  if (!currentUser)
+    return;
+
+  const chatId =
+    [currentUser.uid, uid]
+      .sort()
+      .join("_");
+
+  try {
+
+    const q =
+      query(
+        collection(
+          db,
+          "chats",
+          chatId,
+          "messages"
+        ),
+        orderBy(
+          "createdAt",
+          "asc"
+        )
+      );
+
+    const snapshot =
+      await getDocs(q);
+
+    chatMessages.innerHTML = "";
+
+    if (snapshot.empty) {
+
+      chatMessages.innerHTML =
+        `<div class="card">
+          <p>No messages yet.</p>
+          <p>Start the conversation below.</p>
+        </div>`;
+
+      return;
+
+    }
+
+    snapshot.forEach(messageDoc => {
+
+      const message =
+        messageDoc.data();
+
+      const div =
+        document.createElement("div");
+
+      div.className =
+        "message";
+
+      if (
+        message.senderId ===
+        currentUser.uid
+      ) {
+
+        div.classList.add("mine");
+
+      }
+
+      div.textContent =
+        message.text || "";
+
+      chatMessages.appendChild(div);
+
+    });
+
+    chatMessages.scrollTop =
+      chatMessages.scrollHeight;
+
+  } catch (error) {
+
+    console.error(
+      "Chat history error:",
+      error
+    );
+
+    chatMessages.innerHTML =
+      `<p>
+        Unable to load messages.
+      </p>`;
+
+  }
 
 }
 
+
+/* =========================
+   SEND MESSAGE
+========================= */
 
 if (chatForm) {
 
@@ -908,20 +1283,31 @@ if (chatForm) {
 
       event.preventDefault();
 
-      if (!currentUser || !selectedChatUser)
+      if (
+        !currentUser ||
+        !selectedChatUser
+      ) {
+
         return;
+      }
 
       const text =
         messageInput.value.trim();
 
-      if (!text) return;
+      if (!text)
+        return;
+
+      const chatId =
+        [
+          currentUser.uid,
+          selectedChatUser
+        ]
+          .sort()
+          .join("_");
 
       try {
 
-        const chatId =
-          [currentUser.uid, selectedChatUser]
-            .sort()
-            .join("_");
+        messageInput.disabled = true;
 
         await addDoc(
           collection(
@@ -931,41 +1317,41 @@ if (chatForm) {
             "messages"
           ),
           {
-
             senderId:
               currentUser.uid,
 
             receiverId:
               selectedChatUser,
 
-            text: text,
+            text,
 
             createdAt:
               serverTimestamp()
-
           }
         );
 
-        const message =
-          document.createElement("div");
-
-        message.className =
-          "message mine";
-
-        message.textContent =
-          text;
-
-        chatMessages.appendChild(message);
-
         messageInput.value = "";
+
+        await loadChatMessages(
+          selectedChatUser
+        );
 
       } catch (error) {
 
-        console.error(error);
+        console.error(
+          "Send message error:",
+          error
+        );
 
         alert(
           "Could not send message."
         );
+
+      } finally {
+
+        messageInput.disabled = false;
+
+        messageInput.focus();
 
       }
 
@@ -985,8 +1371,57 @@ if (aiBtn) {
     "click",
     () => {
 
-      alert(
-        "AI Study Assistant is the next feature to connect."
+      aiArea?.classList.toggle(
+        "hidden"
+      );
+
+      if (!aiArea?.classList.contains(
+        "hidden"
+      )) {
+
+        aiInput?.focus();
+
+      }
+
+    }
+  );
+
+}
+
+
+if (aiAskButton) {
+
+  aiAskButton.addEventListener(
+    "click",
+    () => {
+
+      const question =
+        aiInput?.value.trim();
+
+      if (!question) {
+
+        aiResponse.textContent =
+          "Please enter a question.";
+
+        aiResponse.classList.remove(
+          "hidden"
+        );
+
+        return;
+      }
+
+      /*
+        AI API connection should be
+        added through a secure backend.
+        Never put a secret API key
+        directly inside this JavaScript.
+      */
+
+      aiResponse.textContent =
+        "Your AI Study Assistant is ready for connection. The secure AI backend will be added next.";
+
+      aiResponse.classList.remove(
+        "hidden"
       );
 
     }
@@ -996,23 +1431,62 @@ if (aiBtn) {
 
 
 /* =========================
-   SECURITY HELPER
+   EDIT PROFILE
 ========================= */
 
-function escapeHTML(value) {
+if (editProfileBtn) {
 
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+  editProfileBtn.addEventListener(
+    "click",
+    () => {
+
+      alert(
+        "Profile editing will be added next."
+      );
+
+    }
+  );
 
 }
 
 
 /* =========================
-   FIREBASE ERRORS
+   PAGE HELPER
+========================= */
+
+function openPage(page) {
+
+  document
+    .querySelectorAll(".page")
+    .forEach(section => {
+      section.classList.remove(
+        "active"
+      );
+    });
+
+  const target =
+    document.getElementById(
+      `page-${page}`
+    );
+
+  if (target) {
+
+    target.classList.add(
+      "active"
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  }
+
+}
+
+
+/* =========================
+   FIREBASE ERROR HANDLER
 ========================= */
 
 function getFirebaseError(error) {
@@ -1044,8 +1518,10 @@ function getFirebaseError(error) {
       return "Network connection problem. Check your internet and try again.";
 
     default:
-      return error?.message ||
-        "Something went wrong. Please try again.";
+      return (
+        error?.message ||
+        "Something went wrong. Please try again."
+      );
 
   }
 
