@@ -8,18 +8,14 @@ import {
   doc,
   getDoc,
   setDoc,
+  deleteDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
-const profileForm =
-  document.getElementById("profileForm");
-
-const countrySelect =
-  document.getElementById("country");
-
-const levelSelect =
-  document.getElementById("level");
+const profileForm = document.getElementById("profileForm");
+const countrySelect = document.getElementById("country");
+const levelSelect = document.getElementById("level");
 
 
 /* =========================
@@ -195,15 +191,15 @@ const schoolLevels = {
 
 function updateSchoolLevels() {
 
-  const country =
-    countrySelect.value;
+  if (!countrySelect || !levelSelect) return;
 
+  const country = countrySelect.value;
+
+  const currentLevel = levelSelect.value;
 
   levelSelect.innerHTML = "";
 
-
-  const firstOption =
-    document.createElement("option");
+  const firstOption = document.createElement("option");
 
   firstOption.value = "";
 
@@ -212,41 +208,40 @@ function updateSchoolLevels() {
       ? "Choose your level"
       : "Choose your country first";
 
-  levelSelect.appendChild(
-    firstOption
-  );
-
+  levelSelect.appendChild(firstOption);
 
   if (!country) {
+
     levelSelect.disabled = true;
+
     return;
   }
 
-
   levelSelect.disabled = false;
-
 
   const levels =
     schoolLevels[country] ||
     schoolLevels.default;
 
+  levels.forEach(level => {
 
-  levels.forEach(
-    (level) => {
+    const option =
+      document.createElement("option");
 
-      const option =
-        document.createElement("option");
+    option.value = level;
 
-      option.value = level;
+    option.textContent = level;
 
-      option.textContent = level;
+    levelSelect.appendChild(option);
 
-      levelSelect.appendChild(
-        option
-      );
+  });
 
-    }
-  );
+  if (currentLevel &&
+      levels.includes(currentLevel)) {
+
+    levelSelect.value = currentLevel;
+
+  }
 
 }
 
@@ -255,37 +250,44 @@ function updateSchoolLevels() {
    COUNTRY CHANGE
 ========================= */
 
-countrySelect.addEventListener(
-  "change",
-  updateSchoolLevels
-);
+if (countrySelect) {
+
+  countrySelect.addEventListener(
+    "change",
+    () => {
+
+      levelSelect.value = "";
+
+      updateSchoolLevels();
+
+    }
+  );
+
+}
 
 
 /* =========================
-   AUTH CHECK
+   AUTH
 ========================= */
 
 onAuthStateChanged(
   auth,
-  async (user) => {
+  async user => {
 
     if (!user) {
 
-      alert(
-        "Please log in first."
-      );
+      alert("Please log in first.");
 
       window.location.href =
         "index.html";
 
       return;
-
     }
 
 
-    /*
-     * Load existing profile if one exists.
-     */
+    /* =========================
+       LOAD EXISTING PROFILE
+    ========================= */
 
     try {
 
@@ -299,14 +301,45 @@ onAuthStateChanged(
       const profileSnap =
         await getDoc(profileRef);
 
-
       if (profileSnap.exists()) {
 
         const data =
           profileSnap.data();
 
 
-        if (data.country) {
+        const displayName =
+          document.getElementById(
+            "displayName"
+          );
+
+        const region =
+          document.getElementById(
+            "region"
+          );
+
+        const school =
+          document.getElementById(
+            "school"
+          );
+
+        const subject =
+          document.getElementById(
+            "subjects"
+          );
+
+        const interest =
+          document.getElementById(
+            "interests"
+          );
+
+
+        if (displayName)
+          displayName.value =
+            data.displayName || "";
+
+
+        if (countrySelect &&
+            data.country) {
 
           countrySelect.value =
             data.country;
@@ -316,62 +349,29 @@ onAuthStateChanged(
         }
 
 
-        if (data.displayName) {
-
-          document
-            .getElementById("displayName")
-            .value =
-              data.displayName;
-
-        }
+        if (region)
+          region.value =
+            data.region || "";
 
 
-        if (data.region) {
-
-          document
-            .getElementById("region")
-            .value =
-              data.region;
-
-        }
+        if (school)
+          school.value =
+            data.school || "";
 
 
-        if (data.school) {
-
-          document
-            .getElementById("school")
-            .value =
-              data.school;
-
-        }
-
-
-        if (data.level) {
-
+        if (levelSelect)
           levelSelect.value =
-            data.level;
-
-        }
+            data.level || "";
 
 
-        if (data.subject) {
-
-          document
-            .getElementById("subjects")
-            .value =
-              data.subject;
-
-        }
+        if (subject)
+          subject.value =
+            data.subject || "";
 
 
-        if (data.interest) {
-
-          document
-            .getElementById("interests")
-            .value =
-              data.interest;
-
-        }
+        if (interest)
+          interest.value =
+            data.interest || "";
 
 
         if (
@@ -379,17 +379,14 @@ onAuthStateChanged(
           undefined
         ) {
 
-          const value =
-            data.discoverable
-              ? "yes"
-              : "no";
-
-
           const radio =
             document.querySelector(
-              `input[name="discoverable"][value="${value}"]`
+              `input[name="discoverable"][value="${
+                data.discoverable
+                  ? "yes"
+                  : "no"
+              }"]`
             );
-
 
           if (radio) {
             radio.checked = true;
@@ -399,9 +396,7 @@ onAuthStateChanged(
 
       }
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
       console.error(
         "Could not load profile:",
@@ -415,9 +410,12 @@ onAuthStateChanged(
        SAVE PROFILE
     ========================= */
 
+    if (!profileForm) return;
+
+
     profileForm.addEventListener(
       "submit",
-      async (event) => {
+      async event => {
 
         event.preventDefault();
 
@@ -428,10 +426,8 @@ onAuthStateChanged(
             .value
             .trim();
 
-
         const country =
           countrySelect.value;
-
 
         const region =
           document
@@ -439,29 +435,24 @@ onAuthStateChanged(
             .value
             .trim();
 
-
         const school =
           document
             .getElementById("school")
             .value
             .trim();
 
-
         const level =
           levelSelect.value;
-
 
         const subject =
           document
             .getElementById("subjects")
             .value;
 
-
         const interest =
           document
             .getElementById("interests")
             .value;
-
 
         const selectedRadio =
           document.querySelector(
@@ -472,11 +463,10 @@ onAuthStateChanged(
         if (!selectedRadio) {
 
           alert(
-            "Please choose your discoverability setting."
+            "Please choose whether other students can discover you."
           );
 
           return;
-
         }
 
 
@@ -486,9 +476,9 @@ onAuthStateChanged(
 
         try {
 
-          /*
-           * Save complete profile.
-           */
+          /* =========================
+             SAVE MAIN USER PROFILE
+          ========================= */
 
           await setDoc(
             doc(
@@ -541,19 +531,22 @@ onAuthStateChanged(
           );
 
 
-          /*
-           * Add to discoverableProfiles
-           * only when the student agrees.
-           */
+          /* =========================
+             DISCOVERABLE PROFILE
+          ========================= */
+
+          const discoverableRef =
+            doc(
+              db,
+              "discoverableProfiles",
+              user.uid
+            );
+
 
           if (discoverable) {
 
             await setDoc(
-              doc(
-                db,
-                "discoverableProfiles",
-                user.uid
-              ),
+              discoverableRef,
               {
 
                 uid:
@@ -580,6 +573,9 @@ onAuthStateChanged(
                 interest:
                   interest,
 
+                discoverable:
+                  true,
+
                 updatedAt:
                   serverTimestamp()
 
@@ -587,6 +583,18 @@ onAuthStateChanged(
               {
                 merge: true
               }
+            );
+
+          } else {
+
+            /*
+             * If the student changes their
+             * setting to private, remove
+             * their discoverable profile.
+             */
+
+            await deleteDoc(
+              discoverableRef
             );
 
           }
@@ -597,19 +605,14 @@ onAuthStateChanged(
           );
 
 
-          /*
-           * Go to dashboard.
-           */
-
           window.location.href =
             "dashboard.html";
 
-        }
 
-        catch (error) {
+        } catch (error) {
 
           console.error(
-            "Profile error:",
+            "Profile save error:",
             error
           );
 
