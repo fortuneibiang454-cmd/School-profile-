@@ -2,17 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <meta
-    name="description"
-    content="StudentConnect - Learn, connect, study and discover with students."
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1769e0">
+  <meta name="description" content="StudentConnect - Learn, connect and grow with students.">
   <title>StudentConnect</title>
 
   <link rel="stylesheet" href="css/style.css">
@@ -20,68 +12,51 @@
 
 <body>
 
-<!-- =====================================================
-     APP
-===================================================== -->
-
-<div id="app">
-
-
-  <!-- ===================================================
+  <!-- =========================
        AUTH SCREEN
-  ==================================================== -->
+  ========================== -->
 
   <section id="authScreen" class="auth-screen">
 
     <div class="auth-card">
 
-      <div class="logo">
-        🎓 StudentConnect
+      <div class="brand">
+        <div class="brand-icon">🎓</div>
+        <h1>StudentConnect</h1>
+        <p>Learn. Connect. Grow.</p>
       </div>
-
-      <h1 id="authTitle">
-        Welcome to StudentConnect
-      </h1>
-
-      <p id="authSubtitle">
-        Learn. Connect. Discover.
-      </p>
-
 
       <!-- LOGIN -->
 
-      <form id="loginForm">
+      <form id="loginForm" class="auth-form">
 
-        <h2>Login</h2>
+        <h2>Welcome back 👋</h2>
 
-        <label for="loginEmail">
-          Email
-        </label>
+        <p class="form-subtitle">
+          Log in to continue to StudentConnect.
+        </p>
+
+        <label for="loginEmail">Email</label>
 
         <input
           type="email"
           id="loginEmail"
           placeholder="Enter your email"
+          autocomplete="email"
           required
         >
 
-
-        <label for="loginPassword">
-          Password
-        </label>
+        <label for="loginPassword">Password</label>
 
         <input
           type="password"
           id="loginPassword"
           placeholder="Enter your password"
+          autocomplete="current-password"
           required
         >
 
-
-        <button
-          type="submit"
-          class="primary-btn"
-        >
+        <button type="submit" class="primary-btn">
           Login
         </button>
 
@@ -90,16 +65,15 @@
 
       <!-- SIGN UP -->
 
-      <form
-        id="signupForm"
-        class="hidden"
-      >
+      <form id="signupForm" class="auth-form hidden">
 
-        <h2>Create Account</h2>
+        <h2>Create your account 🚀</h2>
 
-        <label for="signupName">
-          Display Name
-        </label>
+        <p class="form-subtitle">
+          Join students from around the world.
+        </p>
+
+        <label for="signupName">Display Name</label>
 
         <input
           type="text"
@@ -109,53 +83,37 @@
           required
         >
 
-
-        <label for="signupEmail">
-          Email
-        </label>
+        <label for="signupEmail">Email</label>
 
         <input
           type="email"
           id="signupEmail"
           placeholder="Enter your email"
+          autocomplete="email"
           required
         >
 
-
-        <label for="signupPassword">
-          Password
-        </label>
+        <label for="signupPassword">Password</label>
 
         <input
           type="password"
           id="signupPassword"
           placeholder="Create a password"
           minlength="6"
+          autocomplete="new-password"
           required
         >
 
-
-        <button
-          type="submit"
-          class="primary-btn"
-        >
+        <button type="submit" class="primary-btn">
           Create Account
         </button>
 
       </form>
 
 
-      <p
-        id="authMessage"
-        class="message"
-      ></p>
+      <p id="authMessage" class="auth-message"></p>
 
-
-      <button
-        id="switchAuth"
-        class="text-btn"
-        type="button"
-      >
+      <button id="switchAuth" class="switch-btn">
         Create an account
       </button>
 
@@ -164,261 +122,87 @@
   </section>
 
 
-
-  <!-- ===================================================
+  <!-- =========================
        MAIN APP
-  ==================================================== -->
+  ========================== -->
 
-  <section
-    id="mainApp"
-    class="hidden"
-  >
+  <div id="app" class="app hidden">
 
+    <!-- HEADER -->
 
-    <!-- =================================================
-         HEADER
-    ================================================== -->
+    <header class="topbar">
 
-    <header class="app-header">
-
-      <div class="brand">
-        🎓 StudentConnect
+      <div class="topbar-brand">
+        🎓 <span>StudentConnect</span>
       </div>
 
-      <div class="header-actions">
-
-        <button
-          id="headerProfileBtn"
-          type="button"
-        >
-          👤 Profile
-        </button>
-
-        <button
-          id="logoutBtn"
-          type="button"
-        >
-          Logout
-        </button>
-
-      </div>
+      <button id="logoutBtn" class="logout-btn">
+        Logout
+      </button>
 
     </header>
 
 
+    <!-- MAIN CONTENT -->
 
-    <!-- =================================================
-         NAVIGATION
-    ================================================== -->
+    <main class="main-content">
 
-    <nav class="bottom-nav">
+      <!-- HOME -->
 
-      <button
-        type="button"
-        data-page="home"
-      >
-        🏠
-        <span>Home</span>
-      </button>
+      <section id="page-home" class="page active">
 
-      <button
-        type="button"
-        data-page="discover"
-      >
-        🔎
-        <span>Discover</span>
-      </button>
+        <div class="hero-card">
 
-      <button
-        type="button"
-        data-page="communities"
-      >
-        👥
-        <span>Communities</span>
-      </button>
-
-      <button
-        type="button"
-        data-page="reels"
-      >
-        🎬
-        <span>Reels</span>
-      </button>
-
-      <button
-        type="button"
-        data-page="chat"
-      >
-        💬
-        <span>Chat</span>
-      </button>
-
-      <button
-        type="button"
-        data-page="profile"
-      >
-        👤
-        <span>Profile</span>
-      </button>
-
-    </nav>
-
-
-
-    <!-- =================================================
-         HOME
-    ================================================== -->
-
-    <main>
-
-      <section
-        id="page-home"
-        class="page active"
-      >
-
-        <div class="hero">
+          <p class="small-label">STUDENTCONNECT</p>
 
           <h1 id="welcomeMessage">
-            Welcome to StudentConnect 👋
+            Welcome 👋
           </h1>
 
           <p>
-            Learn, connect with students and discover
-            new opportunities.
-          </p>
-
-        </div>
-
-
-        <!-- QUICK ACTIONS -->
-
-        <div class="section">
-
-          <h2>What do you want to do?</h2>
-
-          <div class="feature-grid">
-
-            <button
-              class="feature-card"
-              data-page="discover"
-              type="button"
-            >
-              <span>🔎</span>
-
-              <strong>
-                Find Students
-              </strong>
-
-              <small>
-                Discover students with similar interests.
-              </small>
-
-            </button>
-
-
-            <button
-              class="feature-card"
-              data-page="communities"
-              type="button"
-            >
-              <span>👥</span>
-
-              <strong>
-                Join Communities
-              </strong>
-
-              <small>
-                Study and discuss topics together.
-              </small>
-
-            </button>
-
-
-            <button
-              class="feature-card"
-              data-page="reels"
-              type="button"
-            >
-              <span>🎬</span>
-
-              <strong>
-                Educational Reels
-              </strong>
-
-              <small>
-                Watch short educational and motivational videos.
-              </small>
-
-            </button>
-
-
-            <button
-              class="feature-card"
-              data-page="study"
-              type="button"
-            >
-              <span>📚</span>
-
-              <strong>
-                Study
-              </strong>
-
-              <small>
-                Find learning resources and study tools.
-              </small>
-
-            </button>
-
-          </div>
-
-        </div>
-
-
-
-        <!-- AI ASSISTANT -->
-
-        <div class="card ai-card">
-
-          <h2>
-            🤖 AI Study Assistant
-          </h2>
-
-          <p>
-            Need help understanding a topic?
-            Ask the StudentConnect study assistant.
+            Learn, meet students, join communities and discover
+            educational content.
           </p>
 
           <button
-            id="aiBtn"
             class="primary-btn"
-            type="button"
+            data-page="discover"
           >
-            Ask AI
+            Find Students
           </button>
 
         </div>
 
 
+        <div class="section-heading">
+          <h2>Explore StudentConnect</h2>
+        </div>
 
-        <!-- MOTIVATION -->
 
-        <div class="card">
+        <div class="feature-grid">
 
-          <h2>
-            🌟 Today's Motivation
-          </h2>
+          <button class="feature-card" data-page="study">
+            <span>📚</span>
+            <strong>Study</strong>
+            <small>Learn and improve your skills.</small>
+          </button>
 
-          <p id="dailyMotivation">
-            Keep learning. Small progress every day
-            can lead to something great.
-          </p>
+          <button class="feature-card" data-page="discover">
+            <span>🌍</span>
+            <strong>Discover</strong>
+            <small>Meet students with similar interests.</small>
+          </button>
 
-          <button
-            id="motivationBtn"
-            class="secondary-btn"
-            type="button"
-          >
-            New Motivation
+          <button class="feature-card" data-page="communities">
+            <span>👥</span>
+            <strong>Communities</strong>
+            <small>Study and discuss together.</small>
+          </button>
+
+          <button class="feature-card" data-page="reels">
+            <span>🎬</span>
+            <strong>Educational Reels</strong>
+            <small>Watch useful student content.</small>
           </button>
 
         </div>
@@ -426,21 +210,15 @@
       </section>
 
 
+      <!-- DISCOVER -->
 
-      <!-- =================================================
-           DISCOVER
-      ================================================== -->
-
-      <section
-        id="page-discover"
-        class="page"
-      >
+      <section id="page-discover" class="page">
 
         <div class="page-header">
 
-          <h1>
-            🔎 Discover Students
-          </h1>
+          <p class="small-label">CONNECT</p>
+
+          <h1>Discover Students 🌍</h1>
 
           <p>
             Find students who are open to connecting.
@@ -448,94 +226,59 @@
 
         </div>
 
-
-        <div
-          id="discoverList"
-          class="content-list"
-        >
-
-          <div class="card">
+        <div id="discoverList" class="content-list">
+          <div class="loading-card">
             Loading students...
           </div>
-
         </div>
 
       </section>
 
 
+      <!-- COMMUNITIES -->
 
-      <!-- =================================================
-           COMMUNITIES
-      ================================================== -->
-
-      <section
-        id="page-communities"
-        class="page"
-      >
+      <section id="page-communities" class="page">
 
         <div class="page-header">
 
-          <h1>
-            👥 Communities
-          </h1>
+          <p class="small-label">COMMUNITIES</p>
+
+          <h1>Study Together 👥</h1>
 
           <p>
-            Learn and discuss with other students.
+            Join discussions based on your interests.
           </p>
 
         </div>
 
-
-        <div
-          id="communityList"
-          class="content-list"
-        >
-        </div>
+        <div id="communityList" class="content-list"></div>
 
 
-        <!-- COMMUNITY VIEW -->
-
-        <div
-          id="communityView"
-          class="hidden"
-        >
+        <div id="communityView" class="community-view hidden">
 
           <button
             id="backToCommunities"
-            class="secondary-btn"
-            type="button"
+            class="back-btn"
           >
-            ← Back
+            ← Communities
           </button>
 
+          <h2 id="communityTitle"></h2>
 
-          <div class="card">
-
-            <h2 id="communityTitle">
-              Community
-            </h2>
-
-            <p id="communityDescription">
-            </p>
-
-          </div>
+          <p id="communityDescription"></p>
 
 
-          <!-- CREATE POST -->
-
-          <div class="card">
+          <div class="post-composer">
 
             <textarea
               id="postInput"
-              rows="4"
+              placeholder="Start a discussion..."
               maxlength="1000"
-              placeholder="Share something with the community..."
             ></textarea>
 
             <button
               id="postButton"
               class="primary-btn"
-              type="button"
             >
               Post
             </button>
@@ -543,287 +286,31 @@
           </div>
 
 
-          <!-- POSTS -->
-
-          <div
-            id="communityPosts"
-            class="content-list"
-          >
-          </div>
+          <div id="communityPosts"></div>
 
         </div>
 
       </section>
 
 
+      <!-- MESSAGES -->
 
-      <!-- =================================================
-           REELS
-      ================================================== -->
-
-      <section
-        id="page-reels"
-        class="page"
-      >
+      <section id="page-messages" class="page">
 
         <div class="page-header">
 
-          <h1>
-            🎬 StudentConnect Reels
-          </h1>
+          <p class="small-label">MESSAGES</p>
 
-          <p>
-            Short educational and motivational videos.
-          </p>
-
-        </div>
-
-
-        <div class="reels-container">
-
-
-          <!-- REEL 1 -->
-
-          <article class="reel-card">
-
-            <div class="video-placeholder">
-
-              <span>
-                ▶️
-              </span>
-
-              <p>
-                Educational video
-              </p>
-
-            </div>
-
-            <div class="reel-info">
-
-              <h3>
-                Learn Something New
-              </h3>
-
-              <p>
-                Educational content for students.
-              </p>
-
-            </div>
-
-          </article>
-
-
-
-          <!-- REEL 2 -->
-
-          <article class="reel-card">
-
-            <div class="video-placeholder">
-
-              <span>
-                ▶️
-              </span>
-
-              <p>
-                Motivation
-              </p>
-
-            </div>
-
-            <div class="reel-info">
-
-              <h3>
-                Student Motivation
-              </h3>
-
-              <p>
-                Stay focused on your goals.
-              </p>
-
-            </div>
-
-          </article>
-
-
-
-          <!-- REEL 3 -->
-
-          <article class="reel-card">
-
-            <div class="video-placeholder">
-
-              <span>
-                ▶️
-              </span>
-
-              <p>
-                Study Tips
-              </p>
-
-            </div>
-
-            <div class="reel-info">
-
-              <h3>
-                Better Study Habits
-              </h3>
-
-              <p>
-                Discover useful ways to study.
-              </p>
-
-            </div>
-
-          </article>
-
-        </div>
-
-      </section>
-
-
-
-      <!-- =================================================
-           STUDY
-      ================================================== -->
-
-      <section
-        id="page-study"
-        class="page"
-      >
-
-        <div class="page-header">
-
-          <h1>
-            📚 Study Center
-          </h1>
-
-          <p>
-            Your learning space.
-          </p>
-
-        </div>
-
-
-        <div class="feature-grid">
-
-
-          <div class="card">
-
-            <h2>
-              📖 Subjects
-            </h2>
-
-            <p>
-              Explore subjects and learning materials.
-            </p>
-
-            <button
-              class="secondary-btn"
-              type="button"
-            >
-              Coming Soon
-            </button>
-
-          </div>
-
-
-          <div class="card">
-
-            <h2>
-              📝 Past Questions
-            </h2>
-
-            <p>
-              Practice with examination questions.
-            </p>
-
-            <button
-              class="secondary-btn"
-              type="button"
-            >
-              Coming Soon
-            </button>
-
-          </div>
-
-
-          <div class="card">
-
-            <h2>
-              🎯 Study Match
-            </h2>
-
-            <p>
-              Find students who study similar subjects.
-            </p>
-
-            <button
-              class="secondary-btn"
-              type="button"
-            >
-              Coming Soon
-            </button>
-
-          </div>
-
-
-          <div class="card">
-
-            <h2>
-              🌍 Global Learning
-            </h2>
-
-            <p>
-              Discover learning content from around the world.
-            </p>
-
-            <button
-              class="secondary-btn"
-              type="button"
-            >
-              Coming Soon
-            </button>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-
-      <!-- =================================================
-           CHAT
-      ================================================== -->
-
-      <section
-        id="page-chat"
-        class="page"
-      >
-
-        <div class="page-header">
-
-          <h1>
-            💬 Messages
-          </h1>
-
-          <p>
-            Chat with students who allow discovery.
-          </p>
+          <h1>Messages 💬</h1>
 
         </div>
 
 
         <div class="chat-layout">
 
+          <aside class="chat-users">
 
-          <!-- USERS -->
-
-          <aside class="chat-sidebar">
-
-            <h3>
-              Students
-            </h3>
+            <h3>Students</h3>
 
             <div id="chatUsers">
               Loading students...
@@ -832,39 +319,28 @@
           </aside>
 
 
-
-          <!-- CHAT -->
-
           <div class="chat-window">
 
-            <div
-              id="chatTitle"
-              class="chat-header"
-            >
-              Select a student
+            <div class="chat-header">
+
+              <h3 id="chatTitle">
+                Select a student
+              </h3>
+
             </div>
 
 
-            <div
-              id="chatMessages"
-              class="chat-messages"
-            >
+            <div id="chatMessages" class="chat-messages">
 
-              <div class="card">
-
-                <p>
-                  Select a student to start chatting.
-                </p>
-
+              <div class="empty-state">
+                <span>💬</span>
+                <p>Select a student to start a conversation.</p>
               </div>
 
             </div>
 
 
-            <form
-              id="chatForm"
-              class="chat-form"
-            >
+            <form id="chatForm" class="chat-form">
 
               <input
                 type="text"
@@ -876,7 +352,7 @@
 
               <button
                 type="submit"
-                class="primary-btn"
+                class="send-btn"
               >
                 Send
               </button>
@@ -890,140 +366,259 @@
       </section>
 
 
+      <!-- STUDY -->
 
-      <!-- =================================================
-           PROFILE
-      ================================================== -->
-
-      <section
-        id="page-profile"
-        class="page"
-      >
+      <section id="page-study" class="page">
 
         <div class="page-header">
 
-          <h1>
-            👤 My Profile
-          </h1>
+          <p class="small-label">LEARNING</p>
+
+          <h1>Study Hub 📚</h1>
+
+          <p>
+            Your learning tools will live here.
+          </p>
 
         </div>
 
 
-        <div class="profile-card">
+        <div class="study-grid">
 
-
-          <div class="profile-avatar">
-            👤
-          </div>
-
-
-          <h2 id="profileName">
-            Not set
-          </h2>
-
-
-          <p id="profileEmail">
-          </p>
-
-
-          <div class="profile-details">
-
-            <div>
-              <strong>
-                Country
-              </strong>
-
-              <span id="profileCountry">
-                Not set
-              </span>
-            </div>
-
-
-            <div>
-              <strong>
-                Region
-              </strong>
-
-              <span id="profileRegion">
-                Not set
-              </span>
-            </div>
-
-
-            <div>
-              <strong>
-                School
-              </strong>
-
-              <span id="profileSchool">
-                Not set
-              </span>
-            </div>
-
-
-            <div>
-              <strong>
-                Level
-              </strong>
-
-              <span id="profileLevel">
-                Not set
-              </span>
-            </div>
-
-
-            <div>
-              <strong>
-                Favorite Subject
-              </strong>
-
-              <span id="profileSubject">
-                Not set
-              </span>
-            </div>
-
-
-            <div>
-              <strong>
-                Interest
-              </strong>
-
-              <span id="profileInterest">
-                Not set
-              </span>
-            </div>
-
-          </div>
-
-
-          <button
-            id="editProfileBtn"
-            class="primary-btn"
-            type="button"
-          >
-            Edit Profile
+          <button class="study-card" id="aiBtn">
+            <span>🤖</span>
+            <h3>AI Study Assistant</h3>
+            <p>
+              Get help understanding difficult topics.
+            </p>
           </button>
+
+          <div class="study-card">
+            <span>📝</span>
+            <h3>Past Questions</h3>
+            <p>
+              Practice with examination questions.
+            </p>
+          </div>
+
+          <div class="study-card">
+            <span>📖</span>
+            <h3>Study Resources</h3>
+            <p>
+              Find useful learning materials.
+            </p>
+          </div>
+
+          <div class="study-card">
+            <span>🎯</span>
+            <h3>Study Match</h3>
+            <p>
+              Connect with students studying similar subjects.
+            </p>
+          </div>
 
         </div>
 
       </section>
 
+
+      <!-- REELS -->
+
+      <section id="page-reels" class="page">
+
+        <div class="page-header">
+
+          <p class="small-label">WATCH & LEARN</p>
+
+          <h1>Educational Reels 🎬</h1>
+
+          <p>
+            Short educational, motivational and study-focused videos.
+          </p>
+
+        </div>
+
+
+        <div class="reels-notice">
+
+          <span>🎥</span>
+
+          <div>
+
+            <h3>Educational videos are coming</h3>
+
+            <p>
+              This section is prepared for our future video feed.
+              We can connect it to a safe educational video source
+              without rebuilding the rest of the app.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="reel-placeholder">
+
+          <div class="reel-icon">▶️</div>
+
+          <h2>Learn something new</h2>
+
+          <p>
+            Motivational talks, science, coding, study tips,
+            educational documentaries and more.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- PROFILE -->
+
+      <section id="page-profile" class="page">
+
+        <div class="page-header">
+
+          <p class="small-label">MY ACCOUNT</p>
+
+          <h1>My Profile 👤</h1>
+
+        </div>
+
+
+        <div class="profile-summary">
+
+          <div class="profile-avatar">
+            👤
+          </div>
+
+          <div>
+
+            <h2 id="profileName">
+              Not set
+            </h2>
+
+            <p id="profileEmail">
+              -
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="profile-info-grid">
+
+          <div class="info-card">
+            <span>🎓 Level</span>
+            <strong id="profileLevel">Not set</strong>
+          </div>
+
+          <div class="info-card">
+            <span>📚 Subject</span>
+            <strong id="profileSubject">Not set</strong>
+          </div>
+
+          <div class="info-card">
+            <span>⭐ Interest</span>
+            <strong id="profileInterest">Not set</strong>
+          </div>
+
+        </div>
+
+
+        <button
+          class="primary-btn"
+          onclick="window.location.href='profile.html'"
+        >
+          Edit Profile
+        </button>
+
+      </section>
+
+
+      <!-- SETTINGS -->
+
+      <section id="page-settings" class="page">
+
+        <div class="page-header">
+
+          <p class="small-label">ACCOUNT</p>
+
+          <h1>Settings ⚙️</h1>
+
+        </div>
+
+
+        <div class="settings-card">
+
+          <h3>Privacy & Safety</h3>
+
+          <p>
+            StudentConnect is designed around student safety
+            and responsible connections.
+          </p>
+
+        </div>
+
+
+        <div class="settings-card">
+
+          <h3>Profile Visibility</h3>
+
+          <p>
+            Your discoverability setting controls whether
+            other students can find your profile.
+          </p>
+
+        </div>
+
+
+        <button id="settingsLogout" class="danger-btn">
+          Log Out
+        </button>
+
+      </section>
+
     </main>
 
-  </section>
 
-</div>
+    <!-- BOTTOM NAVIGATION -->
+
+    <nav class="bottom-nav">
+
+      <button class="nav-item active" data-page="home">
+        <span>🏠</span>
+        <small>Home</small>
+      </button>
+
+      <button class="nav-item" data-page="discover">
+        <span>🌍</span>
+        <small>Discover</small>
+      </button>
+
+      <button class="nav-item" data-page="messages">
+        <span>💬</span>
+        <small>Messages</small>
+      </button>
+
+      <button class="nav-item" data-page="study">
+        <span>📚</span>
+        <small>Study</small>
+      </button>
+
+      <button class="nav-item" data-page="profile">
+        <span>👤</span>
+        <small>Profile</small>
+      </button>
+
+    </nav>
+
+  </div>
 
 
-
-<!-- =====================================================
-     JAVASCRIPT
-===================================================== -->
-
-<script
-  type="module"
-  src="js/app.js"
-></script>
+  <script type="module" src="js/app.js"></script>
 
 </body>
 </html>
