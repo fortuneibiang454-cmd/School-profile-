@@ -838,5 +838,71 @@ button {
   .nav-item span {
     font-size: 18px;
   }
+/* =========================
+   PROFILE FORM FIX
+========================= */
 
+#profileForm {
+  width: 100%;
+  max-width: 650px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+#profileForm label {
+  display: block;
+  width: 100%;
+  margin: 18px 0 7px;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+#profileForm input,
+#profileForm select,
+#profileForm textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  margin: 0 0 12px;
+}
+
+#profileForm input[type="radio"] {
+  display: inline-block;
+  width: auto;
+  min-height: auto;
+  margin: 0 6px 0 0;
+}
+
+#profileForm .radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+#profileForm button {
+  margin-top: 18px;
+}
+
+/* Phone screens */
+@media (max-width: 600px) {
+
+  #profileForm {
+    width: 100%;
+    padding: 0 12px;
+  }
+
+  #profileForm label {
+    font-size: 16px;
+  }
+
+  #profileForm input,
+  #profileForm select,
+  #profileForm textarea {
+    font-size: 16px;
+  }
+
+}
 }
