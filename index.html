@@ -2,491 +2,42 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="StudentConnect - Learn, connect and grow with students around the world."
+  >
 
   <title>StudentConnect</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f7fb;
-      color: #172033;
-    }
-
-    button,
-    input,
-    select,
-    textarea {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    /* =========================
-       AUTH
-    ========================= */
-
-    #authScreen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background: linear-gradient(135deg, #eff6ff, #f8fafc);
-    }
-
-    .auth-card {
-      width: 100%;
-      max-width: 450px;
-      background: white;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 15px 45px rgba(0,0,0,.08);
-    }
-
-    .auth-card h1 {
-      text-align: center;
-      margin-top: 0;
-      margin-bottom: 8px;
-    }
-
-    .auth-card > p {
-      text-align: center;
-      color: #667085;
-      margin-bottom: 25px;
-    }
-
-    .form-group {
-      margin-bottom: 15px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 7px;
-      font-weight: bold;
-    }
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-      padding: 13px;
-      border: 1px solid #d5dbea;
-      border-radius: 10px;
-      background: white;
-      outline: none;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: #2563eb;
-    }
-
-    textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
-
-    .primary-btn {
-      width: 100%;
-      border: 0;
-      padding: 13px;
-      border-radius: 10px;
-      background: #2563eb;
-      color: white;
-      font-weight: bold;
-    }
-
-    .primary-btn:hover,
-    .action-btn:hover {
-      opacity: .9;
-    }
-
-    .secondary-btn {
-      border: 1px solid #d5dbea;
-      padding: 10px 14px;
-      border-radius: 9px;
-      background: white;
-    }
-
-    .auth-switch {
-      margin-top: 16px;
-      text-align: center;
-    }
-
-    #authMessage {
-      margin-top: 14px;
-      text-align: center;
-      color: #dc2626;
-      font-size: 14px;
-    }
-
-    /* =========================
-       NAVIGATION
-    ========================= */
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: white;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 12px 16px;
-    }
-
-    .topbar-inner {
-      max-width: 1150px;
-      margin: auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .brand {
-      font-weight: bold;
-      font-size: 20px;
-      white-space: nowrap;
-    }
-
-    .nav {
-      display: flex;
-      gap: 5px;
-      overflow-x: auto;
-    }
-
-    .nav-btn {
-      border: 0;
-      background: transparent;
-      padding: 9px 11px;
-      border-radius: 8px;
-      white-space: nowrap;
-    }
-
-    .nav-btn:hover {
-      background: #eef4ff;
-    }
-
-    .logout-btn {
-      border: 0;
-      background: #fee2e2;
-      color: #991b1b;
-      padding: 9px 12px;
-      border-radius: 8px;
-      white-space: nowrap;
-    }
-
-    /* =========================
-       MAIN
-    ========================= */
-
-    main {
-      max-width: 1150px;
-      margin: auto;
-      padding: 24px 16px 70px;
-    }
-
-    .page {
-      display: none;
-    }
-
-    .page.active {
-      display: block;
-    }
-
-    .hero {
-      background: white;
-      padding: 28px;
-      border-radius: 18px;
-      margin-bottom: 20px;
-      border: 1px solid #e5e7eb;
-    }
-
-    .hero h1 {
-      margin-top: 0;
-    }
-
-    .hero p {
-      color: #667085;
-      line-height: 1.6;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns:
-        repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-    }
-
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 16px;
-      border: 1px solid #e5e7eb;
-    }
-
-    .card h3 {
-      margin-top: 0;
-    }
-
-    .card p {
-      color: #667085;
-      line-height: 1.5;
-    }
-
-    .action-btn {
-      border: 0;
-      padding: 10px 14px;
-      border-radius: 9px;
-      background: #2563eb;
-      color: white;
-      font-weight: bold;
-    }
-
-    /* =========================
-       DISCOVER
-    ========================= */
-
-    .student-card {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .student-card .student-name {
-      font-size: 18px;
-      font-weight: bold;
-    }
-
-    .student-info {
-      color: #667085;
-      font-size: 14px;
-    }
-
-    /* =========================
-       COMMUNITIES
-    ========================= */
-
-    .community-card {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .community-icon {
-      font-size: 35px;
-    }
-
-    .community-card h3 {
-      margin: 0;
-    }
-
-    .community-card p {
-      margin: 0;
-    }
-
-    .community-view {
-      margin-top: 20px;
-    }
-
-    .post {
-      background: white;
-      padding: 16px;
-      border-radius: 13px;
-      border: 1px solid #e5e7eb;
-      margin-bottom: 12px;
-    }
-
-    .post-meta {
-      font-size: 13px;
-      color: #667085;
-      margin-bottom: 8px;
-    }
-
-    /* =========================
-       CHAT
-    ========================= */
-
-    .chat-layout {
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      gap: 16px;
-    }
-
-    .user-list {
-      background: white;
-      padding: 12px;
-      border-radius: 15px;
-      border: 1px solid #e5e7eb;
-    }
-
-    .user-item {
-      width: 100%;
-      text-align: left;
-      border: 0;
-      background: transparent;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 5px;
-    }
-
-    .user-item:hover {
-      background: #eef4ff;
-    }
-
-    .chat-box {
-      background: white;
-      border-radius: 15px;
-      padding: 16px;
-      min-height: 450px;
-      border: 1px solid #e5e7eb;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #chatMessages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px 0;
-    }
-
-    .message {
-      padding: 9px 12px;
-      margin: 7px 0;
-      border-radius: 12px;
-      max-width: 80%;
-      background: #eef2f7;
-    }
-
-    .message.mine {
-      margin-left: auto;
-      background: #dbeafe;
-    }
-
-    .chat-form {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .chat-form input {
-      flex: 1;
-    }
-
-    /* =========================
-       PROFILE
-    ========================= */
-
-    .profile-row {
-      margin-bottom: 15px;
-    }
-
-    .profile-row strong {
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .profile-row span {
-      color: #667085;
-    }
-
-    /* =========================
-       AI
-    ========================= */
-
-    .ai-box {
-      background: white;
-      border-radius: 16px;
-      padding: 20px;
-      border: 1px solid #e5e7eb;
-      margin-top: 20px;
-    }
-
-    .ai-input-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .ai-input-row input {
-      flex: 1;
-    }
-
-    #aiResponse {
-      margin-top: 15px;
-      padding: 14px;
-      border-radius: 10px;
-      background: #f4f7fb;
-      line-height: 1.6;
-      white-space: pre-wrap;
-    }
-
-    /* =========================
-       MOBILE
-    ========================= */
-
-    @media (max-width: 750px) {
-
-      .topbar-inner {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .nav {
-        width: 100%;
-      }
-
-      .chat-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .hero {
-        padding: 22px;
-      }
-
-      .auth-card {
-        padding: 22px;
-      }
-
-      .ai-input-row {
-        flex-direction: column;
-      }
-
-      .ai-input-row button {
-        width: 100%;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-<div class="app">
-
   <!-- =========================
-       AUTHENTICATION
-  ========================= -->
+       AUTH SCREEN
+  ========================== -->
 
-  <section id="authScreen">
+  <div id="authScreen" class="auth-screen">
 
     <div class="auth-card">
 
-      <h1>🎓 StudentConnect</h1>
+      <div class="logo">
+        🎓 StudentConnect
+      </div>
 
-      <p>
-        Connect, learn and discover students.
+      <h1 id="authTitle">
+        Welcome to StudentConnect
+      </h1>
+
+      <p id="authSubtitle">
+        Learn. Connect. Grow.
       </p>
 
 
@@ -494,41 +45,33 @@
 
       <form id="loginForm">
 
-        <div class="form-group">
+        <label for="loginEmail">
+          Email
+        </label>
 
-          <label for="loginEmail">
-            Email
-          </label>
+        <input
+          type="email"
+          id="loginEmail"
+          placeholder="Enter your email"
+          autocomplete="email"
+          required
+        >
 
-          <input
-            id="loginEmail"
-            type="email"
-            autocomplete="email"
-            required
-          >
+        <label for="loginPassword">
+          Password
+        </label>
 
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="loginPassword">
-            Password
-          </label>
-
-          <input
-            id="loginPassword"
-            type="password"
-            autocomplete="current-password"
-            required
-          >
-
-        </div>
-
+        <input
+          type="password"
+          id="loginPassword"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+          required
+        >
 
         <button
-          class="primary-btn"
           type="submit"
+          class="primary-btn"
         >
           Login
         </button>
@@ -536,65 +79,53 @@
       </form>
 
 
-      <!-- SIGNUP -->
+      <!-- SIGN UP -->
 
       <form
         id="signupForm"
         class="hidden"
       >
 
-        <div class="form-group">
+        <label for="signupName">
+          Display Name
+        </label>
 
-          <label for="signupName">
-            Display Name
-          </label>
+        <input
+          type="text"
+          id="signupName"
+          placeholder="Choose your display name"
+          maxlength="40"
+          required
+        >
 
-          <input
-            id="signupName"
-            type="text"
-            maxlength="40"
-            required
-          >
+        <label for="signupEmail">
+          Email
+        </label>
 
-        </div>
+        <input
+          type="email"
+          id="signupEmail"
+          placeholder="Enter your email"
+          autocomplete="email"
+          required
+        >
 
+        <label for="signupPassword">
+          Password
+        </label>
 
-        <div class="form-group">
-
-          <label for="signupEmail">
-            Email
-          </label>
-
-          <input
-            id="signupEmail"
-            type="email"
-            autocomplete="email"
-            required
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="signupPassword">
-            Password
-          </label>
-
-          <input
-            id="signupPassword"
-            type="password"
-            minlength="6"
-            autocomplete="new-password"
-            required
-          >
-
-        </div>
-
+        <input
+          type="password"
+          id="signupPassword"
+          placeholder="Create a password"
+          minlength="6"
+          autocomplete="new-password"
+          required
+        >
 
         <button
-          class="primary-btn"
           type="submit"
+          class="primary-btn"
         >
           Create Account
         </button>
@@ -602,266 +133,314 @@
       </form>
 
 
-      <div class="auth-switch">
-
-        <button
-          id="switchAuth"
-          class="secondary-btn"
-          type="button"
-        >
-          Create an account
-        </button>
-
-      </div>
+      <p
+        id="authMessage"
+        class="auth-message"
+      ></p>
 
 
-      <div id="authMessage"></div>
+      <button
+        id="switchAuth"
+        class="text-btn"
+        type="button"
+      >
+        Create an account
+      </button>
 
     </div>
 
-  </section>
+  </div>
 
 
   <!-- =========================
-       MAIN APP
-  ========================= -->
+       MAIN APPLICATION
+  ========================== -->
 
-  <section
-    id="appScreen"
-    class="hidden"
+  <div
+    id="app"
+    class="app hidden"
   >
 
-    <!-- NAVIGATION -->
+    <!-- HEADER -->
 
-    <header class="topbar">
+    <header class="top-header">
 
-      <div class="topbar-inner">
-
-        <div class="brand">
-          🎓 StudentConnect
-        </div>
-
-
-        <nav class="nav">
-
-          <button
-            class="nav-btn"
-            data-page="home"
-          >
-            🏠 Home
-          </button>
-
-
-          <button
-            class="nav-btn"
-            data-page="discover"
-          >
-            🌍 Discover
-          </button>
-
-
-          <button
-            class="nav-btn"
-            data-page="communities"
-          >
-            👥 Communities
-          </button>
-
-
-          <button
-            class="nav-btn"
-            data-page="messages"
-          >
-            💬 Messages
-          </button>
-
-
-          <button
-            class="nav-btn"
-            data-page="profile"
-          >
-            👤 Profile
-          </button>
-
-        </nav>
-
-
-        <button
-          id="logoutBtn"
-          class="logout-btn"
-        >
-          Logout
-        </button>
-
+      <div class="brand">
+        🎓 StudentConnect
       </div>
+
+      <button
+        id="logoutBtn"
+        class="logout-btn"
+      >
+        Logout
+      </button>
 
     </header>
 
 
-    <main>
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+
+    <main class="main-content">
 
 
-      <!-- =========================
-           HOME
-      ========================= -->
+      <!-- HOME -->
 
       <section
         id="page-home"
         class="page active"
       >
 
-        <div class="hero">
+        <div class="hero-card">
+
+          <p class="small-label">
+            STUDENTCONNECT
+          </p>
 
           <h1 id="welcomeMessage">
-            Welcome to StudentConnect 👋
+            Welcome 👋
           </h1>
 
           <p>
-            Connect, learn, discover and meet
-            students who share your interests.
+            Learn, meet students, discover ideas
+            and grow together.
           </p>
 
         </div>
 
 
-        <div class="grid">
+        <div class="quick-grid">
+
+          <button
+            class="quick-card"
+            data-page="study"
+          >
+            📚
+            <strong>Study</strong>
+            <span>Learn and practice</span>
+          </button>
+
+          <button
+            class="quick-card"
+            data-page="reels"
+          >
+            🎬
+            <strong>Reels</strong>
+            <span>Educational videos</span>
+          </button>
+
+          <button
+            class="quick-card"
+            data-page="discover"
+          >
+            🌍
+            <strong>Discover</strong>
+            <span>Meet students</span>
+          </button>
+
+          <button
+            class="quick-card"
+            data-page="communities"
+          >
+            👥
+            <strong>Communities</strong>
+            <span>Study together</span>
+          </button>
+
+        </div>
 
 
-          <!-- DISCOVER -->
+        <div class="section-card">
 
-          <div class="card">
+          <h2>What you can do</h2>
 
-            <h3>
-              🌍 Discover Students
-            </h3>
+          <div class="feature-list">
 
-            <p>
-              Find students who share your
-              subjects, interests and school
-              goals.
-            </p>
+            <div>
+              🌎
+              <span>
+                Connect with students around the world
+              </span>
+            </div>
 
-            <button
-              class="action-btn"
-              data-page="discover"
-            >
-              Discover
-            </button>
+            <div>
+              📚
+              <span>
+                Study with students at your level
+              </span>
+            </div>
+
+            <div>
+              🎬
+              <span>
+                Watch educational and motivational content
+              </span>
+            </div>
+
+            <div>
+              💬
+              <span>
+                Chat and discuss ideas
+              </span>
+            </div>
 
           </div>
 
+        </div>
 
-          <!-- COMMUNITIES -->
-
-          <div class="card">
-
-            <h3>
-              👥 Communities
-            </h3>
-
-            <p>
-              Join communities for studying,
-              coding, science, sports and more.
-            </p>
-
-            <button
-              class="action-btn"
-              data-page="communities"
-            >
-              Explore
-            </button>
-
-          </div>
+      </section>
 
 
-          <!-- MESSAGES -->
+      <!-- =========================
+           STUDY
+      ========================== -->
 
-          <div class="card">
+      <section
+        id="page-study"
+        class="page"
+      >
 
-            <h3>
-              💬 Messages
-            </h3>
+        <div class="page-header">
 
-            <p>
-              Chat with students who have
-              chosen to connect.
-            </p>
+          <h1>📚 Study</h1>
 
-            <button
-              class="action-btn"
-              data-page="messages"
-            >
-              Open Messages
-            </button>
+          <p>
+            Your learning space.
+          </p>
 
-          </div>
+        </div>
 
 
-          <!-- AI -->
+        <div class="study-grid">
 
-          <div class="card">
+          <div class="feature-card">
 
-            <h3>
-              🤖 AI Study Assistant
-            </h3>
+            <div class="feature-icon">
+              🤖
+            </div>
+
+            <h2>AI Study Assistant</h2>
 
             <p>
               Get help understanding difficult
-              school topics.
+              topics and questions.
             </p>
 
             <button
               id="aiBtn"
-              class="action-btn"
+              class="primary-btn"
             >
               Ask AI
             </button>
 
           </div>
 
-        </div>
 
+          <div class="feature-card">
 
-        <!-- AI STUDY AREA -->
+            <div class="feature-icon">
+              📝
+            </div>
 
-        <div
-          id="aiArea"
-          class="ai-box hidden"
-        >
+            <h2>Past Questions</h2>
 
-          <h2>
-            🤖 AI Study Assistant
-          </h2>
-
-          <p>
-            Ask a question about a school topic.
-          </p>
-
-
-          <div class="ai-input-row">
-
-            <input
-              id="aiInput"
-              type="text"
-              maxlength="500"
-              placeholder="Example: Explain Hooke's law"
-            >
+            <p>
+              Practice questions and prepare
+              for examinations.
+            </p>
 
             <button
-              id="aiAskButton"
-              class="action-btn"
-              type="button"
+              class="secondary-btn"
+              id="pastQuestionsBtn"
             >
-              Ask
+              Coming Soon
             </button>
 
           </div>
 
 
-          <div
-            id="aiResponse"
-            class="hidden"
-          ></div>
+          <div class="feature-card">
+
+            <div class="feature-icon">
+              🎯
+            </div>
+
+            <h2>Study Match</h2>
+
+            <p>
+              Find students studying at a similar
+              StudentConnect level.
+            </p>
+
+            <button
+              class="primary-btn"
+              data-page="discover"
+            >
+              Find Students
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div class="section-card">
+
+          <h2>StudentConnect Levels</h2>
+
+          <div class="levels">
+
+            <span>JS1</span>
+            <span>JS2</span>
+            <span>JS3</span>
+            <span>SS1</span>
+            <span>SS2</span>
+            <span>SS3</span>
+
+          </div>
+
+          <p class="muted">
+            We use one simple level system across
+            StudentConnect so students can easily
+            find others at a similar stage.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           REELS
+      ========================== -->
+
+      <section
+        id="page-reels"
+        class="page"
+      >
+
+        <div class="page-header">
+
+          <h1>🎬 StudentConnect Reels</h1>
+
+          <p>
+            Educational and motivational videos
+            for students.
+          </p>
+
+        </div>
+
+
+        <div
+          id="reelsList"
+          class="reels-list"
+        >
+
+          <div class="loading-card">
+            Loading educational videos...
+          </div>
 
         </div>
 
@@ -870,33 +449,41 @@
 
       <!-- =========================
            DISCOVER
-      ========================= -->
+      ========================== -->
 
       <section
         id="page-discover"
         class="page"
       >
 
-        <div class="hero">
+        <div class="page-header">
 
-          <h1>
-            🌍 Discover Students
-          </h1>
+          <h1>🌍 Discover Students</h1>
 
           <p>
-            Find students who have chosen
-            to be discoverable.
+            Find students who share your interests.
           </p>
+
+        </div>
+
+
+        <div class="discover-controls">
+
+          <input
+            type="search"
+            id="studentSearch"
+            placeholder="Search students..."
+          >
 
         </div>
 
 
         <div
           id="discoverList"
-          class="grid"
+          class="card-list"
         >
 
-          <div class="card">
+          <div class="loading-card">
             Loading students...
           </div>
 
@@ -907,22 +494,19 @@
 
       <!-- =========================
            COMMUNITIES
-      ========================= -->
+      ========================== -->
 
       <section
         id="page-communities"
         class="page"
       >
 
-        <div class="hero">
+        <div class="page-header">
 
-          <h1>
-            👥 Student Communities
-          </h1>
+          <h1>👥 Communities</h1>
 
           <p>
-            Find a community that matches
-            your interests.
+            Learn and discuss with other students.
           </p>
 
         </div>
@@ -930,242 +514,51 @@
 
         <div
           id="communityList"
-          class="grid"
-        >
+          class="card-list"
+        ></div>
 
-
-          <div
-            class="card community-card"
-          >
-
-            <div class="community-icon">
-              📚
-            </div>
-
-            <h3>
-              Study Hub
-            </h3>
-
-            <p>
-              Study together and share
-              useful learning tips.
-            </p>
-
-            <button
-              class="action-btn community-open"
-              data-community="study-hub"
-            >
-              Join Community
-            </button>
-
-          </div>
-
-
-          <div
-            class="card community-card"
-          >
-
-            <div class="community-icon">
-              💻
-            </div>
-
-            <h3>
-              Coding Club
-            </h3>
-
-            <p>
-              Learn programming and build
-              projects together.
-            </p>
-
-            <button
-              class="action-btn community-open"
-              data-community="coding-club"
-            >
-              Join Community
-            </button>
-
-          </div>
-
-
-          <div
-            class="card community-card"
-          >
-
-            <div class="community-icon">
-              🔬
-            </div>
-
-            <h3>
-              Science Zone
-            </h3>
-
-            <p>
-              Discuss science subjects
-              and school projects.
-            </p>
-
-            <button
-              class="action-btn community-open"
-              data-community="science-zone"
-            >
-              Join Community
-            </button>
-
-          </div>
-
-
-          <div
-            class="card community-card"
-          >
-
-            <div class="community-icon">
-              🎨
-            </div>
-
-            <h3>
-              Creative Corner
-            </h3>
-
-            <p>
-              Share art, design, writing
-              and creative ideas.
-            </p>
-
-            <button
-              class="action-btn community-open"
-              data-community="creative-corner"
-            >
-              Join Community
-            </button>
-
-          </div>
-
-
-          <div
-            class="card community-card"
-          >
-
-            <div class="community-icon">
-              ⚽
-            </div>
-
-            <h3>
-              Sports Club
-            </h3>
-
-            <p>
-              Talk about sports and
-              favourite teams.
-            </p>
-
-            <button
-              class="action-btn community-open"
-              data-community="sports-club"
-            >
-              Join Community
-            </button>
-
-          </div>
-
-
-          <div
-            class="card community-card"
-          >
-
-            <div class="community-icon">
-              📖
-            </div>
-
-            <h3>
-              Exam Prep
-            </h3>
-
-            <p>
-              Prepare for exams and
-              exchange study strategies.
-            </p>
-
-            <button
-              class="action-btn community-open"
-              data-community="exam-prep"
-            >
-              Join Community
-            </button>
-
-          </div>
-
-        </div>
-
-
-        <!-- COMMUNITY VIEW -->
 
         <div
           id="communityView"
-          class="community-view hidden"
+          class="hidden"
         >
 
           <button
             id="backToCommunities"
-            class="secondary-btn"
-            type="button"
+            class="back-btn"
           >
-            ← Back to Communities
+            ← Back
           </button>
 
+          <div class="community-header">
 
-          <div class="hero">
+            <h2 id="communityTitle"></h2>
 
-            <h2
-              id="communityTitle"
-            ></h2>
-
-            <p
-              id="communityDescription"
-            ></p>
+            <p id="communityDescription"></p>
 
           </div>
 
 
-          <!-- NEW POST -->
+          <div
+            id="communityPosts"
+            class="posts"
+          ></div>
 
-          <div class="card">
 
-            <h3>
-              Start a Discussion
-            </h3>
+          <div class="post-composer">
 
             <textarea
               id="postInput"
-              maxlength="500"
-              placeholder="Share something with this community..."
+              placeholder="Start a discussion..."
+              maxlength="1000"
             ></textarea>
-
-            <br><br>
 
             <button
               id="postButton"
-              class="action-btn"
-              type="button"
+              class="primary-btn"
             >
               Post
             </button>
-
-          </div>
-
-
-          <br>
-
-
-          <!-- POSTS -->
-
-          <div
-            id="postsList"
-          >
-
-            <div class="card">
-              Loading discussions...
-            </div>
 
           </div>
 
@@ -1175,23 +568,20 @@
 
 
       <!-- =========================
-           MESSAGES
-      ========================= -->
+           CHAT
+      ========================== -->
 
       <section
-        id="page-messages"
+        id="page-chat"
         class="page"
       >
 
-        <div class="hero">
+        <div class="page-header">
 
-          <h1>
-            💬 Messages
-          </h1>
+          <h1>💬 Messages</h1>
 
           <p>
-            Select a discoverable student
-            to start a conversation.
+            Chat with students.
           </p>
 
         </div>
@@ -1199,38 +589,34 @@
 
         <div class="chat-layout">
 
-
-          <!-- USERS -->
-
-          <div
+          <aside
             id="chatUsers"
-            class="user-list"
+            class="chat-users"
           >
 
             Loading students...
 
-          </div>
+          </aside>
 
 
-          <!-- CHAT -->
+          <div class="chat-window">
 
-          <div class="chat-box">
-
-            <h3
+            <div
               id="chatTitle"
+              class="chat-title"
             >
               Select a student
-            </h3>
+            </div>
 
 
             <div
               id="chatMessages"
+              class="chat-messages"
             >
 
-              <p>
-                Your conversation will
-                appear here.
-              </p>
+              <div class="empty-chat">
+                Select a student to start chatting.
+              </div>
 
             </div>
 
@@ -1241,17 +627,16 @@
             >
 
               <input
-                id="messageInput"
                 type="text"
-                maxlength="500"
-                placeholder="Type a message..."
+                id="messageInput"
+                placeholder="Write a message..."
+                maxlength="1000"
                 disabled
               >
 
-
               <button
-                class="action-btn"
                 type="submit"
+                class="primary-btn"
               >
                 Send
               </button>
@@ -1267,166 +652,163 @@
 
       <!-- =========================
            PROFILE
-      ========================= -->
+      ========================== -->
 
       <section
         id="page-profile"
         class="page"
       >
 
-        <div class="hero">
+        <div class="page-header">
 
-          <h1>
-            👤 My Profile
-          </h1>
+          <h1>👤 My Profile</h1>
 
           <p>
-            Manage your StudentConnect
-            profile.
+            Your StudentConnect profile.
           </p>
 
         </div>
 
 
-        <div class="card">
+        <div class="profile-card">
 
-          <div class="profile-row">
+          <div class="profile-avatar">
+            👤
+          </div>
 
-            <strong>
-              Name
-            </strong>
+          <h2 id="profileName">
+            Student
+          </h2>
 
-            <span
-              id="profileName"
-            >
-              Loading...
-            </span>
+          <p id="profileEmail"></p>
+
+
+          <div class="profile-info">
+
+            <div>
+              <strong>Country</strong>
+              <span id="profileCountry">
+                Not set
+              </span>
+            </div>
+
+            <div>
+              <strong>Region</strong>
+              <span id="profileRegion">
+                Not set
+              </span>
+            </div>
+
+            <div>
+              <strong>School</strong>
+              <span id="profileSchool">
+                Not set
+              </span>
+            </div>
+
+            <div>
+              <strong>Level</strong>
+              <span id="profileLevel">
+                Not set
+              </span>
+            </div>
+
+            <div>
+              <strong>Subject</strong>
+              <span id="profileSubject">
+                Not set
+              </span>
+            </div>
+
+            <div>
+              <strong>Interest</strong>
+              <span id="profileInterest">
+                Not set
+              </span>
+            </div>
 
           </div>
 
 
-          <div class="profile-row">
-
-            <strong>
-              Email
-            </strong>
-
-            <span
-              id="profileEmail"
-            >
-              Loading...
-            </span>
-
-          </div>
-
-
-          <div class="profile-row">
-
-            <strong>
-              Country
-            </strong>
-
-            <span
-              id="profileCountry"
-            >
-              Loading...
-            </span>
-
-          </div>
-
-
-          <div class="profile-row">
-
-            <strong>
-              School
-            </strong>
-
-            <span
-              id="profileSchool"
-            >
-              Loading...
-            </span>
-
-          </div>
-
-
-          <div class="profile-row">
-
-            <strong>
-              School Level
-            </strong>
-
-            <span
-              id="profileLevel"
-            >
-              Loading...
-            </span>
-
-          </div>
-
-
-          <div class="profile-row">
-
-            <strong>
-              Favorite Subject
-            </strong>
-
-            <span
-              id="profileSubject"
-            >
-              Loading...
-            </span>
-
-          </div>
-
-
-          <div class="profile-row">
-
-            <strong>
-              Main Interest
-            </strong>
-
-            <span
-              id="profileInterest"
-            >
-              Loading...
-            </span>
-
-          </div>
-
-
-          <br>
-
-
-          <button
-            class="action-btn"
-            id="editProfileBtn"
-            type="button"
+          <a
+            href="profile.html"
+            class="primary-btn profile-edit"
           >
             Edit Profile
-          </button>
+          </a>
 
         </div>
 
       </section>
 
-
     </main>
 
-  </section>
 
-</div>
+    <!-- =========================
+         BOTTOM NAVIGATION
+    ========================== -->
+
+    <nav class="bottom-nav">
+
+      <button
+        data-page="home"
+        class="nav-item active"
+      >
+        <span>🏠</span>
+        <small>Home</small>
+      </button>
+
+      <button
+        data-page="study"
+        class="nav-item"
+      >
+        <span>📚</span>
+        <small>Study</small>
+      </button>
+
+      <button
+        data-page="reels"
+        class="nav-item"
+      >
+        <span>🎬</span>
+        <small>Reels</small>
+      </button>
+
+      <button
+        data-page="discover"
+        class="nav-item"
+      >
+        <span>🌍</span>
+        <small>Discover</small>
+      </button>
+
+      <button
+        data-page="chat"
+        class="nav-item"
+      >
+        <span>💬</span>
+        <small>Chat</small>
+      </button>
+
+      <button
+        data-page="profile"
+        class="nav-item"
+      >
+        <span>👤</span>
+        <small>Profile</small>
+      </button>
+
+    </nav>
+
+  </div>
 
 
-<!-- IMPORTANT:
-     app.js handles Firebase,
-     authentication and the app.
--->
+  <!-- APP JAVASCRIPT -->
 
-<script
-  type="module"
-  src="js/app.js"
-></script>
+  <script
+    type="module"
+    src="js/app.js"
+  ></script>
 
 </body>
 </html>
