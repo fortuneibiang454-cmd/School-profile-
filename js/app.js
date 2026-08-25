@@ -1735,4 +1735,767 @@ function getFirebaseError(error) {
         "Something went wrong. Please try again."
       );
   }
+  /* =====================================================
+   STUDENTCONNECT — ADVANCED MESSAGING
+===================================================== */
+
+const messagesApp =
+  document.querySelector(".messages-app");
+
+const backToMessages =
+  document.getElementById("backToMessages");
+
+const chatConversation =
+  document.getElementById("chatConversation");
+
+const chatStatus =
+  document.getElementById("chatStatus");
+
+const chatAvatar =
+  document.getElementById("chatAvatar");
+
+const attachmentBtn =
+  document.getElementById("attachmentBtn");
+
+const fileInput =
+  document.getElementById("fileInput");
+
+const cameraBtn =
+  document.getElementById("cameraBtn");
+
+const voiceRecordBtn =
+  document.getElementById("voiceRecordBtn");
+
+const attachmentPreview =
+  document.getElementById("attachmentPreview");
+
+const messageSearch =
+  document.getElementById("messageSearch");
+
+const voiceCallBtn =
+  document.getElementById("voiceCallBtn");
+
+const videoCallBtn =
+  document.getElementById("videoCallBtn");
+
+let selectedFiles = [];
+
+
+/* =====================================================
+   OPEN CHAT
+===================================================== */
+
+const originalOpenChatWith = openChatWith;
+
+openChatWith = async function(uid) {
+
+  selectedChatUser = uid;
+
+  if (!currentUser) return;
+
+  if (messagesApp) {
+    messagesApp.classList.add("chat-open");
+  }
+
+  if (messageInput) {
+    messageInput.disabled = false;
+    messageInput.focus();
+  }
+
+  if (chatTitle) {
+    chatTitle.textContent = "💬 Student";
+  }
+
+  if (chatStatus) {
+    chatStatus.textContent = "Loading...";
+  }
+
+  if (chatAvatar) {
+    chatAvatar.textContent = "👤";
+  }
+
+  try {
+
+    const studentSnapshot =
+      await getDoc(
+        doc(
+          db,
+          "discoverableProfiles",
+          uid
+        )
+      );
+
+    if (studentSnapshot.exists()) {
+
+      const student =
+        studentSnapshot.data();
+
+      if (chatTitle) {
+
+        chatTitle.textContent =
+          student.displayName ||
+          "Student";
+      }
+
+      if (chatStatus) {
+
+        chatStatus.textContent =
+          "StudentConnect";
+      }
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Chat profile error:",
+      error
+    );
+
+  }
+
+  await loadMessages();
+};
+
+
+/* =====================================================
+   BACK TO USER LIST
+===================================================== */
+
+backToMessages?.addEventListener(
+  "click",
+  () => {
+
+    messagesApp?.classList.remove(
+      "chat-open"
+    );
+
+    selectedChatUser = null;
+
+    if (messageInput) {
+
+      messageInput.disabled = true;
+
+      messageInput.value = "";
+    }
+
+    if (chatTitle) {
+
+      chatTitle.textContent =
+        "Messages";
+    }
+
+    if (chatStatus) {
+
+      chatStatus.textContent =
+        "Select a student";
+    }
+
+  }
+);
+
+
+/* =====================================================
+   MESSAGE SEARCH
+===================================================== */
+
+messageSearch?.addEventListener(
+  "input",
+  () => {
+
+    const search =
+      messageSearch.value
+        .toLowerCase()
+        .trim();
+
+    document
+      .querySelectorAll(
+        "#chatUsers .user-item"
+      )
+      .forEach(item => {
+
+        const name =
+          item.textContent
+            .toLowerCase();
+
+        item.style.display =
+          name.includes(search)
+            ? "flex"
+            : "none";
+
+      });
+
+  }
+);
+
+
+/* =====================================================
+   FILE ATTACHMENTS
+===================================================== */
+
+attachmentBtn?.addEventListener(
+  "click",
+  () => {
+
+    fileInput?.click();
+
+  }
+);
+
+
+fileInput?.addEventListener(
+  "change",
+  () => {
+
+    selectedFiles =
+      Array.from(
+        fileInput.files || []
+      );
+
+    showAttachments();
+
+  }
+);
+
+
+function showAttachments() {
+
+  if (!attachmentPreview)
+    return;
+
+  attachmentPreview.innerHTML = "";
+
+  if (!selectedFiles.length) {
+
+    attachmentPreview.classList.add(
+      "hidden"
+    );
+
+    return;
+  }
+
+  attachmentPreview.classList.remove(
+    "hidden"
+  );
+
+  selectedFiles.forEach(
+    (file, index) => {
+
+      const item =
+        document.createElement(
+          "span"
+        );
+
+      item.className =
+        "attachment-item";
+
+      item.innerHTML = `
+
+        📎 ${escapeHTML(file.name)}
+
+        <button
+          type="button"
+          class="attachment-remove"
+          data-file-index="${index}"
+        >
+          ×
+        </button>
+
+      `;
+
+      attachmentPreview.appendChild(
+        item
+      );
+
+    }
+  );
+
+  document
+    .querySelectorAll(
+      "[data-file-index]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const index =
+            Number(
+              button.dataset.fileIndex
+            );
+
+          selectedFiles.splice(
+            index,
+            1
+          );
+
+          showAttachments();
+
+        }
+      );
+
+    });
+
+}
+
+
+/* =====================================================
+   CAMERA
+===================================================== */
+
+cameraBtn?.addEventListener(
+  "click",
+  () => {
+
+    if (!fileInput)
+      return;
+
+    fileInput.setAttribute(
+      "accept",
+      "image/*"
+    );
+
+    fileInput.setAttribute(
+      "capture",
+      "environment"
+    );
+
+    fileInput.click();
+
+    setTimeout(
+      () => {
+
+        fileInput.removeAttribute(
+          "capture"
+        );
+
+      },
+      1000
+    );
+
+  }
+);
+
+
+/* =====================================================
+   VOICE MESSAGE UI
+===================================================== */
+
+let recording = false;
+let mediaRecorder = null;
+let recordedChunks = [];
+
+
+voiceRecordBtn?.addEventListener(
+  "click",
+  async () => {
+
+    if (recording) {
+
+      mediaRecorder?.stop();
+
+      return;
+    }
+
+    try {
+
+      const stream =
+        await navigator.mediaDevices
+          .getUserMedia({
+            audio: true
+          });
+
+      recordedChunks = [];
+
+      mediaRecorder =
+        new MediaRecorder(
+          stream
+        );
+
+      mediaRecorder.ondataavailable =
+        event => {
+
+          if (event.data.size > 0) {
+
+            recordedChunks.push(
+              event.data
+            );
+
+          }
+
+        };
+
+
+      mediaRecorder.onstop =
+        () => {
+
+          stream
+            .getTracks()
+            .forEach(
+              track =>
+                track.stop()
+            );
+
+          recording = false;
+
+          voiceRecordBtn.textContent =
+            "🎤";
+
+          alert(
+            "Voice recording captured. Upload/storage for voice messages will be connected next."
+          );
+
+        };
+
+
+      mediaRecorder.start();
+
+      recording = true;
+
+      voiceRecordBtn.textContent =
+        "⏹️";
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Microphone permission is required for voice messages."
+      );
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   CALL BUTTONS
+===================================================== */
+
+voiceCallBtn?.addEventListener(
+  "click",
+  () => {
+
+    if (!selectedChatUser) {
+
+      alert(
+        "Select a student first."
+      );
+
+      return;
+    }
+
+    alert(
+      "Voice calling interface is ready. Real-time calling will be connected with WebRTC in the calling stage."
+    );
+
+  }
+);
+
+
+videoCallBtn?.addEventListener(
+  "click",
+  () => {
+
+    if (!selectedChatUser) {
+
+      alert(
+        "Select a student first."
+      );
+
+      return;
+    }
+
+    alert(
+      "Video calling interface is ready. Real-time video calling will be connected with WebRTC in the calling stage."
+    );
+
+  }
+);
+
+
+/* =====================================================
+   IMPROVED MESSAGE DISPLAY
+===================================================== */
+
+const oldLoadMessages =
+  loadMessages;
+
+loadMessages = async function() {
+
+  if (
+    !currentUser ||
+    !selectedChatUser ||
+    !chatMessages
+  ) {
+    return;
+  }
+
+  const chatId =
+    [
+      currentUser.uid,
+      selectedChatUser
+    ]
+      .sort()
+      .join("_");
+
+  try {
+
+    const q =
+      query(
+        collection(
+          db,
+          "chats",
+          chatId,
+          "messages"
+        ),
+        orderBy(
+          "createdAt",
+          "asc"
+        )
+      );
+
+    const snapshot =
+      await getDocs(q);
+
+    chatMessages.innerHTML = "";
+
+    if (snapshot.empty) {
+
+      chatMessages.innerHTML = `
+
+        <div class="empty-state">
+
+          <span>💬</span>
+
+          <h3>Start the conversation</h3>
+
+          <p>
+            Send a message to your fellow student.
+          </p>
+
+        </div>
+
+      `;
+
+      return;
+    }
+
+
+    snapshot.forEach(
+      messageDoc => {
+
+        const message =
+          messageDoc.data();
+
+        const bubble =
+          document.createElement(
+            "div"
+          );
+
+        bubble.className =
+          message.senderId ===
+          currentUser.uid
+            ? "message mine"
+            : "message";
+
+
+        const time =
+          message.createdAt?.toDate
+            ? message.createdAt
+                .toDate()
+                .toLocaleTimeString(
+                  [],
+                  {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  }
+                )
+            : "Now";
+
+
+        bubble.innerHTML = `
+
+          ${escapeHTML(
+            message.text || ""
+          )}
+
+          <span class="message-time">
+
+            ${time}
+
+            ${
+              message.senderId ===
+              currentUser.uid
+                ? '<span class="message-status">✓✓</span>'
+                : ""
+            }
+
+          </span>
+
+        `;
+
+
+        chatMessages.appendChild(
+          bubble
+        );
+
+      }
+    );
+
+
+    chatMessages.scrollTop =
+      chatMessages.scrollHeight;
+
+
+  } catch (error) {
+
+    console.error(
+      "Advanced message loading error:",
+      error
+    );
+
+    chatMessages.innerHTML = `
+
+      <div class="error-card">
+
+        Unable to load messages.
+
+      </div>
+
+    `;
+
+  }
+
+};
+
+
+/* =====================================================
+   SEND MESSAGE WITH ATTACHMENT NOTICE
+===================================================== */
+
+chatForm?.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+    if (
+      !currentUser ||
+      !selectedChatUser
+    ) {
+      return;
+    }
+
+    const text =
+      messageInput.value
+        .trim();
+
+
+    /*
+      For now attachments are selected
+      locally. Firebase Storage will be
+      connected when we add permanent
+      image/file storage.
+    */
+
+    if (
+      !text &&
+      !selectedFiles.length
+    ) {
+      return;
+    }
+
+
+    try {
+
+      const chatId =
+        [
+          currentUser.uid,
+          selectedChatUser
+        ]
+          .sort()
+          .join("_");
+
+
+      let messageText =
+        text;
+
+
+      if (selectedFiles.length) {
+
+        const names =
+          selectedFiles
+            .map(
+              file =>
+                `📎 ${file.name}`
+            )
+            .join("\n");
+
+
+        messageText =
+          text
+            ? `${text}\n${names}`
+            : names;
+
+      }
+
+
+      await addDoc(
+        collection(
+          db,
+          "chats",
+          chatId,
+          "messages"
+        ),
+        {
+
+          senderId:
+            currentUser.uid,
+
+          receiverId:
+            selectedChatUser,
+
+          text:
+            messageText,
+
+          hasAttachment:
+            selectedFiles.length > 0,
+
+          createdAt:
+            serverTimestamp()
+
+        }
+      );
+
+
+      messageInput.value = "";
+
+      selectedFiles = [];
+
+      if (fileInput) {
+
+        fileInput.value = "";
+
+      }
+
+      showAttachments();
+
+      await loadMessages();
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Could not send message."
+      );
+
+    }
+
+  }
+);
 }
