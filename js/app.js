@@ -1232,107 +1232,860 @@ async function loadChatUsers() {
    STEP 3
 ========================================================= */
 
+/* =========================
+   WHATSAPP-STYLE CHAT
+========================= */
+
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+
+
+/* =========================
+   OPEN CHAT
+========================= */
+
 async function openChatWith(uid) {
 
-  if (
-    !currentUser ||
-    !uid
-  ) {
-    return;
-  }
+  selectedChatUser = uid;
 
-  selectedChatUser =
-    uid;
+  if (!messageInput) return;
 
-  if (!messageInput) {
-    return;
-  }
+  messageInput.disabled = false;
 
-  messageInput.disabled =
-    false;
+  chatTitle.textContent = "💬 Chat";
 
-  if (chatTitle) {
-    chatTitle.textContent =
-      "💬 Chat";
-  }
-
-  if (chatMessages) {
-    chatMessages.innerHTML = `
-      <p class="muted">
-        Loading conversation...
-      </p>
-    `;
-  }
-
-  const chatId =
-    [
-      currentUser.uid,
-      uid
-    ]
-      .sort()
-      .join("_");
+  chatMessages.innerHTML =
+    "<p>Loading conversation...</p>";
 
   try {
 
-    await setDoc(
+    const student = await getDoc(
       doc(
         db,
-        "chats",
-        chatId
-      ),
-      {
-        participants: [
-          currentUser.uid,
-          uid
-        ],
-        updatedAt:
-          serverTimestamp()
-      },
-      {
-        merge: true
-      }
+        "discoverableProfiles",
+        uid
+      )
     );
 
-    const student =
-      await getDoc(
-        doc(
-          db,
-          "discoverableProfiles",
-          uid
-        )
-      );
+    if (student.exists()) {
 
-    if (
-      student.exists() &&
-      chatTitle
-    ) {
+      const data = student.data();
 
-      chatTitle.textContent =
-        `💬 ${
-          student.data().displayName ||
-          "Student"
-        }`;
+      chatTitle.innerHTML = `
+        <span class="chat-user-name">
+          💬 ${escapeHTML(
+            data.displayName || "Student"
+          )}
+        </span>
+
+        <div class="chat-actions">
+
+          <button
+            type="button"
+            class="chat-action-btn"
+            id="voiceCallBtn"
+            title="Voice call"
+          >
+            📞
+          </button>
+
+          <button
+            type="button"
+            class="chat-action-btn"
+            id="videoCallBtn"
+            title="Video call"
+          >
+            🎥
+          </button>
+
+          <button
+            type="button"
+            class="chat-action-btn"
+            id="chatMoreBtn"
+            title="More"
+          >
+            ⋮
+          </button>
+
+        </div>
+      `;
+
+      setupChatActions();
+
     }
-
-    await loadMessages();
 
   } catch (error) {
 
     console.error(
-      "Opening chat error:",
+      "Chat user error:",
+      error
+    );
+  }
+
+  await loadMessages();
+}
+
+
+/* =========================
+   CHAT ACTION BUTTONS
+========================= */
+
+function setupChatActions() {
+
+  const voiceCallBtn =
+    document.getElementById(
+      "voiceCallBtn"
+    );
+
+  const videoCallBtn =
+    document.getElementById(
+      "videoCallBtn"
+    );
+
+  const chatMoreBtn =
+    document.getElementById(
+      "chatMoreBtn"
+    );
+
+
+  voiceCallBtn?.addEventListener(
+    "click",
+    () => {
+
+      if (!selectedChatUser) return;
+
+      alert(
+        "Voice calling will be connected with secure calling technology in the next stage."
+      );
+
+    }
+  );
+
+
+  videoCallBtn?.addEventListener(
+    "click",
+    () => {
+
+      if (!selectedChatUser) return;
+
+      alert(
+        "Video calling will be connected with secure calling technology in the next stage."
+      );
+
+    }
+  );
+
+
+  chatMoreBtn?.addEventListener(
+    "click",
+    () => {
+
+      showChatMenu();
+
+    }
+  );
+}
+
+
+/* =========================
+   CHAT MENU
+========================= */
+
+function showChatMenu() {
+
+  const existing =
+    document.getElementById(
+      "chatMenu"
+    );
+
+  if (existing) {
+
+    existing.remove();
+
+    return;
+  }
+
+
+  const menu =
+    document.createElement(
+      "div"
+    );
+
+  menu.id = "chatMenu";
+
+  menu.className =
+    "chat-menu";
+
+
+  menu.innerHTML = `
+
+    <button
+      type="button"
+      id="reportChatBtn"
+    >
+      🚩 Report
+    </button>
+
+    <button
+      type="button"
+      id="blockChatBtn"
+    >
+      🚫 Block
+    </button>
+
+    <button
+      type="button"
+      id="closeChatMenu"
+    >
+      Cancel
+    </button>
+
+  `;
+
+
+  document.body.appendChild(
+    menu
+  );
+
+
+  document
+    .getElementById(
+      "closeChatMenu"
+    )
+    ?.addEventListener(
+      "click",
+      () => menu.remove()
+    );
+
+
+  document
+    .getElementById(
+      "reportChatBtn"
+    )
+    ?.addEventListener(
+      "click",
+      () => {
+
+        menu.remove();
+
+        alert(
+          "Thanks. The report system will be connected to the StudentConnect safety system."
+        );
+
+      }
+    );
+
+
+  document
+    .getElementById(
+      "blockChatBtn"
+    )
+    ?.addEventListener(
+      "click",
+      () => {
+
+        menu.remove();
+
+        alert(
+          "The block system will be connected to StudentConnect safety controls."
+        );
+
+      }
+    );
+}
+
+
+/* =========================
+   LOAD MESSAGES
+========================= */
+
+async function loadMessages() {
+
+  if (
+    !currentUser ||
+    !selectedChatUser
+  ) {
+    return;
+  }
+
+
+  const chatId =
+    [
+      currentUser.uid,
+      selectedChatUser
+    ]
+      .sort()
+      .join("_");
+
+
+  try {
+
+    const q =
+      query(
+        collection(
+          db,
+          "chats",
+          chatId,
+          "messages"
+        ),
+        orderBy(
+          "createdAt",
+          "asc"
+        )
+      );
+
+
+    const snapshot =
+      await getDocs(q);
+
+
+    chatMessages.innerHTML = "";
+
+
+    if (snapshot.empty) {
+
+      chatMessages.innerHTML = `
+
+        <div class="empty-state">
+
+          <span>💬</span>
+
+          <p>
+            No messages yet.
+            Say hello!
+          </p>
+
+        </div>
+
+      `;
+
+      return;
+    }
+
+
+    snapshot.forEach(
+      messageDoc => {
+
+        const message =
+          messageDoc.data();
+
+
+        const bubble =
+          document.createElement(
+            "div"
+          );
+
+
+        bubble.className =
+          message.senderId ===
+          currentUser.uid
+            ? "message mine"
+            : "message";
+
+
+        /* TEXT MESSAGE */
+
+        if (
+          message.type === "text" ||
+          !message.type
+        ) {
+
+          bubble.textContent =
+            message.text || "";
+
+        }
+
+
+        /* FILE MESSAGE */
+
+        else if (
+          message.type === "file"
+        ) {
+
+          bubble.innerHTML = `
+
+            <div class="file-message">
+
+              📎
+
+              <a
+                href="${escapeHTML(
+                  message.fileUrl || "#"
+                )}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                ${escapeHTML(
+                  message.fileName ||
+                  "Open attachment"
+                )}
+              </a>
+
+            </div>
+
+          `;
+
+        }
+
+
+        /* AUDIO MESSAGE */
+
+        else if (
+          message.type === "audio"
+        ) {
+
+          const audio =
+            document.createElement(
+              "audio"
+            );
+
+          audio.controls = true;
+
+          audio.src =
+            message.fileUrl || "";
+
+
+          bubble.appendChild(
+            audio
+          );
+
+        }
+
+
+        chatMessages.appendChild(
+          bubble
+        );
+
+      }
+    );
+
+
+    chatMessages.scrollTop =
+      chatMessages.scrollHeight;
+
+
+  } catch (error) {
+
+    console.error(
+      "Message loading error:",
       error
     );
 
-    if (chatMessages) {
 
-      chatMessages.innerHTML = `
-        <div class="error-card">
-          Unable to open this conversation.
-        </div>
-      `;
-    }
+    chatMessages.innerHTML =
+      `<p>
+        Unable to load messages.
+      </p>`;
   }
 }
+
+
+/* =========================
+   CREATE CHAT TOOLBAR
+========================= */
+
+function createChatToolbar() {
+
+  const form =
+    document.getElementById(
+      "chatForm"
+    );
+
+  if (!form) return;
+
+
+  if (
+    document.getElementById(
+      "chatToolbar"
+    )
+  ) {
+
+    return;
+  }
+
+
+  const toolbar =
+    document.createElement(
+      "div"
+    );
+
+
+  toolbar.id =
+    "chatToolbar";
+
+
+  toolbar.className =
+    "chat-toolbar";
+
+
+  toolbar.innerHTML = `
+
+    <button
+      type="button"
+      id="attachmentBtn"
+      title="Attach file"
+    >
+      📎
+    </button>
+
+    <input
+      type="file"
+      id="attachmentInput"
+      hidden
+    >
+
+    <button
+      type="button"
+      id="voiceRecordBtn"
+      title="Voice message"
+    >
+      🎤
+    </button>
+
+  `;
+
+
+  form.parentNode.insertBefore(
+    toolbar,
+    form
+  );
+
+
+  setupAttachment();
+
+  setupVoiceRecorder();
+}
+
+
+/* =========================
+   ATTACHMENT
+========================= */
+
+function setupAttachment() {
+
+  const button =
+    document.getElementById(
+      "attachmentBtn"
+    );
+
+  const input =
+    document.getElementById(
+      "attachmentInput"
+    );
+
+
+  button?.addEventListener(
+    "click",
+    () => {
+
+      input?.click();
+
+    }
+  );
+
+
+  input?.addEventListener(
+    "change",
+    async () => {
+
+      const file =
+        input.files?.[0];
+
+      if (!file) return;
+
+
+      /*
+        For now we show the selected
+        attachment.
+
+        Firebase Storage upload will
+        be connected after Storage is
+        enabled in your Firebase project.
+      */
+
+      alert(
+        `Selected: ${file.name}\n\nThe Firebase Storage upload will be connected in the next step.`
+      );
+
+
+      input.value = "";
+
+    }
+  );
+}
+
+
+/* =========================
+   VOICE RECORDER
+========================= */
+
+function setupVoiceRecorder() {
+
+  const button =
+    document.getElementById(
+      "voiceRecordBtn"
+    );
+
+
+  if (!button) return;
+
+
+  button.addEventListener(
+    "click",
+    async () => {
+
+      if (isRecording) {
+
+        stopVoiceRecording();
+
+        return;
+      }
+
+
+      try {
+
+        const stream =
+          await navigator.mediaDevices
+            .getUserMedia({
+              audio: true
+            });
+
+
+        audioChunks = [];
+
+
+        mediaRecorder =
+          new MediaRecorder(
+            stream
+          );
+
+
+        mediaRecorder.addEventListener(
+          "dataavailable",
+          event => {
+
+            if (
+              event.data.size > 0
+            ) {
+
+              audioChunks.push(
+                event.data
+              );
+
+            }
+
+          }
+        );
+
+
+        mediaRecorder.addEventListener(
+          "stop",
+          () => {
+
+            stream
+              .getTracks()
+              .forEach(
+                track =>
+                  track.stop()
+              );
+
+
+            const audioBlob =
+              new Blob(
+                audioChunks,
+                {
+                  type:
+                    "audio/webm"
+                }
+              );
+
+
+            const audioUrl =
+              URL.createObjectURL(
+                audioBlob
+              );
+
+
+            const audio =
+              document.createElement(
+                "audio"
+              );
+
+
+            audio.controls =
+              true;
+
+            audio.src =
+              audioUrl;
+
+
+            chatMessages.appendChild(
+              audio
+            );
+
+
+            chatMessages.scrollTop =
+              chatMessages.scrollHeight;
+
+
+            alert(
+              "Voice recording created. Firebase Storage upload will be connected in the next step."
+            );
+
+          }
+        );
+
+
+        mediaRecorder.start();
+
+        isRecording = true;
+
+        button.textContent =
+          "⏹️";
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Microphone permission was not granted."
+        );
+
+      }
+
+    }
+  );
+}
+
+
+/* =========================
+   STOP RECORDING
+========================= */
+
+function stopVoiceRecording() {
+
+  if (
+    mediaRecorder &&
+    mediaRecorder.state !==
+      "inactive"
+  ) {
+
+    mediaRecorder.stop();
+
+  }
+
+
+  isRecording = false;
+
+
+  const button =
+    document.getElementById(
+      "voiceRecordBtn"
+    );
+
+
+  if (button) {
+
+    button.textContent =
+      "🎤";
+
+  }
+}
+
+
+/* =========================
+   SEND TEXT MESSAGE
+========================= */
+
+chatForm?.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    if (
+      !currentUser ||
+      !selectedChatUser
+    ) {
+
+      return;
+    }
+
+
+    const text =
+      messageInput.value.trim();
+
+
+    if (!text) return;
+
+
+    const chatId =
+      [
+        currentUser.uid,
+        selectedChatUser
+      ]
+        .sort()
+        .join("_");
+
+
+    try {
+
+      await addDoc(
+        collection(
+          db,
+          "chats",
+          chatId,
+          "messages"
+        ),
+        {
+
+          senderId:
+            currentUser.uid,
+
+          receiverId:
+            selectedChatUser,
+
+          type:
+            "text",
+
+          text,
+
+          createdAt:
+            serverTimestamp()
+
+        }
+      );
+
+
+      messageInput.value = "";
+
+
+      await loadMessages();
+
+
+    } catch (error) {
+
+      console.error(error);
+
+
+      alert(
+        "Could not send message."
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================
+   INITIALIZE CHAT TOOLS
+========================= */
+
+createChatToolbar();
 
 
 /* =========================================================
