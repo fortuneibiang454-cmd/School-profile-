@@ -119,166 +119,189 @@ let currentUser = null;
 let currentCommunity = null;
 let selectedChatUser = null;
 
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+
 
 /* =========================================================
    AUTH SWITCH
 ========================================================= */
 
-switchAuth?.addEventListener(
-  "click",
-  () => {
+switchAuth?.addEventListener("click", () => {
 
-    signupMode = !signupMode;
+  signupMode = !signupMode;
 
-    if (authMessage) {
-      authMessage.textContent = "";
-    }
+  if (authMessage) {
+    authMessage.textContent = "";
+  }
 
-    if (signupMode) {
+  if (signupMode) {
 
-      loginForm?.classList.add("hidden");
+    loginForm?.classList.add("hidden");
+    signupForm?.classList.remove("hidden");
 
-      signupForm?.classList.remove("hidden");
-
+    if (switchAuth) {
       switchAuth.textContent =
         "Already have an account? Login";
+    }
 
-    } else {
+  } else {
 
-      signupForm?.classList.add("hidden");
+    signupForm?.classList.add("hidden");
+    loginForm?.classList.remove("hidden");
 
-      loginForm?.classList.remove("hidden");
-
+    if (switchAuth) {
       switchAuth.textContent =
         "Create an account";
     }
   }
-);
+});
 
 
 /* =========================================================
    SIGN UP
 ========================================================= */
 
-signupForm?.addEventListener(
-  "submit",
-  async event => {
+signupForm?.addEventListener("submit", async event => {
 
-    event.preventDefault();
+  event.preventDefault();
+
+  if (authMessage) {
+    authMessage.textContent =
+      "Creating your account...";
+  }
+
+  const name =
+    document
+      .getElementById("signupName")
+      ?.value
+      .trim();
+
+  const email =
+    document
+      .getElementById("signupEmail")
+      ?.value
+      .trim();
+
+  const password =
+    document
+      .getElementById("signupPassword")
+      ?.value;
+
+  if (!name || !email || !password) {
 
     if (authMessage) {
       authMessage.textContent =
-        "Creating your account...";
+        "Please fill in all fields.";
     }
 
-    const name =
-      document
-        .getElementById("signupName")
-        .value
-        .trim();
+    return;
+  }
 
-    const email =
-      document
-        .getElementById("signupEmail")
-        .value
-        .trim();
+  try {
 
-    const password =
-      document
-        .getElementById("signupPassword")
-        .value;
-
-    try {
-
-      const result =
-        await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-
-      const user =
-        result.user;
-
-      await setDoc(
-        doc(db, "users", user.uid),
-        {
-          uid: user.uid,
-          displayName: name,
-          email: email,
-          profileComplete: false,
-          discoverable: false,
-          createdAt: serverTimestamp()
-        },
-        {
-          merge: true
-        }
+    const result =
+      await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
       );
 
-      window.location.href =
-        "profile.html";
+    const user =
+      result.user;
 
-    } catch (error) {
-
-      console.error(error);
-
-      if (authMessage) {
-        authMessage.textContent =
-          getFirebaseError(error);
+    await setDoc(
+      doc(db, "users", user.uid),
+      {
+        uid: user.uid,
+        displayName: name,
+        email: email,
+        profileComplete: false,
+        discoverable: false,
+        createdAt: serverTimestamp()
+      },
+      {
+        merge: true
       }
+    );
+
+    window.location.href =
+      "profile.html";
+
+  } catch (error) {
+
+    console.error(
+      "Signup error:",
+      error
+    );
+
+    if (authMessage) {
+      authMessage.textContent =
+        getFirebaseError(error);
     }
   }
-);
+});
 
 
 /* =========================================================
    LOGIN
 ========================================================= */
 
-loginForm?.addEventListener(
-  "submit",
-  async event => {
+loginForm?.addEventListener("submit", async event => {
 
-    event.preventDefault();
+  event.preventDefault();
+
+  if (authMessage) {
+    authMessage.textContent =
+      "Logging in...";
+  }
+
+  const email =
+    document
+      .getElementById("loginEmail")
+      ?.value
+      .trim();
+
+  const password =
+    document
+      .getElementById("loginPassword")
+      ?.value;
+
+  if (!email || !password) {
 
     if (authMessage) {
       authMessage.textContent =
-        "Logging in...";
+        "Please enter your email and password.";
     }
 
-    const email =
-      document
-        .getElementById("loginEmail")
-        .value
-        .trim();
+    return;
+  }
 
-    const password =
-      document
-        .getElementById("loginPassword")
-        .value;
+  try {
 
-    try {
+    await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-      await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+    window.location.href =
+      "dashboard.html";
 
-      window.location.href =
-        "dashboard.html";
+  } catch (error) {
 
-    } catch (error) {
+    console.error(
+      "Login error:",
+      error
+    );
 
-      console.error(error);
-
-      if (authMessage) {
-        authMessage.textContent =
-          getFirebaseError(error);
-      }
+    if (authMessage) {
+      authMessage.textContent =
+        getFirebaseError(error);
     }
   }
-);
+});
 
 
 /* =========================================================
@@ -293,29 +316,21 @@ onAuthStateChanged(
 
     if (!user) {
 
-      authScreen?.classList.remove(
-        "hidden"
-      );
-
-      app?.classList.add(
-        "hidden"
-      );
+      authScreen?.classList.remove("hidden");
+      app?.classList.add("hidden");
 
       return;
     }
 
-    authScreen?.classList.add(
-      "hidden"
-    );
-
-    app?.classList.remove(
-      "hidden"
-    );
+    authScreen?.classList.add("hidden");
+    app?.classList.remove("hidden");
 
     await loadProfile();
     await loadDiscoverStudents();
     await loadCommunities();
     await loadChatUsers();
+
+    createChatToolbar();
   }
 );
 
@@ -335,7 +350,10 @@ async function logout() {
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Logout error:",
+      error
+    );
   }
 }
 
@@ -444,12 +462,14 @@ async function loadProfile() {
       profileSnapshot.data();
 
     if (profileName) {
+
       profileName.textContent =
         data.displayName ||
         "Not set";
     }
 
     if (profileEmail) {
+
       profileEmail.textContent =
         data.email ||
         currentUser.email ||
@@ -457,18 +477,21 @@ async function loadProfile() {
     }
 
     if (profileLevel) {
+
       profileLevel.textContent =
         data.level ||
         "Not set";
     }
 
     if (profileSubject) {
+
       profileSubject.textContent =
         data.subject ||
         "Not set";
     }
 
     if (profileInterest) {
+
       profileInterest.textContent =
         data.interest ||
         "Not set";
@@ -607,7 +630,7 @@ async function loadDiscoverStudents() {
 
             <button
               class="primary-btn small-btn"
-              data-chat="${studentDoc.id}"
+              data-chat="${escapeHTML(studentDoc.id)}"
               type="button"
             >
               Message
@@ -616,9 +639,7 @@ async function loadDiscoverStudents() {
           </div>
         `;
 
-        discoverList.appendChild(
-          card
-        );
+        discoverList.appendChild(card);
       }
     );
 
@@ -644,10 +665,8 @@ async function loadDiscoverStudents() {
       `;
     }
 
-    document
-      .querySelectorAll(
-        "[data-chat]"
-      )
+    discoverList
+      .querySelectorAll("[data-chat]")
       .forEach(button => {
 
         button.addEventListener(
@@ -658,39 +677,7 @@ async function loadDiscoverStudents() {
               button.dataset.chat
             );
 
-            document
-              .querySelectorAll(".page")
-              .forEach(page =>
-                page.classList.remove(
-                  "active"
-                )
-              );
-
-            document
-              .getElementById(
-                "page-messages"
-              )
-              ?.classList.add(
-                "active"
-              );
-
-            document
-              .querySelectorAll(".nav-item")
-              .forEach(item =>
-                item.classList.remove(
-                  "active"
-                )
-              );
-
-            document
-              .querySelectorAll(
-                '.nav-item[data-page="messages"]'
-              )
-              .forEach(item =>
-                item.classList.add(
-                  "active"
-                )
-              );
+            showPage("messages");
           }
         );
       });
@@ -707,9 +694,56 @@ async function loadDiscoverStudents() {
       <div class="error-card">
         Unable to load students.
       </div>
-
     `;
   }
+}
+
+
+/* =========================================================
+   SHOW PAGE
+========================================================= */
+
+function showPage(page) {
+
+  document
+    .querySelectorAll(".page")
+    .forEach(section => {
+
+      section.classList.remove(
+        "active"
+      );
+    });
+
+  document
+    .getElementById(
+      `page-${page}`
+    )
+    ?.classList.add("active");
+
+  document
+    .querySelectorAll(".nav-item")
+    .forEach(item => {
+
+      item.classList.remove(
+        "active"
+      );
+    });
+
+  document
+    .querySelectorAll(
+      `.nav-item[data-page="${page}"]`
+    )
+    .forEach(item => {
+
+      item.classList.add(
+        "active"
+      );
+    });
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 }
 
 
@@ -783,13 +817,14 @@ async function loadCommunities() {
       card.className =
         "community-card";
 
+      const parts =
+        community.name.split(" ");
+
       const icon =
-        community.name.split(" ")[0];
+        parts.shift();
 
       const name =
-        community.name.substring(
-          community.name.indexOf(" ") + 1
-        );
+        parts.join(" ");
 
       card.innerHTML = `
 
@@ -811,7 +846,7 @@ async function loadCommunities() {
 
           <button
             class="primary-btn small-btn"
-            data-community="${community.id}"
+            data-community="${escapeHTML(community.id)}"
             type="button"
           >
             Open Community
@@ -820,16 +855,12 @@ async function loadCommunities() {
         </div>
       `;
 
-      communityList.appendChild(
-        card
-      );
+      communityList.appendChild(card);
     }
   );
 
-  document
-    .querySelectorAll(
-      "[data-community]"
-    )
+  communityList
+    .querySelectorAll("[data-community]")
     .forEach(button => {
 
       button.addEventListener(
@@ -867,11 +898,13 @@ async function openCommunity(id) {
   );
 
   if (communityTitle) {
+
     communityTitle.textContent =
       currentCommunity.name;
   }
 
   if (communityDescription) {
+
     communityDescription.textContent =
       currentCommunity.description;
   }
@@ -914,6 +947,10 @@ postButton?.addEventListener(
       return;
     }
 
+    if (!postInput) {
+      return;
+    }
+
     const text =
       postInput.value.trim();
 
@@ -927,6 +964,11 @@ postButton?.addEventListener(
     }
 
     if (!currentCommunity) {
+
+      alert(
+        "Please open a community first."
+      );
+
       return;
     }
 
@@ -957,7 +999,7 @@ postButton?.addEventListener(
         ),
         {
 
-          text,
+          text: text,
 
           uid:
             currentUser.uid,
@@ -980,15 +1022,19 @@ postButton?.addEventListener(
 
     } catch (error) {
 
-      console.error(error);
+      console.error(
+        "Post error:",
+        error
+      );
 
       alert(
         "Could not publish your post."
       );
 
-    }
+    } finally {
 
-    postButton.disabled = false;
+      postButton.disabled = false;
+    }
   }
 );
 
@@ -1100,14 +1146,16 @@ async function loadCommunityPosts(id) {
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Community posts error:",
+      error
+    );
 
     communityPosts.innerHTML = `
 
       <div class="error-card">
         Unable to load discussions.
       </div>
-
     `;
   }
 }
@@ -1115,7 +1163,6 @@ async function loadCommunityPosts(id) {
 
 /* =========================================================
    CHAT USERS
-   STEP 5
 ========================================================= */
 
 async function loadChatUsers() {
@@ -1229,90 +1276,91 @@ async function loadChatUsers() {
 
 /* =========================================================
    OPEN CHAT
-   STEP 3
 ========================================================= */
-
-/* =========================
-   WHATSAPP-STYLE CHAT
-========================= */
-
-let mediaRecorder = null;
-let audioChunks = [];
-let isRecording = false;
-
-
-/* =========================
-   OPEN CHAT
-========================= */
 
 async function openChatWith(uid) {
 
+  if (!currentUser || !uid) {
+    return;
+  }
+
   selectedChatUser = uid;
 
-  if (!messageInput) return;
+  if (messageInput) {
+    messageInput.disabled = false;
+  }
 
-  messageInput.disabled = false;
+  if (chatTitle) {
+    chatTitle.textContent =
+      "💬 Chat";
+  }
 
-  chatTitle.textContent = "💬 Chat";
-
-  chatMessages.innerHTML =
-    "<p>Loading conversation...</p>";
+  if (chatMessages) {
+    chatMessages.innerHTML =
+      "<p>Loading conversation...</p>";
+  }
 
   try {
 
-    const student = await getDoc(
-      doc(
-        db,
-        "discoverableProfiles",
-        uid
-      )
-    );
+    const student =
+      await getDoc(
+        doc(
+          db,
+          "discoverableProfiles",
+          uid
+        )
+      );
 
     if (student.exists()) {
 
-      const data = student.data();
+      const data =
+        student.data();
 
-      chatTitle.innerHTML = `
-        <span class="chat-user-name">
-          💬 ${escapeHTML(
-            data.displayName || "Student"
-          )}
-        </span>
+      if (chatTitle) {
 
-        <div class="chat-actions">
+        chatTitle.innerHTML = `
 
-          <button
-            type="button"
-            class="chat-action-btn"
-            id="voiceCallBtn"
-            title="Voice call"
-          >
-            📞
-          </button>
+          <span class="chat-user-name">
+            💬 ${escapeHTML(
+              data.displayName ||
+              "Student"
+            )}
+          </span>
 
-          <button
-            type="button"
-            class="chat-action-btn"
-            id="videoCallBtn"
-            title="Video call"
-          >
-            🎥
-          </button>
+          <div class="chat-actions">
 
-          <button
-            type="button"
-            class="chat-action-btn"
-            id="chatMoreBtn"
-            title="More"
-          >
-            ⋮
-          </button>
+            <button
+              type="button"
+              class="chat-action-btn"
+              id="voiceCallBtn"
+              title="Voice call"
+            >
+              📞
+            </button>
 
-        </div>
-      `;
+            <button
+              type="button"
+              class="chat-action-btn"
+              id="videoCallBtn"
+              title="Video call"
+            >
+              🎥
+            </button>
 
-      setupChatActions();
+            <button
+              type="button"
+              class="chat-action-btn"
+              id="chatMoreBtn"
+              title="More"
+            >
+              ⋮
+            </button>
 
+          </div>
+        `;
+
+        setupChatActions();
+      }
     }
 
   } catch (error) {
@@ -1327,9 +1375,9 @@ async function openChatWith(uid) {
 }
 
 
-/* =========================
+/* =========================================================
    CHAT ACTION BUTTONS
-========================= */
+========================================================= */
 
 function setupChatActions() {
 
@@ -1353,12 +1401,13 @@ function setupChatActions() {
     "click",
     () => {
 
-      if (!selectedChatUser) return;
+      if (!selectedChatUser) {
+        return;
+      }
 
       alert(
         "Voice calling will be connected with secure calling technology in the next stage."
       );
-
     }
   );
 
@@ -1367,30 +1416,27 @@ function setupChatActions() {
     "click",
     () => {
 
-      if (!selectedChatUser) return;
+      if (!selectedChatUser) {
+        return;
+      }
 
       alert(
         "Video calling will be connected with secure calling technology in the next stage."
       );
-
     }
   );
 
 
   chatMoreBtn?.addEventListener(
     "click",
-    () => {
-
-      showChatMenu();
-
-    }
+    showChatMenu
   );
 }
 
 
-/* =========================
+/* =========================================================
    CHAT MENU
-========================= */
+========================================================= */
 
 function showChatMenu() {
 
@@ -1406,17 +1452,16 @@ function showChatMenu() {
     return;
   }
 
-
   const menu =
     document.createElement(
       "div"
     );
 
-  menu.id = "chatMenu";
+  menu.id =
+    "chatMenu";
 
   menu.className =
     "chat-menu";
-
 
   menu.innerHTML = `
 
@@ -1440,9 +1485,7 @@ function showChatMenu() {
     >
       Cancel
     </button>
-
   `;
-
 
   document.body.appendChild(
     menu
@@ -1472,7 +1515,6 @@ function showChatMenu() {
         alert(
           "Thanks. The report system will be connected to the StudentConnect safety system."
         );
-
       }
     );
 
@@ -1490,607 +1532,29 @@ function showChatMenu() {
         alert(
           "The block system will be connected to StudentConnect safety controls."
         );
-
       }
     );
 }
 
 
-/* =========================
-   LOAD MESSAGES
-========================= */
+/* =========================================================
+   GET CHAT ID
+========================================================= */
 
-async function loadMessages() {
+function getChatId(uid1, uid2) {
 
-  if (
-    !currentUser ||
-    !selectedChatUser
-  ) {
-    return;
-  }
-
-
-  const chatId =
-    [
-      currentUser.uid,
-      selectedChatUser
-    ]
-      .sort()
-      .join("_");
-
-
-  try {
-
-    const q =
-      query(
-        collection(
-          db,
-          "chats",
-          chatId,
-          "messages"
-        ),
-        orderBy(
-          "createdAt",
-          "asc"
-        )
-      );
-
-
-    const snapshot =
-      await getDocs(q);
-
-
-    chatMessages.innerHTML = "";
-
-
-    if (snapshot.empty) {
-
-      chatMessages.innerHTML = `
-
-        <div class="empty-state">
-
-          <span>💬</span>
-
-          <p>
-            No messages yet.
-            Say hello!
-          </p>
-
-        </div>
-
-      `;
-
-      return;
-    }
-
-
-    snapshot.forEach(
-      messageDoc => {
-
-        const message =
-          messageDoc.data();
-
-
-        const bubble =
-          document.createElement(
-            "div"
-          );
-
-
-        bubble.className =
-          message.senderId ===
-          currentUser.uid
-            ? "message mine"
-            : "message";
-
-
-        /* TEXT MESSAGE */
-
-        if (
-          message.type === "text" ||
-          !message.type
-        ) {
-
-          bubble.textContent =
-            message.text || "";
-
-        }
-
-
-        /* FILE MESSAGE */
-
-        else if (
-          message.type === "file"
-        ) {
-
-          bubble.innerHTML = `
-
-            <div class="file-message">
-
-              📎
-
-              <a
-                href="${escapeHTML(
-                  message.fileUrl || "#"
-                )}"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                ${escapeHTML(
-                  message.fileName ||
-                  "Open attachment"
-                )}
-              </a>
-
-            </div>
-
-          `;
-
-        }
-
-
-        /* AUDIO MESSAGE */
-
-        else if (
-          message.type === "audio"
-        ) {
-
-          const audio =
-            document.createElement(
-              "audio"
-            );
-
-          audio.controls = true;
-
-          audio.src =
-            message.fileUrl || "";
-
-
-          bubble.appendChild(
-            audio
-          );
-
-        }
-
-
-        chatMessages.appendChild(
-          bubble
-        );
-
-      }
-    );
-
-
-    chatMessages.scrollTop =
-      chatMessages.scrollHeight;
-
-
-  } catch (error) {
-
-    console.error(
-      "Message loading error:",
-      error
-    );
-
-
-    chatMessages.innerHTML =
-      `<p>
-        Unable to load messages.
-      </p>`;
-  }
+  return [
+    uid1,
+    uid2
+  ]
+    .sort()
+    .join("_");
 }
-
-
-/* =========================
-   CREATE CHAT TOOLBAR
-========================= */
-
-function createChatToolbar() {
-
-  const form =
-    document.getElementById(
-      "chatForm"
-    );
-
-  if (!form) return;
-
-
-  if (
-    document.getElementById(
-      "chatToolbar"
-    )
-  ) {
-
-    return;
-  }
-
-
-  const toolbar =
-    document.createElement(
-      "div"
-    );
-
-
-  toolbar.id =
-    "chatToolbar";
-
-
-  toolbar.className =
-    "chat-toolbar";
-
-
-  toolbar.innerHTML = `
-
-    <button
-      type="button"
-      id="attachmentBtn"
-      title="Attach file"
-    >
-      📎
-    </button>
-
-    <input
-      type="file"
-      id="attachmentInput"
-      hidden
-    >
-
-    <button
-      type="button"
-      id="voiceRecordBtn"
-      title="Voice message"
-    >
-      🎤
-    </button>
-
-  `;
-
-
-  form.parentNode.insertBefore(
-    toolbar,
-    form
-  );
-
-
-  setupAttachment();
-
-  setupVoiceRecorder();
-}
-
-
-/* =========================
-   ATTACHMENT
-========================= */
-
-function setupAttachment() {
-
-  const button =
-    document.getElementById(
-      "attachmentBtn"
-    );
-
-  const input =
-    document.getElementById(
-      "attachmentInput"
-    );
-
-
-  button?.addEventListener(
-    "click",
-    () => {
-
-      input?.click();
-
-    }
-  );
-
-
-  input?.addEventListener(
-    "change",
-    async () => {
-
-      const file =
-        input.files?.[0];
-
-      if (!file) return;
-
-
-      /*
-        For now we show the selected
-        attachment.
-
-        Firebase Storage upload will
-        be connected after Storage is
-        enabled in your Firebase project.
-      */
-
-      alert(
-        `Selected: ${file.name}\n\nThe Firebase Storage upload will be connected in the next step.`
-      );
-
-
-      input.value = "";
-
-    }
-  );
-}
-
-
-/* =========================
-   VOICE RECORDER
-========================= */
-
-function setupVoiceRecorder() {
-
-  const button =
-    document.getElementById(
-      "voiceRecordBtn"
-    );
-
-
-  if (!button) return;
-
-
-  button.addEventListener(
-    "click",
-    async () => {
-
-      if (isRecording) {
-
-        stopVoiceRecording();
-
-        return;
-      }
-
-
-      try {
-
-        const stream =
-          await navigator.mediaDevices
-            .getUserMedia({
-              audio: true
-            });
-
-
-        audioChunks = [];
-
-
-        mediaRecorder =
-          new MediaRecorder(
-            stream
-          );
-
-
-        mediaRecorder.addEventListener(
-          "dataavailable",
-          event => {
-
-            if (
-              event.data.size > 0
-            ) {
-
-              audioChunks.push(
-                event.data
-              );
-
-            }
-
-          }
-        );
-
-
-        mediaRecorder.addEventListener(
-          "stop",
-          () => {
-
-            stream
-              .getTracks()
-              .forEach(
-                track =>
-                  track.stop()
-              );
-
-
-            const audioBlob =
-              new Blob(
-                audioChunks,
-                {
-                  type:
-                    "audio/webm"
-                }
-              );
-
-
-            const audioUrl =
-              URL.createObjectURL(
-                audioBlob
-              );
-
-
-            const audio =
-              document.createElement(
-                "audio"
-              );
-
-
-            audio.controls =
-              true;
-
-            audio.src =
-              audioUrl;
-
-
-            chatMessages.appendChild(
-              audio
-            );
-
-
-            chatMessages.scrollTop =
-              chatMessages.scrollHeight;
-
-
-            alert(
-              "Voice recording created. Firebase Storage upload will be connected in the next step."
-            );
-
-          }
-        );
-
-
-        mediaRecorder.start();
-
-        isRecording = true;
-
-        button.textContent =
-          "⏹️";
-
-
-      } catch (error) {
-
-        console.error(error);
-
-        alert(
-          "Microphone permission was not granted."
-        );
-
-      }
-
-    }
-  );
-}
-
-
-/* =========================
-   STOP RECORDING
-========================= */
-
-function stopVoiceRecording() {
-
-  if (
-    mediaRecorder &&
-    mediaRecorder.state !==
-      "inactive"
-  ) {
-
-    mediaRecorder.stop();
-
-  }
-
-
-  isRecording = false;
-
-
-  const button =
-    document.getElementById(
-      "voiceRecordBtn"
-    );
-
-
-  if (button) {
-
-    button.textContent =
-      "🎤";
-
-  }
-}
-
-
-/* =========================
-   SEND TEXT MESSAGE
-========================= */
-
-chatForm?.addEventListener(
-  "submit",
-  async event => {
-
-    event.preventDefault();
-
-
-    if (
-      !currentUser ||
-      !selectedChatUser
-    ) {
-
-      return;
-    }
-
-
-    const text =
-      messageInput.value.trim();
-
-
-    if (!text) return;
-
-
-    const chatId =
-      [
-        currentUser.uid,
-        selectedChatUser
-      ]
-        .sort()
-        .join("_");
-
-
-    try {
-
-      await addDoc(
-        collection(
-          db,
-          "chats",
-          chatId,
-          "messages"
-        ),
-        {
-
-          senderId:
-            currentUser.uid,
-
-          receiverId:
-            selectedChatUser,
-
-          type:
-            "text",
-
-          text,
-
-          createdAt:
-            serverTimestamp()
-
-        }
-      );
-
-
-      messageInput.value = "";
-
-
-      await loadMessages();
-
-
-    } catch (error) {
-
-      console.error(error);
-
-
-      alert(
-        "Could not send message."
-      );
-
-    }
-
-  }
-);
-
-
-/* =========================
-   INITIALIZE CHAT TOOLS
-========================= */
-
-createChatToolbar();
 
 
 /* =========================================================
    LOAD MESSAGES
-   STEP 4
+   ONLY ONE VERSION
 ========================================================= */
 
 async function loadMessages() {
@@ -2104,12 +1568,10 @@ async function loadMessages() {
   }
 
   const chatId =
-    [
+    getChatId(
       currentUser.uid,
       selectedChatUser
-    ]
-      .sort()
-      .join("_");
+    );
 
   chatMessages.innerHTML = `
     <p class="muted">
@@ -2174,8 +1636,106 @@ async function loadMessages() {
             ? "message mine"
             : "message";
 
-        bubble.textContent =
-          message.text || "";
+
+        /* TEXT */
+
+        if (
+          message.type === "text" ||
+          !message.type
+        ) {
+
+          bubble.textContent =
+            message.text || "";
+        }
+
+
+        /* FILE */
+
+        else if (
+          message.type === "file"
+        ) {
+
+          const fileMessage =
+            document.createElement(
+              "div"
+            );
+
+          fileMessage.className =
+            "file-message";
+
+          const icon =
+            document.createElement(
+              "span"
+            );
+
+          icon.textContent =
+            "📎 ";
+
+          const link =
+            document.createElement(
+              "a"
+            );
+
+          link.textContent =
+            message.fileName ||
+            "Open attachment";
+
+          link.href =
+            isSafeURL(
+              message.fileUrl
+            )
+              ? message.fileUrl
+              : "#";
+
+          link.target =
+            "_blank";
+
+          link.rel =
+            "noopener noreferrer";
+
+          fileMessage.appendChild(
+            icon
+          );
+
+          fileMessage.appendChild(
+            link
+          );
+
+          bubble.appendChild(
+            fileMessage
+          );
+        }
+
+
+        /* AUDIO */
+
+        else if (
+          message.type === "audio"
+        ) {
+
+          const audio =
+            document.createElement(
+              "audio"
+            );
+
+          audio.controls =
+            true;
+
+          if (
+            isSafeURL(
+              message.fileUrl
+            )
+          ) {
+
+            audio.src =
+              message.fileUrl;
+          }
+
+          bubble.appendChild(
+            audio
+          );
+        }
+
 
         chatMessages.appendChild(
           bubble
@@ -2203,167 +1763,224 @@ async function loadMessages() {
 
 
 /* =========================================================
-   SEND MESSAGE
+   CHAT TOOLBAR
 ========================================================= */
 
-chatForm?.addEventListener(
-  "submit",
-  async event => {
+function createChatToolbar() {
 
-    event.preventDefault();
+  const form =
+    document.getElementById(
+      "chatForm"
+    );
 
-    if (
-      !currentUser ||
-      !selectedChatUser
-    ) {
-      return;
+  if (!form) {
+    return;
+  }
+
+  if (
+    document.getElementById(
+      "chatToolbar"
+    )
+  ) {
+    return;
+  }
+
+  const toolbar =
+    document.createElement(
+      "div"
+    );
+
+  toolbar.id =
+    "chatToolbar";
+
+  toolbar.className =
+    "chat-toolbar";
+
+  toolbar.innerHTML = `
+
+    <button
+      type="button"
+      id="attachmentBtn"
+      title="Attach file"
+    >
+      📎
+    </button>
+
+    <input
+      type="file"
+      id="attachmentInput"
+      hidden
+    >
+
+    <button
+      type="button"
+      id="voiceRecordBtn"
+      title="Voice message"
+    >
+      🎤
+    </button>
+  `;
+
+  form.parentNode.insertBefore(
+    toolbar,
+    form
+  );
+
+  setupAttachment();
+  setupVoiceRecorder();
+}
+
+
+/* =========================================================
+   ATTACHMENT
+========================================================= */
+
+function setupAttachment() {
+
+  const button =
+    document.getElementById(
+      "attachmentBtn"
+    );
+
+  const input =
+    document.getElementById(
+      "attachmentInput"
+    );
+
+  button?.addEventListener(
+    "click",
+    () => {
+
+      input?.click();
+
     }
+  );
 
-    const text =
-      messageInput.value.trim();
 
-    if (!text) {
-      return;
-    }
+  input?.addEventListener(
+    "change",
+    async () => {
 
-    try {
+      const file =
+        input.files?.[0];
 
-      const chatId =
-        [
-          currentUser.uid,
-          selectedChatUser
-        ]
-          .sort()
-          .join("_");
-
-      await addDoc(
-        collection(
-          db,
-          "chats",
-          chatId,
-          "messages"
-        ),
-        {
-
-          senderId:
-            currentUser.uid,
-
-          receiverId:
-            selectedChatUser,
-
-          text,
-
-          createdAt:
-            serverTimestamp()
-        }
-      );
-
-      messageInput.value = "";
-
-      await loadMessages();
-
-    } catch (error) {
-
-      console.error(
-        "Send message error:",
-        error
-      );
+      if (!file) {
+        return;
+      }
 
       alert(
-        "Could not send message. Check your connection and try again."
+        `Selected: ${file.name}\n\nFirebase Storage upload will be connected in the next step.`
       );
+
+      input.value = "";
+
     }
-  }
-);
-
-
-/* =========================================================
-   AI ASSISTANT
-========================================================= */
-
-aiBtn?.addEventListener(
-  "click",
-  () => {
-
-    alert(
-      "The AI Study Assistant will be connected in the next stage."
-    );
-
-  }
-);
-
-
-/* =========================================================
-   SECURITY
-========================================================= */
-
-function escapeHTML(value) {
-
-  return String(value)
-
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
+  );
 }
 
 
 /* =========================================================
-   FIREBASE ERRORS
+   VOICE RECORDER
 ========================================================= */
 
-function getFirebaseError(error) {
+function setupVoiceRecorder() {
 
-  const code =
-    error?.code || "";
+  const button =
+    document.getElementById(
+      "voiceRecordBtn"
+    );
 
-  switch (code) {
-
-    case "auth/email-already-in-use":
-      return "This email already has an account.";
-
-    case "auth/invalid-email":
-      return "Please enter a valid email address.";
-
-    case "auth/weak-password":
-      return "Password must be at least 6 characters.";
-
-    case "auth/invalid-credential":
-      return "Incorrect email or password.";
-
-    case "auth/user-not-found":
-      return "No account was found with this email.";
-
-    case "auth/wrong-password":
-      return "Incorrect password.";
-
-    case "auth/network-request-failed":
-      return "Network connection problem. Check your internet and try again.";
-
-    default:
-      return (
-        error?.message ||
-        "Something went wrong. Please try again."
-      );
+  if (!button) {
+    return;
   }
-}
+
+  button.addEventListener(
+    "click",
+    async () => {
+
+      if (isRecording) {
+
+        stopVoiceRecording();
+
+        return;
+      }
+
+      if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
+
+        alert(
+          "Voice recording is not supported by this browser."
+        );
+
+        return;
+      }
+
+      try {
+
+        const stream =
+          await navigator.mediaDevices
+            .getUserMedia({
+              audio: true
+            });
+
+        audioChunks = [];
+
+        mediaRecorder =
+          new MediaRecorder(
+            stream
+          );
+
+
+        mediaRecorder.addEventListener(
+          "dataavailable",
+          event => {
+
+            if (
+              event.data.size > 0
+            ) {
+
+              audioChunks.push(
+                event.data
+              );
+            }
+          }
+        );
+
+
+        mediaRecorder.addEventListener(
+          "stop",
+          () => {
+
+            stream
+              .getTracks()
+              .forEach(
+                track =>
+                  track.stop()
+              );
+
+            const audioBlob =
+              new Blob(
+                audioChunks,
+                {
+                  type:
+                    "audio/webm"
+                }
+              );
+
+            const audioUrl =
+              URL.createObjectURL(
+                audioBlob
+              );
+
+            const audio =
+              document.createElement(
+                "audio"
+              );
+
+            audio.controls =
+              true;
+
+            audio.src =
+              audio
