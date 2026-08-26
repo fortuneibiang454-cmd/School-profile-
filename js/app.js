@@ -22,92 +22,56 @@ import {
 
 
 /* =========================================================
+   APP CHECK
+========================================================= */
+
+console.log("StudentConnect app.js loaded");
+console.log("Firebase Auth:", auth);
+console.log("Firebase Firestore:", db);
+
+
+/* =========================================================
    ELEMENTS
 ========================================================= */
 
-const authScreen =
-  document.getElementById("authScreen");
+const authScreen = document.getElementById("authScreen");
+const app = document.getElementById("app");
 
-const app =
-  document.getElementById("app");
+const loginForm = document.getElementById("loginForm");
+const signupForm = document.getElementById("signupForm");
+const switchAuth = document.getElementById("switchAuth");
+const authMessage = document.getElementById("authMessage");
 
-const loginForm =
-  document.getElementById("loginForm");
+const logoutBtn = document.getElementById("logoutBtn");
+const settingsLogout = document.getElementById("settingsLogout");
 
-const signupForm =
-  document.getElementById("signupForm");
+const discoverList = document.getElementById("discoverList");
 
-const switchAuth =
-  document.getElementById("switchAuth");
-
-const authMessage =
-  document.getElementById("authMessage");
-
-const logoutBtn =
-  document.getElementById("logoutBtn");
-
-const settingsLogout =
-  document.getElementById("settingsLogout");
-
-const discoverList =
-  document.getElementById("discoverList");
-
-const communityList =
-  document.getElementById("communityList");
-
-const communityView =
-  document.getElementById("communityView");
-
-const communityTitle =
-  document.getElementById("communityTitle");
-
+const communityList = document.getElementById("communityList");
+const communityView = document.getElementById("communityView");
+const communityTitle = document.getElementById("communityTitle");
 const communityDescription =
   document.getElementById("communityDescription");
-
 const backToCommunities =
   document.getElementById("backToCommunities");
 
-const postInput =
-  document.getElementById("postInput");
+const postInput = document.getElementById("postInput");
+const postButton = document.getElementById("postButton");
+const communityPosts = document.getElementById("communityPosts");
 
-const postButton =
-  document.getElementById("postButton");
+const chatUsers = document.getElementById("chatUsers");
+const chatTitle = document.getElementById("chatTitle");
+const chatMessages = document.getElementById("chatMessages");
+const chatForm = document.getElementById("chatForm");
+const messageInput = document.getElementById("messageInput");
 
-const communityPosts =
-  document.getElementById("communityPosts");
+const profileName = document.getElementById("profileName");
+const profileEmail = document.getElementById("profileEmail");
+const profileLevel = document.getElementById("profileLevel");
+const profileSubject = document.getElementById("profileSubject");
+const profileInterest = document.getElementById("profileInterest");
 
-const chatUsers =
-  document.getElementById("chatUsers");
-
-const chatTitle =
-  document.getElementById("chatTitle");
-
-const chatMessages =
-  document.getElementById("chatMessages");
-
-const chatForm =
-  document.getElementById("chatForm");
-
-const messageInput =
-  document.getElementById("messageInput");
-
-const profileName =
-  document.getElementById("profileName");
-
-const profileEmail =
-  document.getElementById("profileEmail");
-
-const profileLevel =
-  document.getElementById("profileLevel");
-
-const profileSubject =
-  document.getElementById("profileSubject");
-
-const profileInterest =
-  document.getElementById("profileInterest");
-
-const aiBtn =
-  document.getElementById("aiBtn");
+const aiBtn = document.getElementById("aiBtn");
 
 
 /* =========================================================
@@ -163,7 +127,7 @@ switchAuth?.addEventListener("click", () => {
    SIGN UP
 ========================================================= */
 
-signupForm?.addEventListener("submit", async event => {
+signupForm?.addEventListener("submit", async (event) => {
 
   event.preventDefault();
 
@@ -172,28 +136,34 @@ signupForm?.addEventListener("submit", async event => {
       "Creating your account...";
   }
 
-  const name =
-    document
-      .getElementById("signupName")
-      ?.value
-      .trim();
+  const nameInput =
+    document.getElementById("signupName");
 
-  const email =
-    document
-      .getElementById("signupEmail")
-      ?.value
-      .trim();
+  const emailInput =
+    document.getElementById("signupEmail");
 
-  const password =
-    document
-      .getElementById("signupPassword")
-      ?.value;
+  const passwordInput =
+    document.getElementById("signupPassword");
+
+  if (!nameInput || !emailInput || !passwordInput) {
+
+    if (authMessage) {
+      authMessage.textContent =
+        "Signup form is not connected correctly.";
+    }
+
+    return;
+  }
+
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
 
   if (!name || !email || !password) {
 
     if (authMessage) {
       authMessage.textContent =
-        "Please fill in all fields.";
+        "Please complete all fields.";
     }
 
     return;
@@ -208,8 +178,12 @@ signupForm?.addEventListener("submit", async event => {
         password
       );
 
-    const user =
-      result.user;
+    const user = result.user;
+
+    console.log(
+      "Account created:",
+      user.uid
+    );
 
     await setDoc(
       doc(db, "users", user.uid),
@@ -226,14 +200,23 @@ signupForm?.addEventListener("submit", async event => {
       }
     );
 
-    window.location.href =
-      "profile.html";
+    if (authMessage) {
+      authMessage.textContent =
+        "Account created successfully.";
+    }
+
+    window.location.href = "profile.html";
 
   } catch (error) {
 
     console.error(
-      "Signup error:",
+      "SIGNUP ERROR:",
       error
+    );
+
+    console.error(
+      "Firebase error code:",
+      error?.code
     );
 
     if (authMessage) {
@@ -248,25 +231,35 @@ signupForm?.addEventListener("submit", async event => {
    LOGIN
 ========================================================= */
 
-loginForm?.addEventListener("submit", async event => {
+loginForm?.addEventListener("submit", async (event) => {
 
   event.preventDefault();
 
-  if (authMessage) {
-    authMessage.textContent =
-      "Logging in...";
+  const emailInput =
+    document.getElementById("loginEmail");
+
+  const passwordInput =
+    document.getElementById("loginPassword");
+
+  if (!emailInput || !passwordInput) {
+
+    console.error(
+      "Login inputs were not found."
+    );
+
+    if (authMessage) {
+      authMessage.textContent =
+        "Login form is not connected correctly.";
+    }
+
+    return;
   }
 
   const email =
-    document
-      .getElementById("loginEmail")
-      ?.value
-      .trim();
+    emailInput.value.trim();
 
   const password =
-    document
-      .getElementById("loginPassword")
-      ?.value;
+    passwordInput.value;
 
   if (!email || !password) {
 
@@ -278,22 +271,55 @@ loginForm?.addEventListener("submit", async event => {
     return;
   }
 
+  if (authMessage) {
+    authMessage.textContent =
+      "Logging in...";
+  }
+
   try {
 
-    await signInWithEmailAndPassword(
-      auth,
-      email,
-      password
+    const result =
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+    console.log(
+      "LOGIN SUCCESS:",
+      result.user.uid
     );
 
-    window.location.href =
-      "dashboard.html";
+    if (authMessage) {
+      authMessage.textContent =
+        "Login successful. Opening dashboard...";
+    }
+
+    /*
+      Firebase has successfully authenticated
+      the user.
+
+      Redirect after a short delay so the user
+      can see the success message.
+    */
+
+    setTimeout(() => {
+
+      window.location.href =
+        "dashboard.html";
+
+    }, 500);
 
   } catch (error) {
 
     console.error(
-      "Login error:",
+      "LOGIN ERROR:",
       error
+    );
+
+    console.error(
+      "Firebase error code:",
+      error?.code
     );
 
     if (authMessage) {
@@ -310,7 +336,12 @@ loginForm?.addEventListener("submit", async event => {
 
 onAuthStateChanged(
   auth,
-  async user => {
+  async (user) => {
+
+    console.log(
+      "AUTH STATE:",
+      user ? user.uid : "No user"
+    );
 
     currentUser = user;
 
@@ -325,12 +356,20 @@ onAuthStateChanged(
     authScreen?.classList.add("hidden");
     app?.classList.remove("hidden");
 
-    await loadProfile();
-    await loadDiscoverStudents();
-    await loadCommunities();
-    await loadChatUsers();
+    try {
 
-    createChatToolbar();
+      await loadProfile();
+      await loadDiscoverStudents();
+      await loadCommunities();
+      await loadChatUsers();
+
+    } catch (error) {
+
+      console.error(
+        "App loading error:",
+        error
+      );
+    }
   }
 );
 
@@ -356,6 +395,7 @@ async function logout() {
     );
   }
 }
+
 
 logoutBtn?.addEventListener(
   "click",
@@ -390,6 +430,7 @@ document
             section.classList.remove(
               "active"
             );
+
           });
 
         document
@@ -399,6 +440,7 @@ document
             item.classList.remove(
               "active"
             );
+
           });
 
         const target =
@@ -427,9 +469,12 @@ document
             item.classList.add(
               "active"
             );
+
           });
+
       }
     );
+
   });
 
 
@@ -455,6 +500,10 @@ async function loadProfile() {
       );
 
     if (!profileSnapshot.exists()) {
+      console.log(
+        "No profile document found."
+      );
+
       return;
     }
 
@@ -462,14 +511,12 @@ async function loadProfile() {
       profileSnapshot.data();
 
     if (profileName) {
-
       profileName.textContent =
         data.displayName ||
         "Not set";
     }
 
     if (profileEmail) {
-
       profileEmail.textContent =
         data.email ||
         currentUser.email ||
@@ -477,21 +524,18 @@ async function loadProfile() {
     }
 
     if (profileLevel) {
-
       profileLevel.textContent =
         data.level ||
         "Not set";
     }
 
     if (profileSubject) {
-
       profileSubject.textContent =
         data.subject ||
         "Not set";
     }
 
     if (profileInterest) {
-
       profileInterest.textContent =
         data.interest ||
         "Not set";
@@ -630,7 +674,7 @@ async function loadDiscoverStudents() {
 
             <button
               class="primary-btn small-btn"
-              data-chat="${escapeHTML(studentDoc.id)}"
+              data-chat="${studentDoc.id}"
               type="button"
             >
               Message
@@ -639,7 +683,9 @@ async function loadDiscoverStudents() {
           </div>
         `;
 
-        discoverList.appendChild(card);
+        discoverList.appendChild(
+          card
+        );
       }
     );
 
@@ -665,8 +711,10 @@ async function loadDiscoverStudents() {
       `;
     }
 
-    discoverList
-      .querySelectorAll("[data-chat]")
+    document
+      .querySelectorAll(
+        "[data-chat]"
+      )
       .forEach(button => {
 
         button.addEventListener(
@@ -678,8 +726,10 @@ async function loadDiscoverStudents() {
             );
 
             showPage("messages");
+
           }
         );
+
       });
 
   } catch (error) {
@@ -694,13 +744,14 @@ async function loadDiscoverStudents() {
       <div class="error-card">
         Unable to load students.
       </div>
+
     `;
   }
 }
 
 
 /* =========================================================
-   SHOW PAGE
+   PAGE HELPER
 ========================================================= */
 
 function showPage(page) {
@@ -712,13 +763,8 @@ function showPage(page) {
       section.classList.remove(
         "active"
       );
-    });
 
-  document
-    .getElementById(
-      `page-${page}`
-    )
-    ?.classList.add("active");
+    });
 
   document
     .querySelectorAll(".nav-item")
@@ -727,7 +773,16 @@ function showPage(page) {
       item.classList.remove(
         "active"
       );
+
     });
+
+  document
+    .getElementById(
+      `page-${page}`
+    )
+    ?.classList.add(
+      "active"
+    );
 
   document
     .querySelectorAll(
@@ -738,12 +793,9 @@ function showPage(page) {
       item.classList.add(
         "active"
       );
+
     });
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
 }
 
 
@@ -817,14 +869,13 @@ async function loadCommunities() {
       card.className =
         "community-card";
 
-      const parts =
-        community.name.split(" ");
-
       const icon =
-        parts.shift();
+        community.name.split(" ")[0];
 
       const name =
-        parts.join(" ");
+        community.name.substring(
+          community.name.indexOf(" ") + 1
+        );
 
       card.innerHTML = `
 
@@ -846,7 +897,7 @@ async function loadCommunities() {
 
           <button
             class="primary-btn small-btn"
-            data-community="${escapeHTML(community.id)}"
+            data-community="${community.id}"
             type="button"
           >
             Open Community
@@ -855,12 +906,16 @@ async function loadCommunities() {
         </div>
       `;
 
-      communityList.appendChild(card);
+      communityList.appendChild(
+        card
+      );
     }
   );
 
-  communityList
-    .querySelectorAll("[data-community]")
+  document
+    .querySelectorAll(
+      "[data-community]"
+    )
     .forEach(button => {
 
       button.addEventListener(
@@ -873,6 +928,7 @@ async function loadCommunities() {
 
         }
       );
+
     });
 }
 
@@ -898,13 +954,11 @@ async function openCommunity(id) {
   );
 
   if (communityTitle) {
-
     communityTitle.textContent =
       currentCommunity.name;
   }
 
   if (communityDescription) {
-
     communityDescription.textContent =
       currentCommunity.description;
   }
@@ -926,6 +980,7 @@ backToCommunities?.addEventListener(
     );
 
     currentCommunity = null;
+
   }
 );
 
@@ -947,12 +1002,8 @@ postButton?.addEventListener(
       return;
     }
 
-    if (!postInput) {
-      return;
-    }
-
     const text =
-      postInput.value.trim();
+      postInput?.value.trim();
 
     if (!text) {
 
@@ -964,11 +1015,6 @@ postButton?.addEventListener(
     }
 
     if (!currentCommunity) {
-
-      alert(
-        "Please open a community first."
-      );
-
       return;
     }
 
@@ -999,7 +1045,7 @@ postButton?.addEventListener(
         ),
         {
 
-          text: text,
+          text,
 
           uid:
             currentUser.uid,
@@ -1011,976 +1057,12 @@ postButton?.addEventListener(
 
           createdAt:
             serverTimestamp()
+
         }
       );
 
-      postInput.value = "";
-
-      await loadCommunityPosts(
-        currentCommunity.id
-      );
-
-    } catch (error) {
-
-      console.error(
-        "Post error:",
-        error
-      );
-
-      alert(
-        "Could not publish your post."
-      );
-
-    } finally {
-
-      postButton.disabled = false;
-    }
-  }
-);
-
-
-async function loadCommunityPosts(id) {
-
-  if (!communityPosts) {
-    return;
-  }
-
-  communityPosts.innerHTML = `
-    <div class="loading-card">
-      Loading discussions...
-    </div>
-  `;
-
-  try {
-
-    const q =
-      query(
-        collection(
-          db,
-          "communities",
-          id,
-          "posts"
-        ),
-        orderBy(
-          "createdAt",
-          "desc"
-        )
-      );
-
-    const snapshot =
-      await getDocs(q);
-
-    communityPosts.innerHTML = "";
-
-    if (snapshot.empty) {
-
-      communityPosts.innerHTML = `
-
-        <div class="empty-state">
-
-          <span>💬</span>
-
-          <h3>
-            No discussions yet
-          </h3>
-
-          <p>
-            Be the first student
-            to start one!
-          </p>
-
-        </div>
-      `;
-
-      return;
-    }
-
-    snapshot.forEach(
-      postDoc => {
-
-        const post =
-          postDoc.data();
-
-        const article =
-          document.createElement(
-            "article"
-          );
-
-        article.className =
-          "post";
-
-        const date =
-          post.createdAt?.toDate
-            ? post.createdAt
-                .toDate()
-                .toLocaleString()
-            : "Just now";
-
-        article.innerHTML = `
-
-          <div class="post-meta">
-
-            👤 ${escapeHTML(
-              post.displayName ||
-              "Student"
-            )}
-
-            • ${escapeHTML(date)}
-
-          </div>
-
-          <div class="post-text">
-
-            ${escapeHTML(
-              post.text || ""
-            )}
-
-          </div>
-        `;
-
-        communityPosts.appendChild(
-          article
-        );
-      }
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Community posts error:",
-      error
-    );
-
-    communityPosts.innerHTML = `
-
-      <div class="error-card">
-        Unable to load discussions.
-      </div>
-    `;
-  }
-}
-
-
-/* =========================================================
-   CHAT USERS
-========================================================= */
-
-async function loadChatUsers() {
-
-  if (
-    !chatUsers ||
-    !currentUser
-  ) {
-    return;
-  }
-
-  chatUsers.innerHTML =
-    "Loading students...";
-
-  try {
-
-    const q =
-      query(
-        collection(
-          db,
-          "discoverableProfiles"
-        ),
-        where(
-          "discoverable",
-          "==",
-          true
-        )
-      );
-
-    const snapshot =
-      await getDocs(q);
-
-    chatUsers.innerHTML = "";
-
-    let count = 0;
-
-    snapshot.forEach(
-      studentDoc => {
-
-        if (
-          studentDoc.id ===
-          currentUser.uid
-        ) {
-          return;
-        }
-
-        const student =
-          studentDoc.data();
-
-        count++;
-
-        const button =
-          document.createElement(
-            "button"
-          );
-
-        button.className =
-          "user-item";
-
-        button.type =
-          "button";
-
-        button.textContent =
-          `👤 ${
-            student.displayName ||
-            "Student"
-          }`;
-
-        button.addEventListener(
-          "click",
-          async () => {
-
-            await openChatWith(
-              studentDoc.id
-            );
-
-          }
-        );
-
-        chatUsers.appendChild(
-          button
-        );
-      }
-    );
-
-    if (count === 0) {
-
-      chatUsers.innerHTML = `
-        <p class="muted">
-          No other discoverable
-          students yet.
-        </p>
-      `;
-    }
-
-  } catch (error) {
-
-    console.error(
-      "Chat users error:",
-      error
-    );
-
-    chatUsers.innerHTML = `
-      <p class="muted">
-        Unable to load students.
-      </p>
-    `;
-  }
-}
-
-
-/* =========================================================
-   OPEN CHAT
-========================================================= */
-
-async function openChatWith(uid) {
-
-  if (!currentUser || !uid) {
-    return;
-  }
-
-  selectedChatUser = uid;
-
-  if (messageInput) {
-    messageInput.disabled = false;
-  }
-
-  if (chatTitle) {
-    chatTitle.textContent =
-      "💬 Chat";
-  }
-
-  if (chatMessages) {
-    chatMessages.innerHTML =
-      "<p>Loading conversation...</p>";
-  }
-
-  try {
-
-    const student =
-      await getDoc(
-        doc(
-          db,
-          "discoverableProfiles",
-          uid
-        )
-      );
-
-    if (student.exists()) {
-
-      const data =
-        student.data();
-
-      if (chatTitle) {
-
-        chatTitle.innerHTML = `
-
-          <span class="chat-user-name">
-            💬 ${escapeHTML(
-              data.displayName ||
-              "Student"
-            )}
-          </span>
-
-          <div class="chat-actions">
-
-            <button
-              type="button"
-              class="chat-action-btn"
-              id="voiceCallBtn"
-              title="Voice call"
-            >
-              📞
-            </button>
-
-            <button
-              type="button"
-              class="chat-action-btn"
-              id="videoCallBtn"
-              title="Video call"
-            >
-              🎥
-            </button>
-
-            <button
-              type="button"
-              class="chat-action-btn"
-              id="chatMoreBtn"
-              title="More"
-            >
-              ⋮
-            </button>
-
-          </div>
-        `;
-
-        setupChatActions();
-      }
-    }
-
-  } catch (error) {
-
-    console.error(
-      "Chat user error:",
-      error
-    );
-  }
-
-  await loadMessages();
-}
-
-
-/* =========================================================
-   CHAT ACTION BUTTONS
-========================================================= */
-
-function setupChatActions() {
-
-  const voiceCallBtn =
-    document.getElementById(
-      "voiceCallBtn"
-    );
-
-  const videoCallBtn =
-    document.getElementById(
-      "videoCallBtn"
-    );
-
-  const chatMoreBtn =
-    document.getElementById(
-      "chatMoreBtn"
-    );
-
-
-  voiceCallBtn?.addEventListener(
-    "click",
-    () => {
-
-      if (!selectedChatUser) {
-        return;
+      if (postInput) {
+        postInput.value = "";
       }
 
-      alert(
-        "Voice calling will be connected with secure calling technology in the next stage."
-      );
-    }
-  );
-
-
-  videoCallBtn?.addEventListener(
-    "click",
-    () => {
-
-      if (!selectedChatUser) {
-        return;
-      }
-
-      alert(
-        "Video calling will be connected with secure calling technology in the next stage."
-      );
-    }
-  );
-
-
-  chatMoreBtn?.addEventListener(
-    "click",
-    showChatMenu
-  );
-}
-
-
-/* =========================================================
-   CHAT MENU
-========================================================= */
-
-function showChatMenu() {
-
-  const existing =
-    document.getElementById(
-      "chatMenu"
-    );
-
-  if (existing) {
-
-    existing.remove();
-
-    return;
-  }
-
-  const menu =
-    document.createElement(
-      "div"
-    );
-
-  menu.id =
-    "chatMenu";
-
-  menu.className =
-    "chat-menu";
-
-  menu.innerHTML = `
-
-    <button
-      type="button"
-      id="reportChatBtn"
-    >
-      🚩 Report
-    </button>
-
-    <button
-      type="button"
-      id="blockChatBtn"
-    >
-      🚫 Block
-    </button>
-
-    <button
-      type="button"
-      id="closeChatMenu"
-    >
-      Cancel
-    </button>
-  `;
-
-  document.body.appendChild(
-    menu
-  );
-
-
-  document
-    .getElementById(
-      "closeChatMenu"
-    )
-    ?.addEventListener(
-      "click",
-      () => menu.remove()
-    );
-
-
-  document
-    .getElementById(
-      "reportChatBtn"
-    )
-    ?.addEventListener(
-      "click",
-      () => {
-
-        menu.remove();
-
-        alert(
-          "Thanks. The report system will be connected to the StudentConnect safety system."
-        );
-      }
-    );
-
-
-  document
-    .getElementById(
-      "blockChatBtn"
-    )
-    ?.addEventListener(
-      "click",
-      () => {
-
-        menu.remove();
-
-        alert(
-          "The block system will be connected to StudentConnect safety controls."
-        );
-      }
-    );
-}
-
-
-/* =========================================================
-   GET CHAT ID
-========================================================= */
-
-function getChatId(uid1, uid2) {
-
-  return [
-    uid1,
-    uid2
-  ]
-    .sort()
-    .join("_");
-}
-
-
-/* =========================================================
-   LOAD MESSAGES
-   ONLY ONE VERSION
-========================================================= */
-
-async function loadMessages() {
-
-  if (
-    !currentUser ||
-    !selectedChatUser ||
-    !chatMessages
-  ) {
-    return;
-  }
-
-  const chatId =
-    getChatId(
-      currentUser.uid,
-      selectedChatUser
-    );
-
-  chatMessages.innerHTML = `
-    <p class="muted">
-      Loading messages...
-    </p>
-  `;
-
-  try {
-
-    const q =
-      query(
-        collection(
-          db,
-          "chats",
-          chatId,
-          "messages"
-        ),
-        orderBy(
-          "createdAt",
-          "asc"
-        )
-      );
-
-    const snapshot =
-      await getDocs(q);
-
-    chatMessages.innerHTML = "";
-
-    if (snapshot.empty) {
-
-      chatMessages.innerHTML = `
-
-        <div class="empty-state">
-
-          <span>💬</span>
-
-          <p>
-            No messages yet.
-            Say hello!
-          </p>
-
-        </div>
-      `;
-
-      return;
-    }
-
-    snapshot.forEach(
-      messageDoc => {
-
-        const message =
-          messageDoc.data();
-
-        const bubble =
-          document.createElement(
-            "div"
-          );
-
-        bubble.className =
-          message.senderId ===
-          currentUser.uid
-            ? "message mine"
-            : "message";
-
-
-        /* TEXT */
-
-        if (
-          message.type === "text" ||
-          !message.type
-        ) {
-
-          bubble.textContent =
-            message.text || "";
-        }
-
-
-        /* FILE */
-
-        else if (
-          message.type === "file"
-        ) {
-
-          const fileMessage =
-            document.createElement(
-              "div"
-            );
-
-          fileMessage.className =
-            "file-message";
-
-          const icon =
-            document.createElement(
-              "span"
-            );
-
-          icon.textContent =
-            "📎 ";
-
-          const link =
-            document.createElement(
-              "a"
-            );
-
-          link.textContent =
-            message.fileName ||
-            "Open attachment";
-
-          link.href =
-            isSafeURL(
-              message.fileUrl
-            )
-              ? message.fileUrl
-              : "#";
-
-          link.target =
-            "_blank";
-
-          link.rel =
-            "noopener noreferrer";
-
-          fileMessage.appendChild(
-            icon
-          );
-
-          fileMessage.appendChild(
-            link
-          );
-
-          bubble.appendChild(
-            fileMessage
-          );
-        }
-
-
-        /* AUDIO */
-
-        else if (
-          message.type === "audio"
-        ) {
-
-          const audio =
-            document.createElement(
-              "audio"
-            );
-
-          audio.controls =
-            true;
-
-          if (
-            isSafeURL(
-              message.fileUrl
-            )
-          ) {
-
-            audio.src =
-              message.fileUrl;
-          }
-
-          bubble.appendChild(
-            audio
-          );
-        }
-
-
-        chatMessages.appendChild(
-          bubble
-        );
-      }
-    );
-
-    chatMessages.scrollTop =
-      chatMessages.scrollHeight;
-
-  } catch (error) {
-
-    console.error(
-      "Message loading error:",
-      error
-    );
-
-    chatMessages.innerHTML = `
-      <div class="error-card">
-        Unable to load messages.
-      </div>
-    `;
-  }
-}
-
-
-/* =========================================================
-   CHAT TOOLBAR
-========================================================= */
-
-function createChatToolbar() {
-
-  const form =
-    document.getElementById(
-      "chatForm"
-    );
-
-  if (!form) {
-    return;
-  }
-
-  if (
-    document.getElementById(
-      "chatToolbar"
-    )
-  ) {
-    return;
-  }
-
-  const toolbar =
-    document.createElement(
-      "div"
-    );
-
-  toolbar.id =
-    "chatToolbar";
-
-  toolbar.className =
-    "chat-toolbar";
-
-  toolbar.innerHTML = `
-
-    <button
-      type="button"
-      id="attachmentBtn"
-      title="Attach file"
-    >
-      📎
-    </button>
-
-    <input
-      type="file"
-      id="attachmentInput"
-      hidden
-    >
-
-    <button
-      type="button"
-      id="voiceRecordBtn"
-      title="Voice message"
-    >
-      🎤
-    </button>
-  `;
-
-  form.parentNode.insertBefore(
-    toolbar,
-    form
-  );
-
-  setupAttachment();
-  setupVoiceRecorder();
-}
-
-
-/* =========================================================
-   ATTACHMENT
-========================================================= */
-
-function setupAttachment() {
-
-  const button =
-    document.getElementById(
-      "attachmentBtn"
-    );
-
-  const input =
-    document.getElementById(
-      "attachmentInput"
-    );
-
-  button?.addEventListener(
-    "click",
-    () => {
-
-      input?.click();
-
-    }
-  );
-
-
-  input?.addEventListener(
-    "change",
-    async () => {
-
-      const file =
-        input.files?.[0];
-
-      if (!file) {
-        return;
-      }
-
-      alert(
-        `Selected: ${file.name}\n\nFirebase Storage upload will be connected in the next step.`
-      );
-
-      input.value = "";
-
-    }
-  );
-}
-
-
-/* =========================================================
-   VOICE RECORDER
-========================================================= */
-
-function setupVoiceRecorder() {
-
-  const button =
-    document.getElementById(
-      "voiceRecordBtn"
-    );
-
-  if (!button) {
-    return;
-  }
-
-  button.addEventListener(
-    "click",
-    async () => {
-
-      if (isRecording) {
-
-        stopVoiceRecording();
-
-        return;
-      }
-
-      if (
-        !navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia
-      ) {
-
-        alert(
-          "Voice recording is not supported by this browser."
-        );
-
-        return;
-      }
-
-      try {
-
-        const stream =
-          await navigator.mediaDevices
-            .getUserMedia({
-              audio: true
-            });
-
-        audioChunks = [];
-
-        mediaRecorder =
-          new MediaRecorder(
-            stream
-          );
-
-
-        mediaRecorder.addEventListener(
-          "dataavailable",
-          event => {
-
-            if (
-              event.data.size > 0
-            ) {
-
-              audioChunks.push(
-                event.data
-              );
-            }
-          }
-        );
-
-
-        mediaRecorder.addEventListener(
-          "stop",
-          () => {
-
-            stream
-              .getTracks()
-              .forEach(
-                track =>
-                  track.stop()
-              );
-
-            const audioBlob =
-              new Blob(
-                audioChunks,
-                {
-                  type:
-                    "audio/webm"
-                }
-              );
-
-            const audioUrl =
-              URL.createObjectURL(
-                audioBlob
-              );
-
-            const audio =
-              document.createElement(
-                "audio"
-              );
-
-            audio.controls =
-              true;
-
-            audio.src =
-              audio
+      await
