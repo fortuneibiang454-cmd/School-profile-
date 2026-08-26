@@ -1,22 +1,13 @@
-/* =========================================================
-   STUDENTCONNECT - app.js
-   Clean Firebase Authentication + App
-========================================================= */
-
-import { initializeApp } from
-  "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import { auth, db, storage, app } from "./firebase.js";
 
 import {
-  getAuth,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut
-} from
-  "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
 
 import {
-  getFirestore,
   collection,
   doc,
   getDoc,
@@ -26,40 +17,48 @@ import {
   query,
   where,
   orderBy,
-  serverTimestamp
-} from
-  "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+  serverTimestamp,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/12.17.0/firebase-storage.js";
+
+import {
+  getAI,
+  getGenerativeModel,
+  GoogleAIBackend
+} from "https://www.gstatic.com/firebasejs/12.17.0/firebase-ai.js";
 
 
 /* =========================================================
-   FIREBASE
+   FIREBASE AI
 ========================================================= */
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBeBJ2fzqhq_yUMUxyq-OHMgI5eBG9t9po",
-  authDomain: "school-connect-11578.firebaseapp.com",
-  databaseURL:
-    "https://school-connect-11578-default-rtdb.firebaseio.com",
-  projectId: "school-connect-11578",
-  storageBucket:
-    "school-connect-11578.firebasestorage.app",
-  messagingSenderId: "85015597520",
-  appId:
-    "1:85015597520:web:6d1c895eade85026c4e9d5",
-  measurementId: "G-XQTW122JZ3"
-};
+let aiModel = null;
 
-const firebaseApp =
-  initializeApp(firebaseConfig);
+try {
 
-const auth =
-  getAuth(firebaseApp);
+  const ai = getAI(app, {
+    backend: new GoogleAIBackend()
+  });
 
-const db =
-  getFirestore(firebaseApp);
+  aiModel = getGenerativeModel(ai, {
+    model: "gemini-3.7-flash"
+  });
 
-console.log("StudentConnect app.js loaded");
-console.log("Firebase initialized successfully");
+  console.log("Firebase AI initialized");
+
+} catch (error) {
+
+  console.error(
+    "Firebase AI initialization error:",
+    error
+  );
+}
 
 
 /* =========================================================
@@ -69,7 +68,7 @@ console.log("Firebase initialized successfully");
 const authScreen =
   document.getElementById("authScreen");
 
-const app =
+const appElement =
   document.getElementById("app");
 
 const loginForm =
@@ -103,14 +102,10 @@ const communityTitle =
   document.getElementById("communityTitle");
 
 const communityDescription =
-  document.getElementById(
-    "communityDescription"
-  );
+  document.getElementById("communityDescription");
 
 const backToCommunities =
-  document.getElementById(
-    "backToCommunities"
-  );
+  document.getElementById("backToCommunities");
 
 const postInput =
   document.getElementById("postInput");
@@ -119,9 +114,7 @@ const postButton =
   document.getElementById("postButton");
 
 const communityPosts =
-  document.getElementById(
-    "communityPosts"
-  );
+  document.getElementById("communityPosts");
 
 const chatUsers =
   document.getElementById("chatUsers");
@@ -138,6 +131,18 @@ const chatForm =
 const messageInput =
   document.getElementById("messageInput");
 
+const attachmentBtn =
+  document.getElementById("attachmentBtn");
+
+const attachmentInput =
+  document.getElementById("attachmentInput");
+
+const voiceRecordBtn =
+  document.getElementById("voiceRecordBtn");
+
+const aiBtn =
+  document.getElementById("aiBtn");
+
 const profileName =
   document.getElementById("profileName");
 
@@ -148,79 +153,58 @@ const profileLevel =
   document.getElementById("profileLevel");
 
 const profileSubject =
-  document.getElementById(
-    "profileSubject"
-  );
+  document.getElementById("profileSubject");
 
 const profileInterest =
-  document.getElementById(
-    "profileInterest"
-  );
-
-const aiBtn =
-  document.getElementById("aiBtn");
+  document.getElementById("profileInterest");
 
 
 /* =========================================================
    STATE
 ========================================================= */
 
+let signupMode = false;
 let currentUser = null;
 let currentCommunity = null;
 let selectedChatUser = null;
-let signupMode = false;
+
+let unsubscribeMessages = null;
+
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
 
 
 /* =========================================================
-   AUTH SCREEN
+   AUTH SWITCH
 ========================================================= */
-
-function showLogin() {
-
-  signupMode = false;
-
-  loginForm?.classList.remove("hidden");
-  signupForm?.classList.add("hidden");
-
-  if (switchAuth) {
-    switchAuth.textContent =
-      "Create an account";
-  }
-
-  if (authMessage) {
-    authMessage.textContent = "";
-  }
-}
-
-
-function showSignup() {
-
-  signupMode = true;
-
-  loginForm?.classList.add("hidden");
-  signupForm?.classList.remove("hidden");
-
-  if (switchAuth) {
-    switchAuth.textContent =
-      "Already have an account? Login";
-  }
-
-  if (authMessage) {
-    authMessage.textContent = "";
-  }
-}
-
 
 switchAuth?.addEventListener(
   "click",
   () => {
 
-    if (signupMode) {
-      showLogin();
-    } else {
-      showSignup();
+    signupMode = !signupMode;
+
+    if (authMessage) {
+      authMessage.textContent = "";
     }
 
+    if (signupMode) {
+
+      loginForm?.classList.add("hidden");
+      signupForm?.classList.remove("hidden");
+
+      switchAuth.textContent =
+        "Already have an account? Login";
+
+    } else {
+
+      signupForm?.classList.add("hidden");
+      loginForm?.classList.remove("hidden");
+
+      switchAuth.textContent =
+        "Create an account";
+    }
   }
 );
 
@@ -235,79 +219,33 @@ signupForm?.addEventListener(
 
     event.preventDefault();
 
-    const nameInput =
-      document.getElementById(
-        "signupName"
-      );
-
-    const emailInput =
-      document.getElementById(
-        "signupEmail"
-      );
-
-    const passwordInput =
-      document.getElementById(
-        "signupPassword"
-      );
-
-    if (
-      !nameInput ||
-      !emailInput ||
-      !passwordInput
-    ) {
-
-      setAuthMessage(
-        "Signup form is not connected correctly."
-      );
-
-      return;
-    }
-
-
     const name =
-      nameInput.value.trim();
+      document
+        .getElementById("signupName")
+        ?.value
+        .trim();
 
     const email =
-      emailInput.value.trim();
+      document
+        .getElementById("signupEmail")
+        ?.value
+        .trim();
 
     const password =
-      passwordInput.value;
+      document
+        .getElementById("signupPassword")
+        ?.value;
 
+    if (!name || !email || !password) {
 
-    if (!name) {
-
-      setAuthMessage(
-        "Please enter your name."
-      );
-
-      return;
-    }
-
-
-    if (!email) {
-
-      setAuthMessage(
-        "Please enter your email."
-      );
+      authMessage.textContent =
+        "Please complete all fields.";
 
       return;
     }
 
-
-    if (password.length < 6) {
-
-      setAuthMessage(
-        "Password must be at least 6 characters."
-      );
-
-      return;
-    }
-
-
-    setAuthMessage(
-      "Creating your account..."
-    );
-
+    authMessage.textContent =
+      "Creating your account...";
 
     try {
 
@@ -318,27 +256,12 @@ signupForm?.addEventListener(
           password
         );
 
-
-      const user =
-        result.user;
-
-
-      console.log(
-        "ACCOUNT CREATED:",
-        user.uid
-      );
-
-
       await setDoc(
-        doc(
-          db,
-          "users",
-          user.uid
-        ),
+        doc(db, "users", result.user.uid),
         {
-          uid: user.uid,
+          uid: result.user.uid,
           displayName: name,
-          email: email,
+          email,
           profileComplete: false,
           discoverable: false,
           createdAt: serverTimestamp()
@@ -348,39 +271,22 @@ signupForm?.addEventListener(
         }
       );
 
+      authMessage.textContent =
+        "Account created successfully.";
 
-      setAuthMessage(
-        "Account created! Opening your profile..."
-      );
-
-
-      /*
-       * Firebase has already logged the user in.
-       * Give the profile page a moment to open.
-       */
-
-      setTimeout(
-        () => {
-          window.location.href =
-            "profile.html";
-        },
-        500
-      );
-
+      window.location.href =
+        "profile.html";
 
     } catch (error) {
 
       console.error(
-        "SIGNUP ERROR:",
+        "Signup error:",
         error
       );
 
-      setAuthMessage(
-        getFirebaseError(error)
-      );
-
+      authMessage.textContent =
+        getFirebaseError(error);
     }
-
   }
 );
 
@@ -395,102 +301,49 @@ loginForm?.addEventListener(
 
     event.preventDefault();
 
-
-    const emailInput =
-      document.getElementById(
-        "loginEmail"
-      );
-
-    const passwordInput =
-      document.getElementById(
-        "loginPassword"
-      );
-
-
-    if (
-      !emailInput ||
-      !passwordInput
-    ) {
-
-      setAuthMessage(
-        "Login form is not connected correctly."
-      );
-
-      return;
-    }
-
-
     const email =
-      emailInput.value.trim();
+      document
+        .getElementById("loginEmail")
+        ?.value
+        .trim();
 
     const password =
-      passwordInput.value;
+      document
+        .getElementById("loginPassword")
+        ?.value;
 
+    if (!email || !password) {
 
-    if (!email) {
-
-      setAuthMessage(
-        "Please enter your email."
-      );
-
-      return;
-    }
-
-
-    if (!password) {
-
-      setAuthMessage(
-        "Please enter your password."
-      );
+      authMessage.textContent =
+        "Please enter your email and password.";
 
       return;
     }
 
-
-    setAuthMessage(
-      "Logging in..."
-    );
-
+    authMessage.textContent =
+      "Logging in...";
 
     try {
 
-      const result =
-        await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-
-
-      console.log(
-        "LOGIN SUCCESS:",
-        result.user.uid
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
       );
 
-
-      setAuthMessage(
-        "Login successful! Loading StudentConnect..."
-      );
-
-
-      /*
-       * DO NOT redirect here.
-       * Firebase auth state will handle it.
-       */
+      authMessage.textContent =
+        "Login successful!";
 
     } catch (error) {
 
       console.error(
-        "LOGIN ERROR:",
+        "Login error:",
         error
       );
 
-      setAuthMessage(
-        getFirebaseError(error)
-      );
-
+      authMessage.textContent =
+        getFirebaseError(error);
     }
-
   }
 );
 
@@ -503,16 +356,7 @@ onAuthStateChanged(
   auth,
   async user => {
 
-    console.log(
-      "AUTH STATE:",
-      user
-        ? user.email
-        : "NOT LOGGED IN"
-    );
-
-
     currentUser = user;
-
 
     if (!user) {
 
@@ -520,66 +364,39 @@ onAuthStateChanged(
         "hidden"
       );
 
-      app?.classList.add(
+      appElement?.classList.add(
         "hidden"
       );
 
+      stopRealtimeMessages();
+
       return;
     }
-
-
-    /*
-     * USER IS LOGGED IN
-     */
 
     authScreen?.classList.add(
       "hidden"
     );
 
-    app?.classList.remove(
+    appElement?.classList.remove(
       "hidden"
     );
-
 
     try {
 
       await loadProfile();
-
       await loadDiscoverStudents();
-
       await loadCommunities();
-
       await loadChatUsers();
-
-      console.log(
-        "StudentConnect loaded successfully."
-      );
 
     } catch (error) {
 
       console.error(
-        "APP LOAD ERROR:",
+        "Application loading error:",
         error
       );
-
     }
-
   }
 );
-
-
-/* =========================================================
-   AUTH MESSAGE
-========================================================= */
-
-function setAuthMessage(message) {
-
-  if (authMessage) {
-    authMessage.textContent =
-      message;
-  }
-
-}
 
 
 /* =========================================================
@@ -590,23 +407,21 @@ async function logout() {
 
   try {
 
+    stopRealtimeMessages();
+
     await signOut(auth);
 
-    console.log(
-      "User logged out"
-    );
+    window.location.href =
+      "index.html";
 
   } catch (error) {
 
     console.error(
-      "LOGOUT ERROR:",
+      "Logout error:",
       error
     );
-
   }
-
 }
-
 
 logoutBtn?.addEventListener(
   "click",
@@ -620,19 +435,87 @@ settingsLogout?.addEventListener(
 
 
 /* =========================================================
+   NAVIGATION
+========================================================= */
+
+document
+  .querySelectorAll("[data-page]")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        showPage(
+          button.dataset.page
+        );
+
+      }
+    );
+
+  });
+
+
+function showPage(page) {
+
+  document
+    .querySelectorAll(".page")
+    .forEach(section => {
+
+      section.classList.remove(
+        "active"
+      );
+
+    });
+
+  document
+    .querySelectorAll(".nav-item")
+    .forEach(item => {
+
+      item.classList.remove(
+        "active"
+      );
+
+    });
+
+  document
+    .getElementById(
+      `page-${page}`
+    )
+    ?.classList.add(
+      "active"
+    );
+
+  document
+    .querySelectorAll(
+      `.nav-item[data-page="${page}"]`
+    )
+    .forEach(item => {
+
+      item.classList.add(
+        "active"
+      );
+
+    });
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+
+/* =========================================================
    PROFILE
 ========================================================= */
 
 async function loadProfile() {
 
-  if (!currentUser) {
-    return;
-  }
-
+  if (!currentUser) return;
 
   try {
 
-    const profileSnapshot =
+    const snapshot =
       await getDoc(
         doc(
           db,
@@ -641,77 +524,48 @@ async function loadProfile() {
         )
       );
 
-
-    if (!profileSnapshot.exists()) {
-
-      console.log(
-        "No user profile found."
-      );
-
-      if (profileEmail) {
-        profileEmail.textContent =
-          currentUser.email || "";
-      }
-
+    if (!snapshot.exists()) {
       return;
     }
 
-
     const data =
-      profileSnapshot.data();
-
+      snapshot.data();
 
     if (profileName) {
-
       profileName.textContent =
         data.displayName ||
         "Not set";
-
     }
 
-
     if (profileEmail) {
-
       profileEmail.textContent =
         data.email ||
         currentUser.email ||
         "";
-
     }
 
-
     if (profileLevel) {
-
       profileLevel.textContent =
         data.level ||
         "Not set";
-
     }
 
-
     if (profileSubject) {
-
       profileSubject.textContent =
         data.subject ||
         "Not set";
-
     }
 
-
     if (profileInterest) {
-
       profileInterest.textContent =
         data.interest ||
         "Not set";
-
     }
-
 
     const welcome =
       document.getElementById(
         "welcomeMessage"
       );
-
 
     if (
       welcome &&
@@ -720,18 +574,15 @@ async function loadProfile() {
 
       welcome.textContent =
         `Welcome, ${data.displayName} 👋`;
-
     }
 
   } catch (error) {
 
     console.error(
-      "PROFILE ERROR:",
+      "Profile error:",
       error
     );
-
   }
-
 }
 
 
@@ -748,13 +599,10 @@ async function loadDiscoverStudents() {
     return;
   }
 
-
-  discoverList.innerHTML = `
-    <div class="loading-card">
+  discoverList.innerHTML =
+    `<div class="loading-card">
       Loading students...
-    </div>
-  `;
-
+    </div>`;
 
   try {
 
@@ -771,16 +619,12 @@ async function loadDiscoverStudents() {
         )
       );
 
-
     const snapshot =
       await getDocs(q);
 
-
     discoverList.innerHTML = "";
 
-
     let count = 0;
-
 
     snapshot.forEach(
       studentDoc => {
@@ -792,23 +636,18 @@ async function loadDiscoverStudents() {
           return;
         }
 
-
         const student =
           studentDoc.data();
 
-
         count++;
-
 
         const card =
           document.createElement(
             "article"
           );
 
-
         card.className =
           "student-card";
-
 
         card.innerHTML = `
 
@@ -864,36 +703,25 @@ async function loadDiscoverStudents() {
           </div>
         `;
 
-
         discoverList.appendChild(
           card
         );
-
       }
     );
-
 
     if (count === 0) {
 
       discoverList.innerHTML = `
-
         <div class="empty-state large">
-
           <span>🌍</span>
-
-          <h3>
-            No other students yet
-          </h3>
-
+          <h3>No other discoverable students yet</h3>
           <p>
-            Discoverable students will appear here.
+            Students who choose to be discoverable
+            will appear here.
           </p>
-
         </div>
       `;
-
     }
-
 
     document
       .querySelectorAll(
@@ -909,107 +737,27 @@ async function loadDiscoverStudents() {
               button.dataset.chat
             );
 
-            showPage("messages");
-
+            showPage(
+              "messages"
+            );
           }
         );
 
       });
 
-
   } catch (error) {
 
     console.error(
-      "DISCOVER ERROR:",
+      "Discover error:",
       error
     );
 
-
-    discoverList.innerHTML = `
-      <div class="error-card">
+    discoverList.innerHTML =
+      `<div class="error-card">
         Unable to load students.
-      </div>
-    `;
-
+      </div>`;
   }
-
 }
-
-
-/* =========================================================
-   PAGE NAVIGATION
-========================================================= */
-
-function showPage(page) {
-
-  document
-    .querySelectorAll(".page")
-    .forEach(section => {
-
-      section.classList.remove(
-        "active"
-      );
-
-    });
-
-
-  document
-    .querySelectorAll(".nav-item")
-    .forEach(item => {
-
-      item.classList.remove(
-        "active"
-      );
-
-    });
-
-
-  document
-    .getElementById(
-      `page-${page}`
-    )
-    ?.classList.add(
-      "active"
-    );
-
-
-  document
-    .querySelectorAll(
-      `.nav-item[data-page="${page}"]`
-    )
-    .forEach(item => {
-
-      item.classList.add(
-        "active"
-      );
-
-    });
-
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
-
-}
-
-
-document
-  .querySelectorAll("[data-page]")
-  .forEach(button => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        showPage(
-          button.dataset.page
-        );
-
-      }
-    );
-
-  });
 
 
 /* =========================================================
@@ -1043,7 +791,7 @@ const communities = [
     id: "exam-prep",
     name: "📝 Exam Prep",
     description:
-      "Share study strategies and prepare for exams."
+      "Share study strategies and prepare for exams together."
   },
 
   {
@@ -1057,7 +805,7 @@ const communities = [
     id: "sports-club",
     name: "⚽ Sports Club",
     description:
-      "Talk about sports and connect with students."
+      "Talk about sports and connect with students who enjoy them."
   }
 
 ];
@@ -1065,13 +813,9 @@ const communities = [
 
 async function loadCommunities() {
 
-  if (!communityList) {
-    return;
-  }
-
+  if (!communityList) return;
 
   communityList.innerHTML = "";
-
 
   communities.forEach(
     community => {
@@ -1081,22 +825,16 @@ async function loadCommunities() {
           "article"
         );
 
-
       card.className =
         "community-card";
 
-
-      const parts =
-        community.name.split(" ");
-
-
       const icon =
-        parts.shift();
-
+        community.name.split(" ")[0];
 
       const name =
-        parts.join(" ");
-
+        community.name.substring(
+          community.name.indexOf(" ") + 1
+        );
 
       card.innerHTML = `
 
@@ -1127,14 +865,11 @@ async function loadCommunities() {
         </div>
       `;
 
-
       communityList.appendChild(
         card
       );
-
     }
   );
-
 
   document
     .querySelectorAll(
@@ -1154,7 +889,6 @@ async function loadCommunities() {
       );
 
     });
-
 }
 
 
@@ -1166,11 +900,7 @@ async function openCommunity(id) {
         community.id === id
     );
 
-
-  if (!currentCommunity) {
-    return;
-  }
-
+  if (!currentCommunity) return;
 
   communityList?.classList.add(
     "hidden"
@@ -1180,25 +910,13 @@ async function openCommunity(id) {
     "hidden"
   );
 
+  communityTitle.textContent =
+    currentCommunity.name;
 
-  if (communityTitle) {
-
-    communityTitle.textContent =
-      currentCommunity.name;
-
-  }
-
-
-  if (communityDescription) {
-
-    communityDescription.textContent =
-      currentCommunity.description;
-
-  }
-
+  communityDescription.textContent =
+    currentCommunity.description;
 
   await loadCommunityPosts(id);
-
 }
 
 
@@ -1215,7 +933,6 @@ backToCommunities?.addEventListener(
     );
 
     currentCommunity = null;
-
   }
 );
 
@@ -1228,25 +945,16 @@ postButton?.addEventListener(
   "click",
   async () => {
 
-    if (
-      !currentUser ||
-      !currentCommunity
-    ) {
-      return;
-    }
-
+    if (!currentUser) return;
 
     const text =
       postInput?.value.trim();
 
+    if (!text) return;
 
-    if (!text) {
-      return;
-    }
-
+    if (!currentCommunity) return;
 
     postButton.disabled = true;
-
 
     try {
 
@@ -1259,12 +967,10 @@ postButton?.addEventListener(
           )
         );
 
-
-      const userData =
+      const data =
         profile.exists()
           ? profile.data()
           : {};
-
 
       await addDoc(
         collection(
@@ -1274,10 +980,10 @@ postButton?.addEventListener(
           "posts"
         ),
         {
-          text: text,
+          text,
           uid: currentUser.uid,
           displayName:
-            userData.displayName ||
+            data.displayName ||
             currentUser.email ||
             "Student",
           createdAt:
@@ -1285,21 +991,16 @@ postButton?.addEventListener(
         }
       );
 
-
-      if (postInput) {
-        postInput.value = "";
-      }
-
+      postInput.value = "";
 
       await loadCommunityPosts(
         currentCommunity.id
       );
 
-
     } catch (error) {
 
       console.error(
-        "POST ERROR:",
+        "Post error:",
         error
       );
 
@@ -1307,21 +1008,22 @@ postButton?.addEventListener(
         "Could not publish your post."
       );
 
+    } finally {
+
+      postButton.disabled = false;
     }
-
-
-    postButton.disabled = false;
-
   }
 );
 
 
 async function loadCommunityPosts(id) {
 
-  if (!communityPosts) {
-    return;
-  }
+  if (!communityPosts) return;
 
+  communityPosts.innerHTML =
+    `<div class="loading-card">
+      Loading discussions...
+    </div>`;
 
   try {
 
@@ -1339,27 +1041,22 @@ async function loadCommunityPosts(id) {
         )
       );
 
-
     const snapshot =
       await getDocs(q);
 
-
     communityPosts.innerHTML = "";
-
 
     if (snapshot.empty) {
 
-      communityPosts.innerHTML = `
-        <div class="empty-state">
+      communityPosts.innerHTML =
+        `<div class="empty-state">
           <span>💬</span>
           <h3>No discussions yet</h3>
           <p>Be the first student to start one!</p>
-        </div>
-      `;
+        </div>`;
 
       return;
     }
-
 
     snapshot.forEach(
       postDoc => {
@@ -1367,16 +1064,13 @@ async function loadCommunityPosts(id) {
         const post =
           postDoc.data();
 
-
         const article =
           document.createElement(
             "article"
           );
 
-
         article.className =
           "post";
-
 
         const date =
           post.createdAt?.toDate
@@ -1385,18 +1079,14 @@ async function loadCommunityPosts(id) {
                 .toLocaleString()
             : "Just now";
 
-
         article.innerHTML = `
 
           <div class="post-meta">
-
             👤 ${escapeHTML(
               post.displayName ||
               "Student"
             )}
-
             • ${escapeHTML(date)}
-
           </div>
 
           <div class="post-text">
@@ -1404,34 +1094,26 @@ async function loadCommunityPosts(id) {
               post.text || ""
             )}
           </div>
-
         `;
-
 
         communityPosts.appendChild(
           article
         );
-
       }
     );
-
 
   } catch (error) {
 
     console.error(
-      "COMMUNITY ERROR:",
+      "Community error:",
       error
     );
 
-
-    communityPosts.innerHTML = `
-      <div class="error-card">
+    communityPosts.innerHTML =
+      `<div class="error-card">
         Unable to load discussions.
-      </div>
-    `;
-
+      </div>`;
   }
-
 }
 
 
@@ -1444,10 +1126,10 @@ async function loadChatUsers() {
   if (
     !chatUsers ||
     !currentUser
-  ) {
-    return;
-  }
+  ) return;
 
+  chatUsers.innerHTML =
+    "Loading students...";
 
   try {
 
@@ -1464,16 +1146,12 @@ async function loadChatUsers() {
         )
       );
 
-
     const snapshot =
       await getDocs(q);
 
-
     chatUsers.innerHTML = "";
 
-
     let count = 0;
-
 
     snapshot.forEach(
       studentDoc => {
@@ -1485,34 +1163,27 @@ async function loadChatUsers() {
           return;
         }
 
-
         const student =
           studentDoc.data();
 
-
         count++;
-
 
         const button =
           document.createElement(
             "button"
           );
 
-
         button.className =
           "user-item";
 
-
         button.type =
           "button";
-
 
         button.textContent =
           `👤 ${
             student.displayName ||
             "Student"
           }`;
-
 
         button.addEventListener(
           "click",
@@ -1525,42 +1196,32 @@ async function loadChatUsers() {
           }
         );
 
-
         chatUsers.appendChild(
           button
         );
-
       }
     );
 
-
     if (count === 0) {
 
-      chatUsers.innerHTML = `
-        <p class="muted">
+      chatUsers.innerHTML =
+        `<p class="muted">
           No other discoverable students yet.
-        </p>
-      `;
-
+        </p>`;
     }
-
 
   } catch (error) {
 
     console.error(
-      "CHAT USERS ERROR:",
+      "Chat users error:",
       error
     );
 
-
-    chatUsers.innerHTML = `
-      <p class="muted">
+    chatUsers.innerHTML =
+      `<p class="muted">
         Unable to load students.
-      </p>
-    `;
-
+      </p>`;
   }
-
 }
 
 
@@ -1570,18 +1231,11 @@ async function loadChatUsers() {
 
 async function openChatWith(uid) {
 
-  if (!currentUser) {
-    return;
-  }
-
+  if (!currentUser) return;
 
   selectedChatUser = uid;
 
-
-  if (messageInput) {
-    messageInput.disabled = false;
-  }
-
+  messageInput.disabled = false;
 
   try {
 
@@ -1594,46 +1248,37 @@ async function openChatWith(uid) {
         )
       );
 
-
     if (student.exists()) {
 
       const data =
         student.data();
 
-
-      if (chatTitle) {
-
-        chatTitle.textContent =
-          `💬 ${
-            data.displayName ||
-            "Student"
-          }`;
-
-      }
-
+      chatTitle.innerHTML =
+        `💬 ${escapeHTML(
+          data.displayName ||
+          "Student"
+        )}`;
     }
-
 
   } catch (error) {
 
     console.error(
-      "OPEN CHAT ERROR:",
+      "Chat profile error:",
       error
     );
-
   }
 
-
-  await loadMessages();
-
+  startRealtimeMessages();
 }
 
 
 /* =========================================================
-   LOAD MESSAGES
+   REAL-TIME CHAT
 ========================================================= */
 
-async function loadMessages() {
+function startRealtimeMessages() {
+
+  stopRealtimeMessages();
 
   if (
     !currentUser ||
@@ -1643,7 +1288,6 @@ async function loadMessages() {
     return;
   }
 
-
   const chatId =
     [
       currentUser.uid,
@@ -1652,108 +1296,158 @@ async function loadMessages() {
       .sort()
       .join("_");
 
+  const q =
+    query(
+      collection(
+        db,
+        "chats",
+        chatId,
+        "messages"
+      ),
+      orderBy(
+        "createdAt",
+        "asc"
+      )
+    );
 
-  chatMessages.innerHTML = `
-    <p class="muted">
-      Loading messages...
-    </p>
-  `;
+  unsubscribeMessages =
+    onSnapshot(
+      q,
+      snapshot => {
 
+        chatMessages.innerHTML = "";
 
-  try {
+        if (snapshot.empty) {
 
-    const q =
-      query(
-        collection(
-          db,
-          "chats",
-          chatId,
-          "messages"
-        ),
-        orderBy(
-          "createdAt",
-          "asc"
-        )
-      );
+          chatMessages.innerHTML =
+            `<div class="empty-state">
+              <span>💬</span>
+              <p>No messages yet. Say hello!</p>
+            </div>`;
 
+          return;
+        }
 
-    const snapshot =
-      await getDocs(q);
+        snapshot.forEach(
+          messageDoc => {
 
+            renderMessage(
+              messageDoc.data()
+            );
 
-    chatMessages.innerHTML = "";
-
-
-    if (snapshot.empty) {
-
-      chatMessages.innerHTML = `
-        <div class="empty-state">
-          <span>💬</span>
-          <p>No messages yet. Say hello!</p>
-        </div>
-      `;
-
-      return;
-    }
-
-
-    snapshot.forEach(
-      messageDoc => {
-
-        const message =
-          messageDoc.data();
-
-
-        const bubble =
-          document.createElement(
-            "div"
-          );
-
-
-        bubble.className =
-          message.senderId ===
-          currentUser.uid
-            ? "message mine"
-            : "message";
-
-
-        bubble.textContent =
-          message.text || "";
-
-
-        chatMessages.appendChild(
-          bubble
+          }
         );
 
+        chatMessages.scrollTop =
+          chatMessages.scrollHeight;
+
+      },
+      error => {
+
+        console.error(
+          "Realtime chat error:",
+          error
+        );
+
+        chatMessages.innerHTML =
+          `<div class="error-card">
+            Unable to load messages.
+          </div>`;
       }
     );
+}
 
 
-    chatMessages.scrollTop =
-      chatMessages.scrollHeight;
+function stopRealtimeMessages() {
 
+  if (unsubscribeMessages) {
 
-  } catch (error) {
+    unsubscribeMessages();
 
-    console.error(
-      "LOAD MESSAGES ERROR:",
-      error
-    );
-
-
-    chatMessages.innerHTML = `
-      <div class="error-card">
-        Unable to load messages.
-      </div>
-    `;
-
+    unsubscribeMessages = null;
   }
-
 }
 
 
 /* =========================================================
-   SEND MESSAGE
+   RENDER MESSAGE
+========================================================= */
+
+function renderMessage(message) {
+
+  const bubble =
+    document.createElement(
+      "div"
+    );
+
+  bubble.className =
+    message.senderId ===
+    currentUser.uid
+      ? "message mine"
+      : "message";
+
+  if (
+    message.type === "file"
+  ) {
+
+    const link =
+      document.createElement(
+        "a"
+      );
+
+    link.href =
+      message.fileUrl;
+
+    link.target =
+      "_blank";
+
+    link.rel =
+      "noopener noreferrer";
+
+    link.textContent =
+      `📎 ${
+        message.fileName ||
+        "Open attachment"
+      }`;
+
+    bubble.appendChild(
+      link
+    );
+
+  } else if (
+    message.type === "audio"
+  ) {
+
+    const audio =
+      document.createElement(
+        "audio"
+      );
+
+    audio.controls = true;
+
+    audio.preload = "metadata";
+
+    audio.src =
+      message.fileUrl;
+
+    bubble.appendChild(
+      audio
+    );
+
+  } else {
+
+    bubble.textContent =
+      message.text || "";
+  }
+
+  chatMessages.appendChild(
+    bubble
+  );
+}
+
+
+/* =========================================================
+   SEND TEXT
 ========================================================= */
 
 chatForm?.addEventListener(
@@ -1762,24 +1456,17 @@ chatForm?.addEventListener(
 
     event.preventDefault();
 
-
     if (
       !currentUser ||
-      !selectedChatUser ||
-      !messageInput
+      !selectedChatUser
     ) {
       return;
     }
 
-
     const text =
       messageInput.value.trim();
 
-
-    if (!text) {
-      return;
-    }
-
+    if (!text) return;
 
     const chatId =
       [
@@ -1789,6 +1476,7 @@ chatForm?.addEventListener(
         .sort()
         .join("_");
 
+    messageInput.disabled = true;
 
     try {
 
@@ -1809,57 +1497,568 @@ chatForm?.addEventListener(
           type:
             "text",
 
-          text:
-            text,
+          text,
 
           createdAt:
             serverTimestamp()
         }
       );
 
-
       messageInput.value = "";
-
-
-      await loadMessages();
-
 
     } catch (error) {
 
       console.error(
-        "SEND MESSAGE ERROR:",
+        "Send message error:",
         error
       );
-
 
       alert(
         "Could not send message."
       );
 
-    }
+    } finally {
 
+      messageInput.disabled = false;
+      messageInput.focus();
+    }
   }
 );
 
 
 /* =========================================================
-   AI
+   FILE ATTACHMENT
+========================================================= */
+
+attachmentBtn?.addEventListener(
+  "click",
+  () => {
+
+    attachmentInput?.click();
+
+  }
+);
+
+
+attachmentInput?.addEventListener(
+  "change",
+  async () => {
+
+    const file =
+      attachmentInput.files?.[0];
+
+    if (!file) return;
+
+    if (
+      !currentUser ||
+      !selectedChatUser
+    ) {
+
+      alert(
+        "Select a student first."
+      );
+
+      attachmentInput.value = "";
+
+      return;
+    }
+
+    const maxSize =
+      10 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+
+      alert(
+        "File is too large. Maximum size is 10 MB."
+      );
+
+      attachmentInput.value = "";
+
+      return;
+    }
+
+    try {
+
+      attachmentBtn.disabled = true;
+
+      attachmentBtn.textContent =
+        "⏳";
+
+      const chatId =
+        [
+          currentUser.uid,
+          selectedChatUser
+        ]
+          .sort()
+          .join("_");
+
+      const safeName =
+        file.name.replace(
+          /[^a-zA-Z0-9._-]/g,
+          "_"
+        );
+
+      const path =
+        `chatFiles/${chatId}/${Date.now()}_${safeName}`;
+
+      const storageRef =
+        ref(
+          storage,
+          path
+        );
+
+      await uploadBytes(
+        storageRef,
+        file,
+        {
+          contentType:
+            file.type
+        }
+      );
+
+      const fileUrl =
+        await getDownloadURL(
+          storageRef
+        );
+
+      await addDoc(
+        collection(
+          db,
+          "chats",
+          chatId,
+          "messages"
+        ),
+        {
+          senderId:
+            currentUser.uid,
+
+          receiverId:
+            selectedChatUser,
+
+          type:
+            "file",
+
+          fileName:
+            file.name,
+
+          fileUrl,
+
+          fileType:
+            file.type || "application/octet-stream",
+
+          createdAt:
+            serverTimestamp()
+        }
+      );
+
+    } catch (error) {
+
+      console.error(
+        "File upload error:",
+        error
+      );
+
+      alert(
+        "Could not upload the file."
+      );
+
+    } finally {
+
+      attachmentBtn.disabled = false;
+
+      attachmentBtn.textContent =
+        "📎";
+
+      attachmentInput.value = "";
+    }
+  }
+);
+
+
+/* =========================================================
+   VOICE MESSAGE
+========================================================= */
+
+voiceRecordBtn?.addEventListener(
+  "click",
+  async () => {
+
+    if (isRecording) {
+
+      stopVoiceRecording();
+
+      return;
+    }
+
+    try {
+
+      const stream =
+        await navigator.mediaDevices
+          .getUserMedia({
+            audio: true
+          });
+
+      audioChunks = [];
+
+      mediaRecorder =
+        new MediaRecorder(
+          stream
+        );
+
+      mediaRecorder.addEventListener(
+        "dataavailable",
+        event => {
+
+          if (
+            event.data.size > 0
+          ) {
+
+            audioChunks.push(
+              event.data
+            );
+          }
+        }
+      );
+
+      mediaRecorder.addEventListener(
+        "stop",
+        async () => {
+
+          stream
+            .getTracks()
+            .forEach(
+              track =>
+                track.stop()
+            );
+
+          const blob =
+            new Blob(
+              audioChunks,
+              {
+                type:
+                  mediaRecorder.mimeType ||
+                  "audio/webm"
+              }
+            );
+
+          await uploadVoiceMessage(
+            blob
+          );
+        }
+      );
+
+      mediaRecorder.start();
+
+      isRecording = true;
+
+      voiceRecordBtn.textContent =
+        "⏹️";
+
+      voiceRecordBtn.title =
+        "Stop recording";
+
+    } catch (error) {
+
+      console.error(
+        "Microphone error:",
+        error
+      );
+
+      alert(
+        "Microphone permission was not granted."
+      );
+    }
+  }
+);
+
+
+function stopVoiceRecording() {
+
+  if (
+    mediaRecorder &&
+    mediaRecorder.state !==
+      "inactive"
+  ) {
+
+    mediaRecorder.stop();
+  }
+
+  isRecording = false;
+
+  voiceRecordBtn.textContent =
+    "🎙️";
+
+  voiceRecordBtn.title =
+    "Voice message";
+}
+
+
+async function uploadVoiceMessage(blob) {
+
+  if (
+    !currentUser ||
+    !selectedChatUser
+  ) {
+    return;
+  }
+
+  try {
+
+    voiceRecordBtn.disabled = true;
+
+    voiceRecordBtn.textContent =
+      "⏳";
+
+    const chatId =
+      [
+        currentUser.uid,
+        selectedChatUser
+      ]
+        .sort()
+        .join("_");
+
+    const path =
+      `chatAudio/${chatId}/${Date.now()}.webm`;
+
+    const storageRef =
+      ref(
+        storage,
+        path
+      );
+
+    await uploadBytes(
+      storageRef,
+      blob,
+      {
+        contentType:
+          "audio/webm"
+      }
+    );
+
+    const fileUrl =
+      await getDownloadURL(
+        storageRef
+      );
+
+    await addDoc(
+      collection(
+        db,
+        "chats",
+        chatId,
+        "messages"
+      ),
+      {
+        senderId:
+          currentUser.uid,
+
+        receiverId:
+          selectedChatUser,
+
+        type:
+          "audio",
+
+        fileUrl,
+
+        createdAt:
+          serverTimestamp()
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Voice upload error:",
+      error
+    );
+
+    alert(
+      "Could not send voice message."
+    );
+
+  } finally {
+
+    voiceRecordBtn.disabled = false;
+
+    voiceRecordBtn.textContent =
+      "🎙️";
+  }
+}
+
+
+/* =========================================================
+   AI STUDY ASSISTANT
 ========================================================= */
 
 aiBtn?.addEventListener(
   "click",
-  () => {
-
-    alert(
-      "The AI Study Assistant will be connected next."
-    );
-
-  }
+  openAIStudyAssistant
 );
 
 
+async function openAIStudyAssistant() {
+
+  if (!currentUser) {
+
+    alert(
+      "Please log in first."
+    );
+
+    return;
+  }
+
+  if (!aiModel) {
+
+    alert(
+      "AI Study Assistant is not configured yet."
+    );
+
+    return;
+  }
+
+  const question =
+    prompt(
+      "What would you like help understanding?"
+    );
+
+  if (!question?.trim()) {
+    return;
+  }
+
+  aiBtn.disabled = true;
+
+  const original =
+    aiBtn.innerHTML;
+
+  aiBtn.innerHTML =
+    "🤖 Thinking...";
+
+  try {
+
+    const promptText = `
+You are the StudentConnect AI Study Assistant.
+
+The user is a student.
+
+Help them understand the following educational question.
+
+Give a clear explanation suitable for a student.
+Break difficult ideas into simple steps.
+Do not simply give an answer when explaining a school concept.
+Encourage learning and understanding.
+
+Question:
+${question}
+`;
+
+    const result =
+      await aiModel.generateContent(
+        promptText
+      );
+
+    const answer =
+      result.response.text();
+
+    showAIAnswer(
+      question,
+      answer
+    );
+
+  } catch (error) {
+
+    console.error(
+      "AI error:",
+      error
+    );
+
+    alert(
+      "The AI assistant could not respond right now. Check your Firebase AI setup."
+    );
+
+  } finally {
+
+    aiBtn.disabled = false;
+
+    aiBtn.innerHTML =
+      original;
+  }
+}
+
+
+function showAIAnswer(
+  question,
+  answer
+) {
+
+  const existing =
+    document.getElementById(
+      "aiAnswerBox"
+    );
+
+  existing?.remove();
+
+  const box =
+    document.createElement(
+      "div"
+    );
+
+  box.id =
+    "aiAnswerBox";
+
+  box.className =
+    "ai-answer-box";
+
+  box.innerHTML = `
+
+    <div class="ai-answer-header">
+      🤖 StudentConnect AI
+    </div>
+
+    <p>
+      <strong>
+        Question:
+      </strong>
+      ${escapeHTML(question)}
+    </p>
+
+    <div class="ai-answer-text">
+      ${escapeHTML(answer)
+        .replaceAll(
+          "\n",
+          "<br>"
+        )}
+    </div>
+
+    <button
+      type="button"
+      class="primary-btn small-btn"
+      id="closeAIAnswer"
+    >
+      Close
+    </button>
+  `;
+
+  const studyPage =
+    document.getElementById(
+      "page-study"
+    );
+
+  studyPage?.appendChild(
+    box
+  );
+
+  document
+    .getElementById(
+      "closeAIAnswer"
+    )
+    ?.addEventListener(
+      "click",
+      () => box.remove()
+    );
+}
+
+
 /* =========================================================
-   HELPERS
+   SECURITY HELPERS
 ========================================================= */
 
 function escapeHTML(value) {
@@ -1890,27 +2089,21 @@ function escapeHTML(value) {
       "'",
       "&#039;"
     );
-
 }
 
 
 /* =========================================================
-   FIREBASE ERROR MESSAGES
+   FIREBASE ERROR HANDLER
 ========================================================= */
 
 function getFirebaseError(error) {
 
-  console.error(
-    "Firebase error:",
-    error?.code,
-    error?.message
-  );
-
-
-  switch (error?.code) {
+  switch (
+    error?.code
+  ) {
 
     case "auth/email-already-in-use":
-      return "This email already has an account. Try Login.";
+      return "This email already has an account.";
 
     case "auth/invalid-email":
       return "Please enter a valid email address.";
@@ -1928,29 +2121,12 @@ function getFirebaseError(error) {
       return "Incorrect password.";
 
     case "auth/network-request-failed":
-      return "Network error. Check your internet connection.";
-
-    case "auth/operation-not-allowed":
-      return "Email/password login is not enabled in Firebase.";
-
-    case "auth/configuration-not-found":
-      return "Firebase Authentication is not configured correctly.";
+      return "Network connection problem.";
 
     default:
       return (
         error?.message ||
         "Something went wrong. Please try again."
       );
-
   }
-
 }
-
-
-/* =========================================================
-   FINAL CHECK
-========================================================= */
-
-console.log(
-  "StudentConnect JavaScript is ready."
-);
