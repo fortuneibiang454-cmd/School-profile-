@@ -1,24 +1,22 @@
-
 /* =========================================================
-   STUDENTCONNECT - APP.JS
-   Corrected complete version
+   STUDENTCONNECT - app.js
+   Clean Firebase Authentication + App
 ========================================================= */
 
-
-/* =========================================================
-   FIREBASE
-========================================================= */
-
-import { auth, db } from "../firebase.js";
+import { initializeApp } from
+  "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
 import {
+  getAuth,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+} from
+  "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 import {
+  getFirestore,
   collection,
   doc,
   getDoc,
@@ -29,14 +27,39 @@ import {
   where,
   orderBy,
   serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+} from
+  "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
-console.log("=================================");
+/* =========================================================
+   FIREBASE
+========================================================= */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBeBJ2fzqhq_yUMUxyq-OHMgI5eBG9t9po",
+  authDomain: "school-connect-11578.firebaseapp.com",
+  databaseURL:
+    "https://school-connect-11578-default-rtdb.firebaseio.com",
+  projectId: "school-connect-11578",
+  storageBucket:
+    "school-connect-11578.firebasestorage.app",
+  messagingSenderId: "85015597520",
+  appId:
+    "1:85015597520:web:6d1c895eade85026c4e9d5",
+  measurementId: "G-XQTW122JZ3"
+};
+
+const firebaseApp =
+  initializeApp(firebaseConfig);
+
+const auth =
+  getAuth(firebaseApp);
+
+const db =
+  getFirestore(firebaseApp);
+
 console.log("StudentConnect app.js loaded");
-console.log("Firebase Auth:", auth);
-console.log("Firebase Firestore:", db);
-console.log("=================================");
+console.log("Firebase initialized successfully");
 
 
 /* =========================================================
@@ -80,10 +103,14 @@ const communityTitle =
   document.getElementById("communityTitle");
 
 const communityDescription =
-  document.getElementById("communityDescription");
+  document.getElementById(
+    "communityDescription"
+  );
 
 const backToCommunities =
-  document.getElementById("backToCommunities");
+  document.getElementById(
+    "backToCommunities"
+  );
 
 const postInput =
   document.getElementById("postInput");
@@ -92,7 +119,9 @@ const postButton =
   document.getElementById("postButton");
 
 const communityPosts =
-  document.getElementById("communityPosts");
+  document.getElementById(
+    "communityPosts"
+  );
 
 const chatUsers =
   document.getElementById("chatUsers");
@@ -119,10 +148,14 @@ const profileLevel =
   document.getElementById("profileLevel");
 
 const profileSubject =
-  document.getElementById("profileSubject");
+  document.getElementById(
+    "profileSubject"
+  );
 
 const profileInterest =
-  document.getElementById("profileInterest");
+  document.getElementById(
+    "profileInterest"
+  );
 
 const aiBtn =
   document.getElementById("aiBtn");
@@ -132,162 +165,169 @@ const aiBtn =
    STATE
 ========================================================= */
 
-let signupMode = false;
 let currentUser = null;
 let currentCommunity = null;
 let selectedChatUser = null;
-
-let mediaRecorder = null;
-let audioChunks = [];
-let isRecording = false;
+let signupMode = false;
 
 
 /* =========================================================
-   AUTH SWITCH
+   AUTH SCREEN
 ========================================================= */
 
-switchAuth?.addEventListener("click", () => {
+function showLogin() {
 
-  signupMode = !signupMode;
+  signupMode = false;
 
-  if (authMessage) {
-    authMessage.textContent = "";
-  }
+  loginForm?.classList.remove("hidden");
+  signupForm?.classList.add("hidden");
 
-  if (signupMode) {
-
-    loginForm?.classList.add("hidden");
-    signupForm?.classList.remove("hidden");
-
-    switchAuth.textContent =
-      "Already have an account? Login";
-
-  } else {
-
-    signupForm?.classList.add("hidden");
-    loginForm?.classList.remove("hidden");
-
+  if (switchAuth) {
     switchAuth.textContent =
       "Create an account";
   }
 
-});
+  if (authMessage) {
+    authMessage.textContent = "";
+  }
+}
+
+
+function showSignup() {
+
+  signupMode = true;
+
+  loginForm?.classList.add("hidden");
+  signupForm?.classList.remove("hidden");
+
+  if (switchAuth) {
+    switchAuth.textContent =
+      "Already have an account? Login";
+  }
+
+  if (authMessage) {
+    authMessage.textContent = "";
+  }
+}
+
+
+switchAuth?.addEventListener(
+  "click",
+  () => {
+
+    if (signupMode) {
+      showLogin();
+    } else {
+      showSignup();
+    }
+
+  }
+);
 
 
 /* =========================================================
    SIGN UP
 ========================================================= */
 
-signupForm?.addEventListener("submit", async (event) => {
+signupForm?.addEventListener(
+  "submit",
+  async event => {
 
-  event.preventDefault();
+    event.preventDefault();
 
-  console.log("Signup form submitted");
-
-  const nameInput =
-    document.getElementById("signupName");
-
-  const emailInput =
-    document.getElementById("signupEmail");
-
-  const passwordInput =
-    document.getElementById("signupPassword");
-
-
-  if (!nameInput || !emailInput || !passwordInput) {
-
-    if (authMessage) {
-      authMessage.textContent =
-        "Signup form is not connected correctly.";
-    }
-
-    console.error(
-      "Signup input elements missing."
-    );
-
-    return;
-  }
-
-
-  const name =
-    nameInput.value.trim();
-
-  const email =
-    emailInput.value.trim();
-
-  const password =
-    passwordInput.value;
-
-
-  if (!name) {
-
-    authMessage.textContent =
-      "Please enter your display name.";
-
-    return;
-  }
-
-
-  if (!email) {
-
-    authMessage.textContent =
-      "Please enter your email.";
-
-    return;
-  }
-
-
-  if (!password) {
-
-    authMessage.textContent =
-      "Please create a password.";
-
-    return;
-  }
-
-
-  if (password.length < 6) {
-
-    authMessage.textContent =
-      "Password must be at least 6 characters.";
-
-    return;
-  }
-
-
-  authMessage.textContent =
-    "Creating your account...";
-
-
-  try {
-
-    /*
-      Create Firebase Authentication account
-    */
-
-    const result =
-      await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
+    const nameInput =
+      document.getElementById(
+        "signupName"
       );
 
+    const emailInput =
+      document.getElementById(
+        "signupEmail"
+      );
 
-    const user =
-      result.user;
+    const passwordInput =
+      document.getElementById(
+        "signupPassword"
+      );
+
+    if (
+      !nameInput ||
+      !emailInput ||
+      !passwordInput
+    ) {
+
+      setAuthMessage(
+        "Signup form is not connected correctly."
+      );
+
+      return;
+    }
 
 
-    console.log(
-      "ACCOUNT CREATED:",
-      user.uid
+    const name =
+      nameInput.value.trim();
+
+    const email =
+      emailInput.value.trim();
+
+    const password =
+      passwordInput.value;
+
+
+    if (!name) {
+
+      setAuthMessage(
+        "Please enter your name."
+      );
+
+      return;
+    }
+
+
+    if (!email) {
+
+      setAuthMessage(
+        "Please enter your email."
+      );
+
+      return;
+    }
+
+
+    if (password.length < 6) {
+
+      setAuthMessage(
+        "Password must be at least 6 characters."
+      );
+
+      return;
+    }
+
+
+    setAuthMessage(
+      "Creating your account..."
     );
 
 
-    /*
-      Save basic profile
-    */
-
     try {
+
+      const result =
+        await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+
+      const user =
+        result.user;
+
+
+      console.log(
+        "ACCOUNT CREATED:",
+        user.uid
+      );
+
 
       await setDoc(
         doc(
@@ -296,194 +336,163 @@ signupForm?.addEventListener("submit", async (event) => {
           user.uid
         ),
         {
-
-          uid:
-            user.uid,
-
-          displayName:
-            name,
-
-          email:
-            email,
-
-          profileComplete:
-            false,
-
-          discoverable:
-            false,
-
-          createdAt:
-            serverTimestamp()
-
+          uid: user.uid,
+          displayName: name,
+          email: email,
+          profileComplete: false,
+          discoverable: false,
+          createdAt: serverTimestamp()
         },
         {
           merge: true
         }
       );
 
-    } catch (firestoreError) {
 
-      console.error(
-        "Profile save error:",
-        firestoreError
+      setAuthMessage(
+        "Account created! Opening your profile..."
       );
 
+
       /*
-        Do not prevent account creation
-        if Firestore temporarily fails.
-      */
-    }
+       * Firebase has already logged the user in.
+       * Give the profile page a moment to open.
+       */
+
+      setTimeout(
+        () => {
+          window.location.href =
+            "profile.html";
+        },
+        500
+      );
 
 
-    authMessage.textContent =
-      "Account created successfully!";
+    } catch (error) {
 
+      console.error(
+        "SIGNUP ERROR:",
+        error
+      );
 
-    /*
-      Firebase has already signed the user in.
-      Send them to the profile page.
-    */
-
-    setTimeout(() => {
-
-      window.location.href =
-        "profile.html";
-
-    }, 500);
-
-
-  } catch (error) {
-
-    console.error(
-      "SIGNUP ERROR:",
-      error
-    );
-
-    console.error(
-      "Firebase error code:",
-      error?.code
-    );
-
-    if (authMessage) {
-
-      authMessage.textContent =
-        getFirebaseError(error);
+      setAuthMessage(
+        getFirebaseError(error)
+      );
 
     }
 
   }
-
-});
+);
 
 
 /* =========================================================
    LOGIN
 ========================================================= */
 
-loginForm?.addEventListener("submit", async (event) => {
+loginForm?.addEventListener(
+  "submit",
+  async event => {
 
-  event.preventDefault();
-
-  console.log("Login form submitted");
-
-
-  const emailInput =
-    document.getElementById("loginEmail");
-
-  const passwordInput =
-    document.getElementById("loginPassword");
+    event.preventDefault();
 
 
-  if (!emailInput || !passwordInput) {
+    const emailInput =
+      document.getElementById(
+        "loginEmail"
+      );
 
-    authMessage.textContent =
-      "Login form is not connected correctly.";
-
-    console.error(
-      "Login input elements missing."
-    );
-
-    return;
-  }
-
-
-  const email =
-    emailInput.value.trim();
-
-  const password =
-    passwordInput.value;
-
-
-  if (!email) {
-
-    authMessage.textContent =
-      "Please enter your email.";
-
-    return;
-  }
-
-
-  if (!password) {
-
-    authMessage.textContent =
-      "Please enter your password.";
-
-    return;
-  }
-
-
-  authMessage.textContent =
-    "Logging in...";
-
-
-  try {
-
-    const result =
-      await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
+    const passwordInput =
+      document.getElementById(
+        "loginPassword"
       );
 
 
-    console.log(
-      "LOGIN SUCCESS:",
-      result.user.uid
+    if (
+      !emailInput ||
+      !passwordInput
+    ) {
+
+      setAuthMessage(
+        "Login form is not connected correctly."
+      );
+
+      return;
+    }
+
+
+    const email =
+      emailInput.value.trim();
+
+    const password =
+      passwordInput.value;
+
+
+    if (!email) {
+
+      setAuthMessage(
+        "Please enter your email."
+      );
+
+      return;
+    }
+
+
+    if (!password) {
+
+      setAuthMessage(
+        "Please enter your password."
+      );
+
+      return;
+    }
+
+
+    setAuthMessage(
+      "Logging in..."
     );
 
 
-    authMessage.textContent =
-      "Login successful!";
+    try {
+
+      const result =
+        await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
 
 
-    /*
-      IMPORTANT:
-      We do NOT redirect here.
-
-      onAuthStateChanged() handles
-      showing the application.
-    */
+      console.log(
+        "LOGIN SUCCESS:",
+        result.user.uid
+      );
 
 
-  } catch (error) {
-
-    console.error(
-      "LOGIN ERROR:",
-      error
-    );
-
-    console.error(
-      "Firebase error code:",
-      error?.code
-    );
+      setAuthMessage(
+        "Login successful! Loading StudentConnect..."
+      );
 
 
-    authMessage.textContent =
-      getFirebaseError(error);
+      /*
+       * DO NOT redirect here.
+       * Firebase auth state will handle it.
+       */
+
+    } catch (error) {
+
+      console.error(
+        "LOGIN ERROR:",
+        error
+      );
+
+      setAuthMessage(
+        getFirebaseError(error)
+      );
+
+    }
 
   }
-
-});
+);
 
 
 /* =========================================================
@@ -492,18 +501,17 @@ loginForm?.addEventListener("submit", async (event) => {
 
 onAuthStateChanged(
   auth,
-  async (user) => {
+  async user => {
 
     console.log(
       "AUTH STATE:",
       user
-        ? user.uid
-        : "NO USER"
+        ? user.email
+        : "NOT LOGGED IN"
     );
 
 
-    currentUser =
-      user;
+    currentUser = user;
 
 
     if (!user) {
@@ -521,8 +529,8 @@ onAuthStateChanged(
 
 
     /*
-      User is authenticated.
-    */
+     * USER IS LOGGED IN
+     */
 
     authScreen?.classList.add(
       "hidden"
@@ -543,10 +551,14 @@ onAuthStateChanged(
 
       await loadChatUsers();
 
+      console.log(
+        "StudentConnect loaded successfully."
+      );
+
     } catch (error) {
 
       console.error(
-        "Application loading error:",
+        "APP LOAD ERROR:",
         error
       );
 
@@ -554,6 +566,20 @@ onAuthStateChanged(
 
   }
 );
+
+
+/* =========================================================
+   AUTH MESSAGE
+========================================================= */
+
+function setAuthMessage(message) {
+
+  if (authMessage) {
+    authMessage.textContent =
+      message;
+  }
+
+}
 
 
 /* =========================================================
@@ -567,18 +593,13 @@ async function logout() {
     await signOut(auth);
 
     console.log(
-      "User logged out."
+      "User logged out"
     );
-
-
-    window.location.href =
-      "index.html";
-
 
   } catch (error) {
 
     console.error(
-      "Logout error:",
+      "LOGOUT ERROR:",
       error
     );
 
@@ -592,93 +613,10 @@ logoutBtn?.addEventListener(
   logout
 );
 
-
 settingsLogout?.addEventListener(
   "click",
   logout
 );
-
-
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
-document
-  .querySelectorAll("[data-page]")
-  .forEach(button => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        const page =
-          button.dataset.page;
-
-        showPage(page);
-
-      }
-    );
-
-  });
-
-
-function showPage(page) {
-
-  document
-    .querySelectorAll(".page")
-    .forEach(section => {
-
-      section.classList.remove(
-        "active"
-      );
-
-    });
-
-
-  document
-    .querySelectorAll(".nav-item")
-    .forEach(item => {
-
-      item.classList.remove(
-        "active"
-      );
-
-    });
-
-
-  const target =
-    document.getElementById(
-      `page-${page}`
-    );
-
-
-  if (target) {
-
-    target.classList.add(
-      "active"
-    );
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
-
-  }
-
-
-  document
-    .querySelectorAll(
-      `.nav-item[data-page="${page}"]`
-    )
-    .forEach(item => {
-
-      item.classList.add(
-        "active"
-      );
-
-    });
-
-}
 
 
 /* =========================================================
@@ -707,8 +645,13 @@ async function loadProfile() {
     if (!profileSnapshot.exists()) {
 
       console.log(
-        "No profile document found."
+        "No user profile found."
       );
+
+      if (profileEmail) {
+        profileEmail.textContent =
+          currentUser.email || "";
+      }
 
       return;
     }
@@ -780,11 +723,10 @@ async function loadProfile() {
 
     }
 
-
   } catch (error) {
 
     console.error(
-      "Profile loading error:",
+      "PROFILE ERROR:",
       error
     );
 
@@ -794,7 +736,7 @@ async function loadProfile() {
 
 
 /* =========================================================
-   DISCOVER STUDENTS
+   DISCOVER
 ========================================================= */
 
 async function loadDiscoverStudents() {
@@ -803,7 +745,6 @@ async function loadDiscoverStudents() {
     !discoverList ||
     !currentUser
   ) {
-
     return;
   }
 
@@ -848,7 +789,6 @@ async function loadDiscoverStudents() {
           studentDoc.id ===
           currentUser.uid
         ) {
-
           return;
         }
 
@@ -915,14 +855,13 @@ async function loadDiscoverStudents() {
 
             <button
               class="primary-btn small-btn"
-              data-chat="${studentDoc.id}"
               type="button"
+              data-chat="${studentDoc.id}"
             >
               Message
             </button>
 
           </div>
-
         `;
 
 
@@ -943,17 +882,14 @@ async function loadDiscoverStudents() {
           <span>🌍</span>
 
           <h3>
-            No other discoverable students yet
+            No other students yet
           </h3>
 
           <p>
-            When another student completes
-            their profile and chooses
-            "Yes", they will appear here.
+            Discoverable students will appear here.
           </p>
 
         </div>
-
       `;
 
     }
@@ -973,9 +909,7 @@ async function loadDiscoverStudents() {
               button.dataset.chat
             );
 
-            showPage(
-              "messages"
-            );
+            showPage("messages");
 
           }
         );
@@ -986,22 +920,96 @@ async function loadDiscoverStudents() {
   } catch (error) {
 
     console.error(
-      "Discover error:",
+      "DISCOVER ERROR:",
       error
     );
 
 
     discoverList.innerHTML = `
-
       <div class="error-card">
         Unable to load students.
       </div>
-
     `;
 
   }
 
 }
+
+
+/* =========================================================
+   PAGE NAVIGATION
+========================================================= */
+
+function showPage(page) {
+
+  document
+    .querySelectorAll(".page")
+    .forEach(section => {
+
+      section.classList.remove(
+        "active"
+      );
+
+    });
+
+
+  document
+    .querySelectorAll(".nav-item")
+    .forEach(item => {
+
+      item.classList.remove(
+        "active"
+      );
+
+    });
+
+
+  document
+    .getElementById(
+      `page-${page}`
+    )
+    ?.classList.add(
+      "active"
+    );
+
+
+  document
+    .querySelectorAll(
+      `.nav-item[data-page="${page}"]`
+    )
+    .forEach(item => {
+
+      item.classList.add(
+        "active"
+      );
+
+    });
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+}
+
+
+document
+  .querySelectorAll("[data-page]")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        showPage(
+          button.dataset.page
+        );
+
+      }
+    );
+
+  });
 
 
 /* =========================================================
@@ -1035,7 +1043,7 @@ const communities = [
     id: "exam-prep",
     name: "📝 Exam Prep",
     description:
-      "Share study strategies and prepare for exams together."
+      "Share study strategies and prepare for exams."
   },
 
   {
@@ -1049,7 +1057,7 @@ const communities = [
     id: "sports-club",
     name: "⚽ Sports Club",
     description:
-      "Talk about sports and connect with students who enjoy them."
+      "Talk about sports and connect with students."
   }
 
 ];
@@ -1078,14 +1086,16 @@ async function loadCommunities() {
         "community-card";
 
 
+      const parts =
+        community.name.split(" ");
+
+
       const icon =
-        community.name.split(" ")[0];
+        parts.shift();
 
 
       const name =
-        community.name.substring(
-          community.name.indexOf(" ") + 1
-        );
+        parts.join(" ");
 
 
       card.innerHTML = `
@@ -1108,14 +1118,13 @@ async function loadCommunities() {
 
           <button
             class="primary-btn small-btn"
-            data-community="${community.id}"
             type="button"
+            data-community="${community.id}"
           >
             Open Community
           </button>
 
         </div>
-
       `;
 
 
@@ -1167,7 +1176,6 @@ async function openCommunity(id) {
     "hidden"
   );
 
-
   communityView?.classList.remove(
     "hidden"
   );
@@ -1202,11 +1210,9 @@ backToCommunities?.addEventListener(
       "hidden"
     );
 
-
     communityList?.classList.remove(
       "hidden"
     );
-
 
     currentCommunity = null;
 
@@ -1222,12 +1228,10 @@ postButton?.addEventListener(
   "click",
   async () => {
 
-    if (!currentUser) {
-
-      alert(
-        "Please log in first."
-      );
-
+    if (
+      !currentUser ||
+      !currentCommunity
+    ) {
       return;
     }
 
@@ -1237,16 +1241,6 @@ postButton?.addEventListener(
 
 
     if (!text) {
-
-      alert(
-        "Write something first."
-      );
-
-      return;
-    }
-
-
-    if (!currentCommunity) {
       return;
     }
 
@@ -1280,25 +1274,14 @@ postButton?.addEventListener(
           "posts"
         ),
         {
-
-          text:
-
-            text,
-
-          uid:
-
-            currentUser.uid,
-
+          text: text,
+          uid: currentUser.uid,
           displayName:
-
             userData.displayName ||
             currentUser.email ||
             "Student",
-
           createdAt:
-
             serverTimestamp()
-
         }
       );
 
@@ -1316,10 +1299,9 @@ postButton?.addEventListener(
     } catch (error) {
 
       console.error(
-        "Post error:",
+        "POST ERROR:",
         error
       );
-
 
       alert(
         "Could not publish your post."
@@ -1339,13 +1321,6 @@ async function loadCommunityPosts(id) {
   if (!communityPosts) {
     return;
   }
-
-
-  communityPosts.innerHTML = `
-    <div class="loading-card">
-      Loading discussions...
-    </div>
-  `;
 
 
   try {
@@ -1375,22 +1350,11 @@ async function loadCommunityPosts(id) {
     if (snapshot.empty) {
 
       communityPosts.innerHTML = `
-
         <div class="empty-state">
-
           <span>💬</span>
-
-          <h3>
-            No discussions yet
-          </h3>
-
-          <p>
-            Be the first student
-            to start one!
-          </p>
-
+          <h3>No discussions yet</h3>
+          <p>Be the first student to start one!</p>
         </div>
-
       `;
 
       return;
@@ -1436,12 +1400,9 @@ async function loadCommunityPosts(id) {
           </div>
 
           <div class="post-text">
-
             ${escapeHTML(
-              post.text ||
-              ""
+              post.text || ""
             )}
-
           </div>
 
         `;
@@ -1458,17 +1419,15 @@ async function loadCommunityPosts(id) {
   } catch (error) {
 
     console.error(
-      "Community posts error:",
+      "COMMUNITY ERROR:",
       error
     );
 
 
     communityPosts.innerHTML = `
-
       <div class="error-card">
         Unable to load discussions.
       </div>
-
     `;
 
   }
@@ -1486,13 +1445,8 @@ async function loadChatUsers() {
     !chatUsers ||
     !currentUser
   ) {
-
     return;
   }
-
-
-  chatUsers.innerHTML =
-    "Loading students...";
 
 
   try {
@@ -1515,8 +1469,7 @@ async function loadChatUsers() {
       await getDocs(q);
 
 
-    chatUsers.innerHTML =
-      "";
+    chatUsers.innerHTML = "";
 
 
     let count = 0;
@@ -1529,7 +1482,6 @@ async function loadChatUsers() {
           studentDoc.id ===
           currentUser.uid
         ) {
-
           return;
         }
 
@@ -1585,12 +1537,9 @@ async function loadChatUsers() {
     if (count === 0) {
 
       chatUsers.innerHTML = `
-
         <p class="muted">
-          No other discoverable
-          students yet.
+          No other discoverable students yet.
         </p>
-
       `;
 
     }
@@ -1599,17 +1548,15 @@ async function loadChatUsers() {
   } catch (error) {
 
     console.error(
-      "Chat users error:",
+      "CHAT USERS ERROR:",
       error
     );
 
 
     chatUsers.innerHTML = `
-
       <p class="muted">
         Unable to load students.
       </p>
-
     `;
 
   }
@@ -1623,31 +1570,16 @@ async function loadChatUsers() {
 
 async function openChatWith(uid) {
 
-  selectedChatUser =
-    uid;
+  if (!currentUser) {
+    return;
+  }
+
+
+  selectedChatUser = uid;
 
 
   if (messageInput) {
-
-    messageInput.disabled =
-      false;
-
-  }
-
-
-  if (chatTitle) {
-
-    chatTitle.textContent =
-      "💬 Chat";
-
-  }
-
-
-  if (chatMessages) {
-
-    chatMessages.innerHTML =
-      "<p>Loading conversation...</p>";
-
+    messageInput.disabled = false;
   }
 
 
@@ -1671,16 +1603,11 @@ async function openChatWith(uid) {
 
       if (chatTitle) {
 
-        chatTitle.innerHTML = `
-
-          <span class="chat-user-name">
-            💬 ${escapeHTML(
-              data.displayName ||
-              "Student"
-            )}
-          </span>
-
-        `;
+        chatTitle.textContent =
+          `💬 ${
+            data.displayName ||
+            "Student"
+          }`;
 
       }
 
@@ -1690,7 +1617,7 @@ async function openChatWith(uid) {
   } catch (error) {
 
     console.error(
-      "Chat user error:",
+      "OPEN CHAT ERROR:",
       error
     );
 
@@ -1703,7 +1630,7 @@ async function openChatWith(uid) {
 
 
 /* =========================================================
-   LOAD CHAT MESSAGES
+   LOAD MESSAGES
 ========================================================= */
 
 async function loadMessages() {
@@ -1713,7 +1640,6 @@ async function loadMessages() {
     !selectedChatUser ||
     !chatMessages
   ) {
-
     return;
   }
 
@@ -1755,25 +1681,16 @@ async function loadMessages() {
       await getDocs(q);
 
 
-    chatMessages.innerHTML =
-      "";
+    chatMessages.innerHTML = "";
 
 
     if (snapshot.empty) {
 
       chatMessages.innerHTML = `
-
         <div class="empty-state">
-
           <span>💬</span>
-
-          <p>
-            No messages yet.
-            Say hello!
-          </p>
-
+          <p>No messages yet. Say hello!</p>
         </div>
-
       `;
 
       return;
@@ -1800,87 +1717,8 @@ async function loadMessages() {
             : "message";
 
 
-        /*
-          TEXT
-        */
-
-        if (
-          message.type === "text" ||
-          !message.type
-        ) {
-
-          bubble.textContent =
-            message.text ||
-            "";
-
-        }
-
-
-        /*
-          FILE
-        */
-
-        else if (
-          message.type === "file"
-        ) {
-
-          bubble.innerHTML = `
-
-            <div class="file-message">
-
-              📎
-
-              <a
-                href="${escapeHTML(
-                  message.fileUrl ||
-                  "#"
-                )}"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-
-                ${escapeHTML(
-                  message.fileName ||
-                  "Open attachment"
-                )}
-
-              </a>
-
-            </div>
-
-          `;
-
-        }
-
-
-        /*
-          AUDIO
-        */
-
-        else if (
-          message.type === "audio"
-        ) {
-
-          const audio =
-            document.createElement(
-              "audio"
-            );
-
-
-          audio.controls =
-            true;
-
-
-          audio.src =
-            message.fileUrl ||
-            "";
-
-
-          bubble.appendChild(
-            audio
-          );
-
-        }
+        bubble.textContent =
+          message.text || "";
 
 
         chatMessages.appendChild(
@@ -1898,17 +1736,15 @@ async function loadMessages() {
   } catch (error) {
 
     console.error(
-      "Message loading error:",
+      "LOAD MESSAGES ERROR:",
       error
     );
 
 
     chatMessages.innerHTML = `
-
       <div class="error-card">
         Unable to load messages.
       </div>
-
     `;
 
   }
@@ -1917,7 +1753,7 @@ async function loadMessages() {
 
 
 /* =========================================================
-   SEND TEXT MESSAGE
+   SEND MESSAGE
 ========================================================= */
 
 chatForm?.addEventListener(
@@ -1929,15 +1765,15 @@ chatForm?.addEventListener(
 
     if (
       !currentUser ||
-      !selectedChatUser
+      !selectedChatUser ||
+      !messageInput
     ) {
-
       return;
     }
 
 
     const text =
-      messageInput?.value.trim();
+      messageInput.value.trim();
 
 
     if (!text) {
@@ -1964,7 +1800,6 @@ chatForm?.addEventListener(
           "messages"
         ),
         {
-
           senderId:
             currentUser.uid,
 
@@ -1979,14 +1814,11 @@ chatForm?.addEventListener(
 
           createdAt:
             serverTimestamp()
-
         }
       );
 
 
-      if (messageInput) {
-        messageInput.value = "";
-      }
+      messageInput.value = "";
 
 
       await loadMessages();
@@ -1995,13 +1827,13 @@ chatForm?.addEventListener(
     } catch (error) {
 
       console.error(
-        "Send message error:",
+        "SEND MESSAGE ERROR:",
         error
       );
 
 
       alert(
-        "Could not send message. Check your connection and try again."
+        "Could not send message."
       );
 
     }
@@ -2011,244 +1843,7 @@ chatForm?.addEventListener(
 
 
 /* =========================================================
-   ATTACHMENT
-========================================================= */
-
-const attachmentBtn =
-  document.getElementById(
-    "attachmentBtn"
-  );
-
-const attachmentInput =
-  document.getElementById(
-    "attachmentInput"
-  );
-
-
-attachmentBtn?.addEventListener(
-  "click",
-  () => {
-
-    attachmentInput?.click();
-
-  }
-);
-
-
-attachmentInput?.addEventListener(
-  "change",
-  () => {
-
-    const file =
-      attachmentInput.files?.[0];
-
-
-    if (!file) {
-      return;
-    }
-
-
-    alert(
-      `Selected: ${file.name}\n\nFirebase Storage upload will be connected when Storage is enabled.`
-    );
-
-
-    attachmentInput.value =
-      "";
-
-  }
-);
-
-
-/* =========================================================
-   VOICE RECORDING
-========================================================= */
-
-const voiceRecordBtn =
-  document.getElementById(
-    "voiceRecordBtn"
-  );
-
-
-voiceRecordBtn?.addEventListener(
-  "click",
-  async () => {
-
-    if (isRecording) {
-
-      stopVoiceRecording();
-
-      return;
-    }
-
-
-    try {
-
-      const stream =
-        await navigator
-          .mediaDevices
-          .getUserMedia({
-            audio: true
-          });
-
-
-      audioChunks =
-        [];
-
-
-      mediaRecorder =
-        new MediaRecorder(
-          stream
-        );
-
-
-      mediaRecorder.addEventListener(
-        "dataavailable",
-        event => {
-
-          if (
-            event.data.size > 0
-          ) {
-
-            audioChunks.push(
-              event.data
-            );
-
-          }
-
-        }
-      );
-
-
-      mediaRecorder.addEventListener(
-        "stop",
-        () => {
-
-          stream
-            .getTracks()
-            .forEach(
-              track =>
-                track.stop()
-            );
-
-
-          const audioBlob =
-            new Blob(
-              audioChunks,
-              {
-                type:
-                  "audio/webm"
-              }
-            );
-
-
-          const audioUrl =
-            URL.createObjectURL(
-              audioBlob
-            );
-
-
-          const audio =
-            document.createElement(
-              "audio"
-            );
-
-
-          audio.controls =
-            true;
-
-
-          audio.src =
-            audioUrl;
-
-
-          if (chatMessages) {
-
-            chatMessages.appendChild(
-              audio
-            );
-
-
-            chatMessages.scrollTop =
-              chatMessages.scrollHeight;
-
-          }
-
-
-          alert(
-            "Voice recording created. Firebase Storage upload will be connected in the next step."
-          );
-
-        }
-      );
-
-
-      mediaRecorder.start();
-
-
-      isRecording =
-        true;
-
-
-      if (voiceRecordBtn) {
-
-        voiceRecordBtn.textContent =
-          "⏹️";
-
-      }
-
-
-    } catch (error) {
-
-      console.error(
-        "Microphone error:",
-        error
-      );
-
-
-      alert(
-        "Microphone permission was not granted."
-      );
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   STOP RECORDING
-========================================================= */
-
-function stopVoiceRecording() {
-
-  if (
-    mediaRecorder &&
-    mediaRecorder.state !==
-      "inactive"
-  ) {
-
-    mediaRecorder.stop();
-
-  }
-
-
-  isRecording =
-    false;
-
-
-  if (voiceRecordBtn) {
-
-    voiceRecordBtn.textContent =
-      "🎤";
-
-  }
-
-}
-
-
-/* =========================================================
-   AI ASSISTANT
+   AI
 ========================================================= */
 
 aiBtn?.addEventListener(
@@ -2256,7 +1851,7 @@ aiBtn?.addEventListener(
   () => {
 
     alert(
-      "The AI Study Assistant will be connected in the next stage."
+      "The AI Study Assistant will be connected next."
     );
 
   }
@@ -2264,7 +1859,7 @@ aiBtn?.addEventListener(
 
 
 /* =========================================================
-   SECURITY
+   HELPERS
 ========================================================= */
 
 function escapeHTML(value) {
@@ -2300,83 +1895,48 @@ function escapeHTML(value) {
 
 
 /* =========================================================
-   FIREBASE ERROR HANDLER
+   FIREBASE ERROR MESSAGES
 ========================================================= */
 
 function getFirebaseError(error) {
 
-  const code =
-    error?.code ||
-    "";
+  console.error(
+    "Firebase error:",
+    error?.code,
+    error?.message
+  );
 
 
-  switch (code) {
+  switch (error?.code) {
 
     case "auth/email-already-in-use":
-
-      return (
-        "This email already has an account."
-      );
-
+      return "This email already has an account. Try Login.";
 
     case "auth/invalid-email":
-
-      return (
-        "Please enter a valid email address."
-      );
-
+      return "Please enter a valid email address.";
 
     case "auth/weak-password":
-
-      return (
-        "Password must be at least 6 characters."
-      );
-
+      return "Password must be at least 6 characters.";
 
     case "auth/invalid-credential":
-
-      return (
-        "Incorrect email or password."
-      );
-
+      return "Incorrect email or password.";
 
     case "auth/user-not-found":
-
-      return (
-        "No account was found with this email."
-      );
-
+      return "No account was found with this email.";
 
     case "auth/wrong-password":
-
-      return (
-        "Incorrect password."
-      );
-
-
-    case "auth/operation-not-allowed":
-
-      return (
-        "Email/password login is not enabled in Firebase."
-      );
-
+      return "Incorrect password.";
 
     case "auth/network-request-failed":
+      return "Network error. Check your internet connection.";
 
-      return (
-        "Network connection problem. Check your internet and try again."
-      );
+    case "auth/operation-not-allowed":
+      return "Email/password login is not enabled in Firebase.";
 
-
-    case "auth/too-many-requests":
-
-      return (
-        "Too many attempts. Please wait a little and try again."
-      );
-
+    case "auth/configuration-not-found":
+      return "Firebase Authentication is not configured correctly.";
 
     default:
-
       return (
         error?.message ||
         "Something went wrong. Please try again."
@@ -2392,5 +1952,5 @@ function getFirebaseError(error) {
 ========================================================= */
 
 console.log(
-  "StudentConnect JavaScript initialized successfully."
+  "StudentConnect JavaScript is ready."
 );
