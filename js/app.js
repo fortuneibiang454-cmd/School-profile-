@@ -227,6 +227,10 @@ signupForm?.addEventListener("submit", async (event) => {
 });
 
 
+/* ========================================================
+   LOGIN
+========================================================= */
+
 /* =========================================================
    LOGIN
 ========================================================= */
@@ -235,99 +239,54 @@ loginForm?.addEventListener("submit", async (event) => {
 
   event.preventDefault();
 
-  const emailInput =
-    document.getElementById("loginEmail");
+  if (!authMessage) return;
 
-  const passwordInput =
-    document.getElementById("loginPassword");
-
-  if (!emailInput || !passwordInput) {
-
-    console.error(
-      "Login inputs were not found."
-    );
-
-    if (authMessage) {
-      authMessage.textContent =
-        "Login form is not connected correctly.";
-    }
-
-    return;
-  }
+  authMessage.textContent = "Logging in...";
 
   const email =
-    emailInput.value.trim();
+    document.getElementById("loginEmail")?.value.trim();
 
   const password =
-    passwordInput.value;
+    document.getElementById("loginPassword")?.value;
 
   if (!email || !password) {
-
-    if (authMessage) {
-      authMessage.textContent =
-        "Please enter your email and password.";
-    }
-
-    return;
-  }
-
-  if (authMessage) {
     authMessage.textContent =
-      "Logging in...";
+      "Please enter your email and password.";
+    return;
   }
 
   try {
 
-    const result =
-      await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
-    console.log(
-      "LOGIN SUCCESS:",
-      result.user.uid
+    const result = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
     );
 
-    if (authMessage) {
-      authMessage.textContent =
-        "Login successful. Opening dashboard...";
-    }
+    console.log("LOGIN SUCCESS:", result.user.uid);
+
+    authMessage.textContent =
+      "Login successful!";
 
     /*
-      Firebase has successfully authenticated
-      the user.
+      IMPORTANT:
+      Do NOT redirect to dashboard.html here.
 
-      Redirect after a short delay so the user
-      can see the success message.
+      onAuthStateChanged() will automatically
+      show the app after Firebase confirms login.
     */
-
-    setTimeout(() => {
-
-      window.location.href =
-        "dashboard.html";
-
-    }, 500);
 
   } catch (error) {
 
-    console.error(
-      "LOGIN ERROR:",
-      error
-    );
+    console.error("LOGIN ERROR:", error);
 
-    console.error(
-      "Firebase error code:",
-      error?.code
-    );
+    authMessage.textContent =
+      getFirebaseError(error);
 
-    if (authMessage) {
-      authMessage.textContent =
-        getFirebaseError(error);
-    }
   }
+
 });
+
 
 
 /* =========================================================
