@@ -13,14 +13,12 @@ import {
   getDoc,
   getDocs,
   addDoc,
+  setDoc,
   query,
   where,
   orderBy,
-  serverTimestamp,
-  setDoc
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-
 /* =========================================================
    ELEMENTS
 ========================================================= */
