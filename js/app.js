@@ -587,7 +587,7 @@ async function loadProfile() {
 
 
 /* =========================================================
-   DISCOVER
+   DISCOVER STUDENTS
 ========================================================= */
 
 async function loadDiscoverStudents() {
@@ -606,7 +606,11 @@ async function loadDiscoverStudents() {
 
   try {
 
-    const q =
+    /*
+     * First load the discoverableProfiles collection.
+     */
+
+    const discoverQuery =
       query(
         collection(
           db,
@@ -619,14 +623,14 @@ async function loadDiscoverStudents() {
         )
       );
 
-    const snapshot =
-      await getDocs(q);
+    const discoverSnapshot =
+      await getDocs(
+        discoverQuery
+      );
 
-    discoverList.innerHTML = "";
+    const students = [];
 
-    let count = 0;
-
-    snapshot.forEach(
+    discoverSnapshot.forEach(
       studentDoc => {
 
         if (
@@ -636,10 +640,87 @@ async function loadDiscoverStudents() {
           return;
         }
 
-        const student =
-          studentDoc.data();
+        students.push({
+          id: studentDoc.id,
+          data: studentDoc.data()
+        });
+      }
+    );
 
-        count++;
+
+    /*
+     * FALLBACK
+     *
+     * If discoverableProfiles has no students,
+     * check the users collection too.
+     *
+     * This makes Discover continue working if
+     * an older profile was saved only in users.
+     */
+
+    if (students.length === 0) {
+
+      const usersQuery =
+        query(
+          collection(
+            db,
+            "users"
+          ),
+          where(
+            "discoverable",
+            "==",
+            true
+          )
+        );
+
+      const usersSnapshot =
+        await getDocs(
+          usersQuery
+        );
+
+      usersSnapshot.forEach(
+        studentDoc => {
+
+          if (
+            studentDoc.id ===
+            currentUser.uid
+          ) {
+            return;
+          }
+
+          students.push({
+            id: studentDoc.id,
+            data: studentDoc.data()
+          });
+        }
+      );
+    }
+
+
+    discoverList.innerHTML = "";
+
+    if (students.length === 0) {
+
+      discoverList.innerHTML = `
+        <div class="empty-state large">
+          <span>🌍</span>
+          <h3>No other discoverable students yet</h3>
+          <p>
+            Students who choose to be discoverable
+            will appear here.
+          </p>
+        </div>
+      `;
+
+      return;
+    }
+
+
+    students.forEach(
+      studentItem => {
+
+        const student =
+          studentItem.data;
 
         const card =
           document.createElement(
@@ -695,7 +776,7 @@ async function loadDiscoverStudents() {
             <button
               class="primary-btn small-btn"
               type="button"
-              data-chat="${studentDoc.id}"
+              data-chat="${studentItem.id}"
             >
               Message
             </button>
@@ -709,23 +790,10 @@ async function loadDiscoverStudents() {
       }
     );
 
-    if (count === 0) {
-
-      discoverList.innerHTML = `
-        <div class="empty-state large">
-          <span>🌍</span>
-          <h3>No other discoverable students yet</h3>
-          <p>
-            Students who choose to be discoverable
-            will appear here.
-          </p>
-        </div>
-      `;
-    }
 
     document
       .querySelectorAll(
-        "[data-chat]"
+        "#discoverList [data-chat]"
       )
       .forEach(button => {
 
@@ -1133,7 +1201,15 @@ async function loadChatUsers() {
 
   try {
 
-    const q =
+    const students = [];
+
+
+    /*
+     * FIRST:
+     * Load discoverable profiles.
+     */
+
+    const discoverQuery =
       query(
         collection(
           db,
@@ -1146,27 +1222,92 @@ async function loadChatUsers() {
         )
       );
 
-    const snapshot =
-      await getDocs(q);
+    const discoverSnapshot =
+      await getDocs(
+        discoverQuery
+      );
 
-    chatUsers.innerHTML = "";
-
-    let count = 0;
-
-    snapshot.forEach(
+    discoverSnapshot.forEach(
       studentDoc => {
 
         if (
-          studentDoc.id ===
+          studentDoc.id !==
           currentUser.uid
         ) {
-          return;
+
+          students.push({
+            id: studentDoc.id,
+            data: studentDoc.data()
+          });
+
         }
+      }
+    );
+
+
+    /*
+     * FALLBACK:
+     * Check users collection if needed.
+     */
+
+    if (students.length === 0) {
+
+      const usersQuery =
+        query(
+          collection(
+            db,
+            "users"
+          ),
+          where(
+            "discoverable",
+            "==",
+            true
+          )
+        );
+
+      const usersSnapshot =
+        await getDocs(
+          usersQuery
+        );
+
+      usersSnapshot.forEach(
+        studentDoc => {
+
+          if (
+            studentDoc.id !==
+            currentUser.uid
+          ) {
+
+            students.push({
+              id: studentDoc.id,
+              data: studentDoc.data()
+            });
+
+          }
+        }
+      );
+    }
+
+
+    chatUsers.innerHTML = "";
+
+
+    if (students.length === 0) {
+
+      chatUsers.innerHTML =
+        `<p class="muted">
+          No other discoverable students yet.
+        </p>`;
+
+      return;
+    }
+
+
+    students.forEach(
+      studentItem => {
 
         const student =
-          studentDoc.data();
-
-        count++;
+          studentItem.data;
 
         const button =
           document.createElement(
@@ -1190,7 +1331,7 @@ async function loadChatUsers() {
           async () => {
 
             await openChatWith(
-              studentDoc.id
+              studentItem.id
             );
 
           }
@@ -1201,14 +1342,6 @@ async function loadChatUsers() {
         );
       }
     );
-
-    if (count === 0) {
-
-      chatUsers.innerHTML =
-        `<p class="muted">
-          No other discoverable students yet.
-        </p>`;
-    }
 
   } catch (error) {
 
@@ -1226,20 +1359,98 @@ async function loadChatUsers() {
 
 
 /* =========================================================
+   CREATE / VERIFY CHAT
+========================================================= */
+
+async function ensureChat(chatId, otherUserId) {
+
+  if (!currentUser) return;
+
+  const chatRef =
+    doc(
+      db,
+      "chats",
+      chatId
+    );
+
+  const chatSnap =
+    await getDoc(chatRef);
+
+  if (!chatSnap.exists()) {
+
+    await setDoc(
+      chatRef,
+      {
+        participants: [
+          currentUser.uid,
+          otherUserId
+        ],
+
+        createdAt:
+          serverTimestamp(),
+
+        updatedAt:
+          serverTimestamp()
+      }
+    );
+
+  }
+}
+
+
+/* =========================================================
    OPEN CHAT
 ========================================================= */
 
 async function openChatWith(uid) {
 
-  if (!currentUser) return;
+  if (!currentUser || !uid) return;
 
   selectedChatUser = uid;
 
-  messageInput.disabled = false;
+  if (messageInput) {
+    messageInput.disabled = false;
+  }
+
+  const chatId =
+    [
+      currentUser.uid,
+      uid
+    ]
+      .sort()
+      .join("_");
 
   try {
 
-    const student =
+    /*
+     * Create the parent chat document.
+     * This is required by the current Firestore
+     * message rules.
+     */
+
+    await ensureChat(
+      chatId,
+      uid
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Chat creation error:",
+      error
+    );
+
+    alert(
+      "Could not open this chat."
+    );
+
+    return;
+  }
+
+
+  try {
+
+    let student =
       await getDoc(
         doc(
           db,
@@ -1248,16 +1459,39 @@ async function openChatWith(uid) {
         )
       );
 
+
+    /*
+     * If the student exists only in users,
+     * use that profile instead.
+     */
+
+    if (!student.exists()) {
+
+      student =
+        await getDoc(
+          doc(
+            db,
+            "users",
+            uid
+          )
+        );
+    }
+
+
     if (student.exists()) {
 
       const data =
         student.data();
 
-      chatTitle.innerHTML =
-        `💬 ${escapeHTML(
-          data.displayName ||
-          "Student"
-        )}`;
+      if (chatTitle) {
+
+        chatTitle.innerHTML =
+          `💬 ${escapeHTML(
+            data.displayName ||
+            "Student"
+          )}`;
+
+      }
     }
 
   } catch (error) {
@@ -1480,6 +1714,17 @@ chatForm?.addEventListener(
 
     try {
 
+      /*
+       * Make sure the chat parent exists
+       * before creating the message.
+       */
+
+      await ensureChat(
+        chatId,
+        selectedChatUser
+      );
+
+
       await addDoc(
         collection(
           db,
@@ -1503,6 +1748,27 @@ chatForm?.addEventListener(
             serverTimestamp()
         }
       );
+
+
+      /*
+       * Update the chat timestamp.
+       */
+
+      await setDoc(
+        doc(
+          db,
+          "chats",
+          chatId
+        ),
+        {
+          updatedAt:
+            serverTimestamp()
+        },
+        {
+          merge: true
+        }
+      );
+
 
       messageInput.value = "";
 
@@ -1592,6 +1858,13 @@ attachmentInput?.addEventListener(
           .sort()
           .join("_");
 
+
+      await ensureChat(
+        chatId,
+        selectedChatUser
+      );
+
+
       const safeName =
         file.name.replace(
           /[^a-zA-Z0-9._-]/g,
@@ -1644,10 +1917,27 @@ attachmentInput?.addEventListener(
           fileUrl,
 
           fileType:
-            file.type || "application/octet-stream",
+            file.type ||
+            "application/octet-stream",
 
           createdAt:
             serverTimestamp()
+        }
+      );
+
+
+      await setDoc(
+        doc(
+          db,
+          "chats",
+          chatId
+        ),
+        {
+          updatedAt:
+            serverTimestamp()
+        },
+        {
+          merge: true
         }
       );
 
@@ -1817,6 +2107,13 @@ async function uploadVoiceMessage(blob) {
         .sort()
         .join("_");
 
+
+    await ensureChat(
+      chatId,
+      selectedChatUser
+    );
+
+
     const path =
       `chatAudio/${chatId}/${Date.now()}.webm`;
 
@@ -1861,6 +2158,22 @@ async function uploadVoiceMessage(blob) {
 
         createdAt:
           serverTimestamp()
+      }
+    );
+
+
+    await setDoc(
+      doc(
+        db,
+        "chats",
+        chatId
+      ),
+      {
+        updatedAt:
+          serverTimestamp()
+      },
+      {
+        merge: true
       }
     );
 
