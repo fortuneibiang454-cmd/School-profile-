@@ -13,91 +13,173 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
-const profileForm = document.getElementById("profileForm");
-const countrySelect = document.getElementById("country");
-const levelSelect = document.getElementById("level");
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const profileForm =
+  document.getElementById("profileForm");
+
+const countrySelect =
+  document.getElementById("country");
+
+const levelSelect =
+  document.getElementById("level");
 
 
-/* =========================
+/* =========================================================
    SCHOOL LEVELS
-========================= */
+========================================================= */
 
 const schoolLevels = {
 
   Nigeria: [
-    "Primary 1", "Primary 2", "Primary 3",
-    "Primary 4", "Primary 5", "Primary 6",
-    "JSS1", "JSS2", "JSS3",
-    "SS1", "SS2", "SS3",
+    "Primary 1",
+    "Primary 2",
+    "Primary 3",
+    "Primary 4",
+    "Primary 5",
+    "Primary 6",
+    "JSS1",
+    "JSS2",
+    "JSS3",
+    "SS1",
+    "SS2",
+    "SS3",
     "University"
   ],
 
   Ghana: [
-    "Basic 1", "Basic 2", "Basic 3",
-    "Basic 4", "Basic 5", "Basic 6",
-    "JHS1", "JHS2", "JHS3",
-    "SHS1", "SHS2", "SHS3",
+    "Basic 1",
+    "Basic 2",
+    "Basic 3",
+    "Basic 4",
+    "Basic 5",
+    "Basic 6",
+    "JHS1",
+    "JHS2",
+    "JHS3",
+    "SHS1",
+    "SHS2",
+    "SHS3",
     "University"
   ],
 
   Kenya: [
-    "Grade 1", "Grade 2", "Grade 3",
-    "Grade 4", "Grade 5", "Grade 6",
-    "Grade 7", "Grade 8", "Grade 9",
-    "Grade 10", "Grade 11", "Grade 12",
+    "Grade 1",
+    "Grade 2",
+    "Grade 3",
+    "Grade 4",
+    "Grade 5",
+    "Grade 6",
+    "Grade 7",
+    "Grade 8",
+    "Grade 9",
+    "Grade 10",
+    "Grade 11",
+    "Grade 12",
     "University"
   ],
 
   "United States": [
     "Kindergarten",
-    "Grade 1", "Grade 2", "Grade 3",
-    "Grade 4", "Grade 5", "Grade 6",
-    "Grade 7", "Grade 8", "Grade 9",
-    "Grade 10", "Grade 11", "Grade 12",
+    "Grade 1",
+    "Grade 2",
+    "Grade 3",
+    "Grade 4",
+    "Grade 5",
+    "Grade 6",
+    "Grade 7",
+    "Grade 8",
+    "Grade 9",
+    "Grade 10",
+    "Grade 11",
+    "Grade 12",
     "College / University"
   ],
 
   Canada: [
     "Kindergarten",
-    "Grade 1", "Grade 2", "Grade 3",
-    "Grade 4", "Grade 5", "Grade 6",
-    "Grade 7", "Grade 8", "Grade 9",
-    "Grade 10", "Grade 11", "Grade 12",
+    "Grade 1",
+    "Grade 2",
+    "Grade 3",
+    "Grade 4",
+    "Grade 5",
+    "Grade 6",
+    "Grade 7",
+    "Grade 8",
+    "Grade 9",
+    "Grade 10",
+    "Grade 11",
+    "Grade 12",
     "College / University"
   ],
 
   "United Kingdom": [
     "Reception",
-    "Year 1", "Year 2", "Year 3",
-    "Year 4", "Year 5", "Year 6",
-    "Year 7", "Year 8", "Year 9",
-    "Year 10", "Year 11", "Year 12",
-    "Year 13", "University"
+    "Year 1",
+    "Year 2",
+    "Year 3",
+    "Year 4",
+    "Year 5",
+    "Year 6",
+    "Year 7",
+    "Year 8",
+    "Year 9",
+    "Year 10",
+    "Year 11",
+    "Year 12",
+    "Year 13",
+    "University"
   ],
 
   "South Africa": [
     "Grade R",
-    "Grade 1", "Grade 2", "Grade 3",
-    "Grade 4", "Grade 5", "Grade 6",
-    "Grade 7", "Grade 8", "Grade 9",
-    "Grade 10", "Grade 11", "Grade 12",
+    "Grade 1",
+    "Grade 2",
+    "Grade 3",
+    "Grade 4",
+    "Grade 5",
+    "Grade 6",
+    "Grade 7",
+    "Grade 8",
+    "Grade 9",
+    "Grade 10",
+    "Grade 11",
+    "Grade 12",
     "University"
   ],
 
   India: [
-    "Class 1", "Class 2", "Class 3",
-    "Class 4", "Class 5", "Class 6",
-    "Class 7", "Class 8", "Class 9",
-    "Class 10", "Class 11", "Class 12",
+    "Class 1",
+    "Class 2",
+    "Class 3",
+    "Class 4",
+    "Class 5",
+    "Class 6",
+    "Class 7",
+    "Class 8",
+    "Class 9",
+    "Class 10",
+    "Class 11",
+    "Class 12",
     "University"
   ],
 
   Australia: [
     "Prep / Foundation",
-    "Year 1", "Year 2", "Year 3",
-    "Year 4", "Year 5", "Year 6",
-    "Year 7", "Year 8", "Year 9",
-    "Year 10", "Year 11", "Year 12",
+    "Year 1",
+    "Year 2",
+    "Year 3",
+    "Year 4",
+    "Year 5",
+    "Year 6",
+    "Year 7",
+    "Year 8",
+    "Year 9",
+    "Year 10",
+    "Year 11",
+    "Year 12",
     "University"
   ],
 
@@ -108,20 +190,27 @@ const schoolLevels = {
     "College",
     "University"
   ]
+
 };
 
 
-/* =========================
+/* =========================================================
    UPDATE LEVELS
-========================= */
+========================================================= */
 
 function updateSchoolLevels() {
 
-  const country = countrySelect.value;
+  if (!countrySelect || !levelSelect) {
+    return;
+  }
+
+  const country =
+    countrySelect.value;
 
   levelSelect.innerHTML = "";
 
-  const firstOption = document.createElement("option");
+  const firstOption =
+    document.createElement("option");
 
   firstOption.value = "";
 
@@ -130,10 +219,14 @@ function updateSchoolLevels() {
       ? "Choose your level"
       : "Choose your country first";
 
-  levelSelect.appendChild(firstOption);
+  levelSelect.appendChild(
+    firstOption
+  );
 
   if (!country) {
+
     levelSelect.disabled = true;
+
     return;
   }
 
@@ -163,229 +256,348 @@ countrySelect?.addEventListener(
 );
 
 
-/* =========================
+/* =========================================================
    AUTH
-========================= */
+========================================================= */
 
-onAuthStateChanged(auth, async user => {
+onAuthStateChanged(
+  auth,
+  async user => {
 
-  if (!user) {
+    console.log(
+      "PROFILE AUTH:",
+      user ? user.uid : "No user"
+    );
 
-    alert("Please log in first.");
+    if (!user) {
 
-    window.location.href = "index.html";
+      window.location.href =
+        "index.html";
 
-    return;
-  }
-
-
-  /* =========================
-     LOAD EXISTING PROFILE
-  ========================= */
-
-  try {
-
-    const profileRef =
-      doc(db, "users", user.uid);
-
-    const profileSnap =
-      await getDoc(profileRef);
-
-    if (profileSnap.exists()) {
-
-      const data = profileSnap.data();
-
-      const displayName =
-        document.getElementById("displayName");
-
-      const region =
-        document.getElementById("region");
-
-      const school =
-        document.getElementById("school");
-
-      const subject =
-        document.getElementById("subjects");
-
-      const interest =
-        document.getElementById("interests");
-
-
-      if (data.displayName)
-        displayName.value = data.displayName;
-
-      if (data.country) {
-
-        countrySelect.value = data.country;
-
-        updateSchoolLevels();
-      }
-
-      if (data.region)
-        region.value = data.region;
-
-      if (data.school)
-        school.value = data.school;
-
-      if (data.level)
-        levelSelect.value = data.level;
-
-      if (data.subject)
-        subject.value = data.subject;
-
-      if (data.interest)
-        interest.value = data.interest;
-
-
-      if (data.discoverable !== undefined) {
-
-        const radio =
-          document.querySelector(
-            `input[name="discoverable"][value="${
-              data.discoverable ? "yes" : "no"
-            }"]`
-          );
-
-        if (radio)
-          radio.checked = true;
-      }
+      return;
     }
 
-  } catch (error) {
 
-    console.error(
-      "Could not load profile:",
-      error
-    );
-  }
+    /* =====================================================
+       LOAD EXISTING PROFILE
+    ===================================================== */
 
+    try {
 
-  /* =========================
-     SAVE PROFILE
-  ========================= */
-
-  profileForm?.addEventListener(
-    "submit",
-    async event => {
-
-      event.preventDefault();
-
-      const displayName =
-        document
-          .getElementById("displayName")
-          .value
-          .trim();
-
-      const country =
-        countrySelect.value;
-
-      const region =
-        document
-          .getElementById("region")
-          .value
-          .trim();
-
-      const school =
-        document
-          .getElementById("school")
-          .value
-          .trim();
-
-      const level =
-        levelSelect.value;
-
-      const subject =
-        document
-          .getElementById("subjects")
-          .value;
-
-      const interest =
-        document
-          .getElementById("interests")
-          .value;
-
-      const selectedRadio =
-        document.querySelector(
-          'input[name="discoverable"]:checked'
+      const profileRef =
+        doc(
+          db,
+          "users",
+          user.uid
         );
 
+      const profileSnap =
+        await getDoc(profileRef);
 
-      if (!selectedRadio) {
+      if (profileSnap.exists()) {
 
-        alert(
-          "Please choose whether other students can discover you."
-        );
+        const data =
+          profileSnap.data();
 
-        return;
-      }
+        const displayName =
+          document.getElementById(
+            "displayName"
+          );
 
+        const region =
+          document.getElementById(
+            "region"
+          );
 
-      const discoverable =
-        selectedRadio.value === "yes";
+        const school =
+          document.getElementById(
+            "school"
+          );
 
+        const subject =
+          document.getElementById(
+            "subjects"
+          );
 
-      try {
-
-        /* =========================
-           SAVE MAIN PROFILE
-        ========================= */
-
-        await setDoc(
-          doc(db, "users", user.uid),
-          {
-
-            uid: user.uid,
-
-            displayName,
-
-            email:
-              user.email || "",
-
-            country,
-
-            region,
-
-            school,
-
-            level,
-
-            subject,
-
-            interest,
-
-            discoverable,
-
-            profileComplete: true,
-
-            updatedAt:
-              serverTimestamp()
-
-          },
-          { merge: true }
-        );
-
-
-        /* =========================
-           DISCOVERABLE PROFILE
-        ========================= */
-
-        const discoverableRef =
-          doc(
-            db,
-            "discoverableProfiles",
-            user.uid
+        const interest =
+          document.getElementById(
+            "interests"
           );
 
 
-        if (discoverable) {
+        if (
+          displayName &&
+          data.displayName
+        ) {
+          displayName.value =
+            data.displayName;
+        }
+
+
+        if (data.country) {
+
+          countrySelect.value =
+            data.country;
+
+          updateSchoolLevels();
+        }
+
+
+        if (
+          region &&
+          data.region
+        ) {
+          region.value =
+            data.region;
+        }
+
+
+        if (
+          school &&
+          data.school
+        ) {
+          school.value =
+            data.school;
+        }
+
+
+        if (
+          levelSelect &&
+          data.level
+        ) {
+          levelSelect.value =
+            data.level;
+        }
+
+
+        if (
+          subject &&
+          data.subject
+        ) {
+          subject.value =
+            data.subject;
+        }
+
+
+        if (
+          interest &&
+          data.interest
+        ) {
+          interest.value =
+            data.interest;
+        }
+
+
+        if (
+          data.discoverable !==
+          undefined
+        ) {
+
+          const radio =
+            document.querySelector(
+              `input[name="discoverable"][value="${
+                data.discoverable
+                  ? "yes"
+                  : "no"
+              }"]`
+            );
+
+          if (radio) {
+            radio.checked = true;
+          }
+        }
+
+      }
+
+    } catch (error) {
+
+      console.error(
+        "PROFILE LOAD ERROR:",
+        error
+      );
+
+    }
+
+
+    /* =====================================================
+       SAVE PROFILE
+    ===================================================== */
+
+    profileForm?.addEventListener(
+      "submit",
+      async event => {
+
+        event.preventDefault();
+
+        const displayNameInput =
+          document.getElementById(
+            "displayName"
+          );
+
+        const regionInput =
+          document.getElementById(
+            "region"
+          );
+
+        const schoolInput =
+          document.getElementById(
+            "school"
+          );
+
+        const subjectInput =
+          document.getElementById(
+            "subjects"
+          );
+
+        const interestInput =
+          document.getElementById(
+            "interests"
+          );
+
+
+        if (
+          !displayNameInput ||
+          !regionInput ||
+          !schoolInput ||
+          !subjectInput ||
+          !interestInput ||
+          !countrySelect ||
+          !levelSelect
+        ) {
+
+          alert(
+            "Some profile fields are missing from the page."
+          );
+
+          return;
+        }
+
+
+        const displayName =
+          displayNameInput.value.trim();
+
+        const country =
+          countrySelect.value;
+
+        const region =
+          regionInput.value.trim();
+
+        const school =
+          schoolInput.value.trim();
+
+        const level =
+          levelSelect.value;
+
+        const subject =
+          subjectInput.value.trim();
+
+        const interest =
+          interestInput.value.trim();
+
+        const selectedRadio =
+          document.querySelector(
+            'input[name="discoverable"]:checked'
+          );
+
+
+        /* =================================================
+           VALIDATION
+        ================================================= */
+
+        if (!displayName) {
+
+          alert(
+            "Please enter your name."
+          );
+
+          return;
+        }
+
+
+        if (!country) {
+
+          alert(
+            "Please choose your country."
+          );
+
+          return;
+        }
+
+
+        if (!level) {
+
+          alert(
+            "Please choose your school level."
+          );
+
+          return;
+        }
+
+
+        if (!selectedRadio) {
+
+          alert(
+            "Please choose whether other students can discover you."
+          );
+
+          return;
+        }
+
+
+        const discoverable =
+          selectedRadio.value === "yes";
+
+
+        console.log(
+          "Saving profile:",
+          {
+            uid: user.uid,
+            displayName,
+            country,
+            level,
+            subject,
+            interest,
+            discoverable
+          }
+        );
+
+
+        /* =================================================
+           DISABLE BUTTON
+        ================================================= */
+
+        const submitButton =
+          profileForm.querySelector(
+            'button[type="submit"]'
+          );
+
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent =
+            "Saving...";
+        }
+
+
+        try {
+
+          /* ===============================================
+             SAVE MAIN USER PROFILE
+          =============================================== */
 
           await setDoc(
-            discoverableRef,
+            doc(
+              db,
+              "users",
+              user.uid
+            ),
             {
 
               uid: user.uid,
 
               displayName,
+
+              email:
+                user.email || "",
 
               country,
 
@@ -399,7 +611,7 @@ onAuthStateChanged(auth, async user => {
 
               interest,
 
-              discoverable: true,
+              discoverable,
 
               profileComplete: true,
 
@@ -407,48 +619,157 @@ onAuthStateChanged(auth, async user => {
                 serverTimestamp()
 
             },
-            { merge: true }
+            {
+              merge: true
+            }
           );
 
-        } else {
 
-          /* Remove student from Discover */
-
-          await deleteDoc(
-            discoverableRef
+          console.log(
+            "Main profile saved."
           );
+
+
+          /* ===============================================
+             SAVE DISCOVERABLE PROFILE
+          =============================================== */
+
+          const discoverableRef =
+            doc(
+              db,
+              "discoverableProfiles",
+              user.uid
+            );
+
+
+          if (discoverable) {
+
+            await setDoc(
+              discoverableRef,
+              {
+
+                uid: user.uid,
+
+                displayName,
+
+                email:
+                  user.email || "",
+
+                country,
+
+                region,
+
+                school,
+
+                level,
+
+                subject,
+
+                interest,
+
+                discoverable: true,
+
+                profileComplete: true,
+
+                updatedAt:
+                  serverTimestamp()
+
+              },
+              {
+                merge: true
+              }
+            );
+
+
+            console.log(
+              "DISCOVERABLE PROFILE CREATED:",
+              user.uid
+            );
+
+
+            /* =============================================
+               VERIFY IT WAS SAVED
+            ============================================= */
+
+            const verifySnap =
+              await getDoc(
+                discoverableRef
+              );
+
+            if (!verifySnap.exists()) {
+
+              throw new Error(
+                "Your discoverable profile could not be verified after saving."
+              );
+            }
+
+
+            console.log(
+              "DISCOVERABLE PROFILE VERIFIED:",
+              verifySnap.data()
+            );
+
+          } else {
+
+            /* =============================================
+               REMOVE FROM DISCOVER
+            ============================================= */
+
+            await deleteDoc(
+              discoverableRef
+            );
+
+
+            console.log(
+              "Student removed from Discover."
+            );
+          }
+
+
+          alert(
+            "Profile saved successfully! 🎉"
+          );
+
+
+          window.location.href =
+            "dashboard.html";
+
+
+        } catch (error) {
+
+          console.error(
+            "PROFILE SAVE ERROR:",
+            error
+          );
+
+          alert(
+            "Could not save your profile.\n\n" +
+            error.message
+          );
+
+
+          if (submitButton) {
+
+            submitButton.disabled =
+              false;
+
+            submitButton.textContent =
+              "Save Profile";
+          }
         }
 
-
-        alert(
-          "Profile saved successfully! 🎉"
-        );
-
-        window.location.href =
-          "dashboard.html";
-
-      } catch (error) {
-
-        console.error(
-          "Profile save error:",
-          error
-        );
-
-        alert(
-          "Could not save your profile: " +
-          error.message
-        );
+      },
+      {
+        once: true
       }
+    );
 
-    },
-    { once: true }
-  );
-
-});
+  }
+);
 
 
-/* =========================
-   INITIAL STATE
-========================= */
+/* =========================================================
+   INITIALIZE
+========================================================= */
 
 updateSchoolLevels();
