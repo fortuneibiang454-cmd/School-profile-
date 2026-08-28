@@ -5,53 +5,361 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#1769e0">
   <title>StudentConnect</title>
-  
-  <!-- GOOGLE ADSENSE CODE - YOUR REAL ONE -->
+
+  <!-- GOOGLE ADSENSE -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1676079211222440"
-     crossorigin="anonymous"></script>
-  
-  <!-- PWA: APP NAME + LOGO + INSTALL -->
+    crossorigin="anonymous"></script>
+
+  <!-- PWA -->
   <link rel="manifest" href='data:application/json,{"name":"StudentConnect","short_name":"SConnect","start_url":".","display":"standalone","background_color":"#1769e0","theme_color":"#1769e0","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2232/2232688.png","sizes":"192x192","type":"image/png"}]}'>
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2232/2232688.png">
-  
+
+  <link rel="apple-touch-icon"
+    href="https://cdn-icons-png.flaticon.com/512/2232/2232688.png">
+
   <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: system-ui, Arial, sans-serif; background: #f4f7fb; color: #172033; }
-    button, input, textarea, select { font: inherit; }
-    button { cursor: pointer; border: 0; }
-    .hidden { display: none!important; }
-    .auth { min-height: 100vh; display: grid; place-items: center; padding: 18px; background: linear-gradient(135deg, #1769e0, #6c5ce7); }
-    .card { background: #fff; border: 1px solid #e6eaf0; border-radius: 18px; padding: 18px; box-shadow: 0 10px 30px #0001; }
-    .auth.card { width: min(450px, 100%); }
-    .form { display: grid; gap: 10px; }
-    input, textarea, select { width: 100%; padding: 12px; border: 1px solid #dfe4ec; border-radius: 10px; background: white; }
-    .btn { background: #1769e0; color: white; padding: 11px 15px; border-radius: 10px; font-weight: 700; }
-    .btn-premium { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    .link { background: none; color: #1769e0; margin: auto; padding: 10px; }
-    .msg { text-align: center; min-height: 22px; color: #b42318; }
-    .top { height: 60px; position: sticky; top: 0; background: #fff; border-bottom: 1px solid #e6eaf0; display: flex; justify-content: space-between; align-items: center; padding: 0 14px; }
-    .main { max-width: 1050px; margin: auto; padding: 16px 14px 90px; }
-    .page { display: none; } .page.active { display: block; }
-    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-    .tile { padding: 16px; text-align: left; }
-    .nav { position: fixed; bottom: 0; left: 0; right: 0; height: 66px; background: white; border-top: 1px solid #e6eaf0; display: flex; z-index: 10; }
-    .nav button { flex: 1; background: white; color: #667085; font-size: 10px; }
-    .nav button.active { color: #1769e0; font-weight: 800; }
-    .messages, .aiChat { min-height: 400px; max-height: 500px; overflow: auto; background: #f8fafc; padding: 12px; border-radius: 12px; }
-    .bubble { max-width: 78%; padding: 9px 11px; background: white; border: 1px solid #e6eaf0; border-radius: 12px; margin-bottom: 6px; }
-    .mine { background: #dbeafe; margin-left: auto; }
-    .composer { display: flex; gap: 6px; padding-top: 8px; }
-    .ad { margin: 16px 0; text-align: center; }
-    .ad.hide { display: none; }
-    .premium-badge { background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 800; }
-    .streak { background: #fff4e5; color: #b54708; border-radius: 999px; padding: 6px 9px; font-weight: 800; }
-    .lockscreen { position: fixed; inset: 0; background: #1769e0; z-index: 100; display: grid; place-items: center; color: white; }
-    .pin { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 300px; margin: auto; }
-    .pin button { font-size: 24px; padding: 20px; border-radius: 50%; background: white; color: #1769e0; font-weight: 800; }
-    video { width: 100%; border-radius: 12px; background: black; }
-    @media (max-width: 750px) { .grid { grid-template-columns: 1fr 1fr; }
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, Arial, sans-serif;
+      background: #f4f7fb;
+      color: #172033;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .auth {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: linear-gradient(135deg, #1769e0, #6c5ce7);
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e6eaf0;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 10px 30px #0001;
+    }
+
+    .auth .card {
+      width: min(450px, 100%);
+    }
+
+    .form {
+      display: grid;
+      gap: 10px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #dfe4ec;
+      border-radius: 10px;
+      background: white;
+    }
+
+    .btn {
+      background: #1769e0;
+      color: white;
+      padding: 11px 15px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    .btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .btn-premium {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .link {
+      background: none;
+      color: #1769e0;
+      margin: auto;
+      padding: 10px;
+    }
+
+    .msg {
+      text-align: center;
+      min-height: 22px;
+      color: #b42318;
+    }
+
+    .top {
+      height: 60px;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      border-bottom: 1px solid #e6eaf0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 14px;
+      z-index: 20;
+    }
+
+    .main {
+      max-width: 1050px;
+      margin: auto;
+      padding: 16px 14px 90px;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .tile {
+      padding: 16px;
+      text-align: left;
+    }
+
+    .nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 66px;
+      background: white;
+      border-top: 1px solid #e6eaf0;
+      display: flex;
+      z-index: 30;
+    }
+
+    .nav button {
+      flex: 1;
+      background: white;
+      color: #667085;
+      font-size: 10px;
+    }
+
+    .nav button.active {
+      color: #1769e0;
+      font-weight: 800;
+    }
+
+    .messages,
+    .aiChat {
+      min-height: 400px;
+      max-height: 500px;
+      overflow: auto;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .bubble {
+      max-width: 78%;
+      padding: 9px 11px;
+      background: white;
+      border: 1px solid #e6eaf0;
+      border-radius: 12px;
+      margin-bottom: 6px;
+    }
+
+    .mine {
+      background: #dbeafe;
+      margin-left: auto;
+    }
+
+    .composer {
+      display: flex;
+      gap: 6px;
+      padding-top: 8px;
+    }
+
+    .ad {
+      margin: 16px 0;
+      text-align: center;
+    }
+
+    .ad.hide {
+      display: none;
+    }
+
+    .premium-badge {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .streak {
+      background: #fff4e5;
+      color: #b54708;
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-weight: 800;
+    }
+
+    .lockscreen {
+      position: fixed;
+      inset: 0;
+      background: #1769e0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      color: white;
+    }
+
+    .pin {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      max-width: 300px;
+      margin: auto;
+    }
+
+    .pin button {
+      font-size: 24px;
+      padding: 20px;
+      border-radius: 50%;
+      background: white;
+      color: #1769e0;
+      font-weight: 800;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 12px;
+      background: black;
+    }
+
+    /* REELS */
+    .reels-feed {
+      height: calc(100vh - 170px);
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      background: #000;
+      border-radius: 18px;
+    }
+
+    .reel-card {
+      position: relative;
+      height: 100%;
+      min-height: calc(100vh - 170px);
+      scroll-snap-align: start;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .reel-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 0;
+      display: block;
+    }
+
+    .reel-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(
+        transparent 55%,
+        rgba(0,0,0,.75)
+      );
+    }
+
+    .reel-info {
+      position: absolute;
+      left: 15px;
+      right: 80px;
+      bottom: 25px;
+      color: white;
+      z-index: 2;
+      text-shadow: 0 1px 5px #000;
+    }
+
+    .reel-info p {
+      margin: 7px 0 0;
+    }
+
+    .reel-actions {
+      position: absolute;
+      right: 12px;
+      bottom: 25px;
+      display: grid;
+      gap: 12px;
+      z-index: 3;
+      pointer-events: auto;
+    }
+
+    .reel-actions button {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #ffffffdd;
+      font-size: 20px;
+    }
+
+    .upload-box {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 750px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .top {
+        padding: 0 8px;
+      }
+
+      .top .btn {
+        padding: 8px 9px;
+      }
+
+      .reels-feed {
+        height: calc(100vh - 155px);
+        margin: 0 -14px;
+        border-radius: 0;
+      }
+
+      .reel-card {
+        min-height: calc(100vh - 155px);
+      }
+    }
   </style>
 </head>
+
 <body>
 
   <!-- LOCK SCREEN -->
@@ -59,11 +367,20 @@
     <div style="text-align:center">
       <h2>🔒 Enter Passcode</h2>
       <div id="pinDots"></div>
+
       <div class="pin">
-        <button>1</button><button>2</button><button>3</button>
-        <button>4</button><button>5</button><button>6</button>
-        <button>7</button><button>8</button><button>9</button>
-        <button></button><button>0</button><button id="pinDelete">⌫</button>
+        <button>1</button>
+        <button>2</button>
+        <button>3</button>
+        <button>4</button>
+        <button>5</button>
+        <button>6</button>
+        <button>7</button>
+        <button>8</button>
+        <button>9</button>
+        <button></button>
+        <button>0</button>
+        <button id="pinDelete">⌫</button>
       </div>
     </div>
   </div>
@@ -71,266 +388,1686 @@
   <!-- AUTH -->
   <section id="auth" class="auth">
     <div class="card">
-      <div style="text-align:center"><div style="font-size:40px">🎓</div><h1>StudentConnect</h1></div>
+
+      <div style="text-align:center">
+        <div style="font-size:40px">🎓</div>
+        <h1>StudentConnect</h1>
+      </div>
+
       <form id="loginForm" class="form">
         <h2>Login</h2>
-        <input id="le" type="email" placeholder="Email" required>
-        <input id="lp" type="password" placeholder="Password" required>
-        <button type="submit" class="btn">Login</button>
+
+        <input
+          id="le"
+          type="email"
+          placeholder="Email"
+          required
+        >
+
+        <input
+          id="lp"
+          type="password"
+          placeholder="Password"
+          required
+        >
+
+        <button type="submit" class="btn">
+          Login
+        </button>
       </form>
+
       <form id="signupForm" class="form hidden">
         <h2>Sign Up</h2>
-        <input id="sn" type="text" placeholder="Display name" required>
-        <input id="se" type="email" placeholder="Email" required>
-        <input id="sp" type="password" minlength="6" placeholder="Password" required>
-        <button type="submit" class="btn">Create Account</button>
+
+        <input
+          id="sn"
+          type="text"
+          placeholder="Display name"
+          required
+        >
+
+        <input
+          id="se"
+          type="email"
+          placeholder="Email"
+          required
+        >
+
+        <input
+          id="sp"
+          type="password"
+          minlength="6"
+          placeholder="Password"
+          required
+        >
+
+        <button type="submit" class="btn">
+          Create Account
+        </button>
       </form>
+
       <p id="authmsg" class="msg"></p>
-      <button id="switchBtn" class="link" type="button">Create an account</button>
+
+      <button id="switchBtn" class="link" type="button">
+        Create an account
+      </button>
+
     </div>
   </section>
 
   <!-- APP -->
   <div id="app" class="hidden">
+
     <header class="top">
-      <div>🎓 StudentConnect <span id="premiumBadge" class="premium-badge hidden">PREMIUM</span></div>
-      <div style="display:flex; gap:8px"><span id="streak" class="streak">🔥 0</span><button id="lockBtn" class="btn" style="background:#fff4e5; color:#b54708">🔒</button><button id="logoutBtn" class="btn" style="background:#fee4e2; color:#b42318">Logout</button></div>
+
+      <div>
+        🎓 StudentConnect
+        <span id="premiumBadge" class="premium-badge hidden">
+          PREMIUM
+        </span>
+      </div>
+
+      <div style="display:flex; gap:8px; align-items:center">
+
+        <span id="streak" class="streak">
+          🔥 0
+        </span>
+
+        <button
+          id="lockBtn"
+          class="btn"
+          style="background:#fff4e5;color:#b54708"
+        >
+          🔒
+        </button>
+
+        <button
+          id="logoutBtn"
+          class="btn"
+          style="background:#fee4e2;color:#b42318"
+        >
+          Logout
+        </button>
+
+      </div>
+
     </header>
 
     <main class="main">
+
+      <!-- HOME -->
       <section id="home" class="page active">
-        <div style="background:linear-gradient(135deg, #1769e0, #5b5ce2); color:white; padding:25px; border-radius:20px"><h1>Welcome 👋</h1></div>
-        
-        <!-- REAL ADSENSE AD -->
-        <div class="ad">
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-client="ca-pub-1676079211222440"
-               data-ad-slot="1234567890"
-               data-ad-format="auto"
-               data-full-width-responsive="true"></ins>
-          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+
+        <div style="background:linear-gradient(135deg,#1769e0,#5b5ce2);color:white;padding:25px;border-radius:20px">
+          <h1>Welcome 👋</h1>
+          <p>Learn. Connect. Discover.</p>
         </div>
-        
+
+        <!-- ADSENSE -->
+        <div class="ad">
+          <ins
+            class="adsbygoogle"
+            style="display:block"
+            data-ad-client="ca-pub-1676079211222440"
+            data-ad-slot="1234567890"
+            data-ad-format="auto"
+            data-full-width-responsive="true">
+          </ins>
+
+          <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+          </script>
+        </div>
+
         <div class="grid">
-          <button class="card tile" data-page="feed">📸<h3>Feed</h3></button>
-          <button class="card tile" data-page="reels">🎬<h3>Reels</h3></button>
-          <button class="card tile" data-page="messages">💬<h3>Chat</h3></button>
-          <button class="card tile" data-page="study">🤖<h3>AI</h3></button>
-          <button class="card tile" data-page="communities">👥<h3>Community</h3></button>
-          <button class="card tile" data-page="discover">🌍<h3>Discover</h3></button>
+
+          <button class="card tile" data-page="feed">
+            📸
+            <h3>Feed</h3>
+          </button>
+
+          <button class="card tile" data-page="reels">
+            🎬
+            <h3>Reels</h3>
+          </button>
+
+          <button class="card tile" data-page="messages">
+            💬
+            <h3>Chat</h3>
+          </button>
+
+          <button class="card tile" data-page="study">
+            🤖
+            <h3>AI</h3>
+          </button>
+
+          <button class="card tile" data-page="communities">
+            👥
+            <h3>Community</h3>
+          </button>
+
+          <button class="card tile" data-page="discover">
+            🌍
+            <h3>Discover</h3>
+          </button>
+
         </div>
+
       </section>
 
+      <!-- FEED -->
       <section id="feed" class="page">
+
         <h2>📸 Feed</h2>
-        <div style="display:flex; gap:8px"><input id="postInput" placeholder="What's on your mind?"><button id="postBtn" class="btn">Post</button></div>
-        
-        <!-- REAL ADSENSE AD -->
+
+        <div style="display:flex;gap:8px">
+          <input
+            id="postInput"
+            placeholder="What's on your mind?"
+          >
+
+          <button id="postBtn" class="btn">
+            Post
+          </button>
+        </div>
+
         <div class="ad">
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-client="ca-pub-1676079211222440"
-               data-ad-slot="1234567890"
-               data-ad-format="auto"
-               data-full-width-responsive="true"></ins>
-          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+          <ins
+            class="adsbygoogle"
+            style="display:block"
+            data-ad-client="ca-pub-1676079211222440"
+            data-ad-slot="1234567890"
+            data-ad-format="auto"
+            data-full-width-responsive="true">
+          </ins>
+
+          <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+          </script>
         </div>
-        
+
         <div id="feedList" class="list"></div>
+
       </section>
 
+      <!-- REELS -->
       <section id="reels" class="page">
+
         <h2>🎬 Reels</h2>
-        <div style="display:flex; gap:8px"><input type="file" id="reelUpload" accept="video/*"><button id="uploadReelBtn" class="btn">Upload</button></div>
-        <div id="reelsList" class="list"></div>
-      </section>
 
-      <section id="communities" class="page">
-        <h2>👥 Community</h2>
-        <input id="questionInput" placeholder="Ask a question..."><button id="askBtn" class="btn">Ask</button>
-        <div id="questionList" class="list"></div>
-      </section>
+        <div class="card upload-box">
 
-      <section id="discover" class="page"><h2>🌍 Discover</h2><div class="card">Aisha from Nigeria <button class="btn">Connect</button></div></section>
+          <input
+            type="file"
+            id="reelUpload"
+            accept="video/*"
+          >
 
-      <section id="messages" class="page">
-        <h2>💬 Global Chat</h2>
-        <div id="messagesBox" class="messages"></div>
-        <div class="composer"><input id="msgInput" placeholder="Type message..."><button id="sendMsgBtn" class="btn">Send</button></div>
-      </section>
+          <input
+            type="text"
+            id="reelCaption"
+            maxlength="150"
+            placeholder="Write a caption..."
+          >
 
-      <section id="study" class="page">
-        <h2>🤖 AI Study Assistant</h2>
-        <div id="aiChat" class="aiChat"></div>
-        <div class="composer"><input id="aiInput" placeholder="Ask anything..."><button id="aiSendBtn" class="btn">Ask</button></div>
-      </section>
+          <button
+            id="uploadReelBtn"
+            class="btn"
+          >
+            🎬 Upload Reel
+          </button>
 
-      <section id="profile" class="page">
-        <div class="card"><h2>👤 Profile</h2>
-          <p id="userEmail"></p>
-          <input id="setPin" maxlength="4" placeholder="Set 4-digit PIN">
-          <button id="savePinBtn" class="btn">Save PIN</button>
-          <hr>
-          <h3>⭐ Go Premium - $1/month</h3>
-          <p>Remove all ads</p>
-          <button id="buyPremiumBtn" class="btn btn-premium">Upgrade to Premium</button>
+          <small>
+            Videos must be 50MB or smaller.
+          </small>
+
         </div>
+
+        <div id="reelsList" class="reels-feed"></div>
+
       </section>
+
+      <!-- COMMUNITIES -->
+      <section id="communities" class="page">
+
+        <h2>👥 Community</h2>
+
+        <div style="display:flex;gap:8px">
+          <input
+            id="questionInput"
+            placeholder="Ask a school question..."
+          >
+
+          <button id="askBtn" class="btn">
+            Ask
+          </button>
+        </div>
+
+        <div id="questionList" class="list"></div>
+
+      </section>
+
+      <!-- DISCOVER -->
+      <section id="discover" class="page">
+
+        <h2>🌍 Discover</h2>
+
+        <div class="card">
+          <b>Aisha from Nigeria</b>
+
+          <p>StudentConnect student</p>
+
+          <button class="btn">
+            Connect
+          </button>
+        </div>
+
+      </section>
+
+      <!-- CHAT -->
+      <section id="messages" class="page">
+
+        <h2>💬 Global Chat</h2>
+
+        <div
+          id="messagesBox"
+          class="messages">
+        </div>
+
+        <div class="composer">
+
+          <input
+            id="msgInput"
+            placeholder="Type message..."
+          >
+
+          <button
+            id="sendMsgBtn"
+            class="btn">
+            Send
+          </button>
+
+        </div>
+
+      </section>
+
+      <!-- AI -->
+      <section id="study" class="page">
+
+        <h2>🤖 AI Study Assistant</h2>
+
+        <div
+          id="aiChat"
+          class="aiChat">
+        </div>
+
+        <div class="composer">
+
+          <input
+            id="aiInput"
+            placeholder="Ask anything..."
+          >
+
+          <button
+            id="aiSendBtn"
+            class="btn">
+            Ask
+          </button>
+
+        </div>
+
+      </section>
+
+      <!-- PROFILE -->
+      <section id="profile" class="page">
+
+        <div class="card">
+
+          <h2>👤 Profile</h2>
+
+          <p id="userEmail"></p>
+
+          <input
+            id="setPin"
+            maxlength="4"
+            inputmode="numeric"
+            placeholder="Set 4-digit PIN"
+          >
+
+          <br><br>
+
+          <button
+            id="savePinBtn"
+            class="btn">
+            Save PIN
+          </button>
+
+          <hr>
+
+          <h3>⭐ Go Premium - $1/month</h3>
+
+          <p>
+            Remove all ads.
+          </p>
+
+          <button
+            id="buyPremiumBtn"
+            class="btn btn-premium">
+            Upgrade to Premium
+          </button>
+
+        </div>
+
+      </section>
+
     </main>
 
+    <!-- NAVIGATION -->
     <nav class="nav">
-      <button data-page="home" class="active">🏠<br>Home</button>
-      <button data-page="feed">📸<br>Feed</button>
-      <button data-page="reels">🎬<br>Reels</button>
-      <button data-page="messages">💬<br>Chat</button>
-      <button data-page="study">🤖<br>AI</button>
-      <button data-page="profile">👤<br>Me</button>
+
+      <button
+        data-page="home"
+        class="active">
+        🏠<br>Home
+      </button>
+
+      <button data-page="feed">
+        📸<br>Feed
+      </button>
+
+      <button data-page="reels">
+        🎬<br>Reels
+      </button>
+
+      <button data-page="messages">
+        💬<br>Chat
+      </button>
+
+      <button data-page="study">
+        🤖<br>AI
+      </button>
+
+      <button data-page="profile">
+        👤<br>Me
+      </button>
+
     </nav>
+
   </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-storage.js";
+  <!-- FIREBASE -->
+  <script type="module">
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBeBJ2fzqhq_yUMUxyq-OHMgI5eBG9t9po",
-    authDomain: "school-connect-11578.firebaseapp.com",
-    projectId: "school-connect-11578",
-    storageBucket: "school-connect-11578.firebasestorage.app",
-    messagingSenderId: "85015597520",
-    appId: "1:85015597520:web:6d1c895eade85026c4e9d5"
-  };
+    import {
+      initializeApp
+    } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
 
-  let currentUser = null;
-  let isPremium = localStorage.getItem('sc_premium') === 'true';
-  let appPin = localStorage.getItem('sc_pin');
-  let pinInput = '';
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      onSnapshot,
+      query,
+      orderBy,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 
-  function updatePremiumUI(){ 
-    if(isPremium){ 
-      document.querySelectorAll('.ad').forEach(ad => ad.classList.add('hide')); 
-      document.getElementById('premiumBadge').classList.remove('hidden'); 
-      document.getElementById('buyPremiumBtn').innerText = '✓ You are Premium';
-    } 
-  }
+    import {
+      getStorage,
+      ref,
+      uploadBytes,
+      getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-storage.js";
 
-  document.querySelectorAll('.nav button, .tile').forEach(b => b.onclick = () => {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav button').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(b.dataset.page).classList.add('active');
-    if(b.dataset.page) document.querySelector(`.nav button[data-page="${b.dataset.page}"]`)?.classList.add('active');
-  });
 
-  document.getElementById('switchBtn').onclick = () => {
-    document.getElementById('loginForm').classList.toggle('hidden');
-    document.getElementById('signupForm').classList.toggle('hidden');
-  }
+    /* FIREBASE CONFIG */
 
-  document.getElementById('signupForm').onsubmit = async (e) => {
-    e.preventDefault(); authmsg.innerText = "Creating...";
-    try{ await createUserWithEmailAndPassword(auth, se.value, sp.value); }
-    catch(err){ authmsg.innerText = err.message; }
-  }
-  
-  document.getElementById('loginForm').onsubmit = async (e) => {
-    e.preventDefault(); authmsg.innerText = "Logging in...";
-    try{ await signInWithEmailAndPassword(auth, le.value, lp.value); }
-    catch(err){ authmsg.innerText = err.message; }
-  }
+    const firebaseConfig = {
 
-  onAuthStateChanged(auth, user => {
-    if(user){
-      currentUser = user;
-      document.getElementById('auth').classList.add('hidden');
-      document.getElementById('app').classList.remove('hidden');
-      document.getElementById('userEmail').innerText = user.email;
-      updatePremiumUI();
-      loadAll();
-      if(appPin) document.getElementById('lockscreen').classList.remove('hidden');
+      apiKey: "AIzaSyBeBJ2fzqhq_yUMUxyq-OHMgI5eBG9t9po",
+
+      authDomain:
+        "school-connect-11578.firebaseapp.com",
+
+      projectId:
+        "school-connect-11578",
+
+      storageBucket:
+        "school-connect-11578.firebasestorage.app",
+
+      messagingSenderId:
+        "85015597520",
+
+      appId:
+        "1:85015597520:web:6d1c895eade85026c4e9d5"
+
+    };
+
+
+    /* FIREBASE INITIALIZATION */
+
+    const app = initializeApp(firebaseConfig);
+
+    const auth = getAuth(app);
+
+    const db = getFirestore(app);
+
+    const storage = getStorage(app);
+
+
+    /* VARIABLES */
+
+    let currentUser = null;
+
+    let isPremium =
+      localStorage.getItem("sc_premium") === "true";
+
+    let appPin =
+      localStorage.getItem("sc_pin");
+
+    let pinInput = "";
+
+    let listenersStarted = false;
+
+
+    /* ELEMENTS */
+
+    const authmsg =
+      document.getElementById("authmsg");
+
+    const feedList =
+      document.getElementById("feedList");
+
+    const reelsList =
+      document.getElementById("reelsList");
+
+    const messagesBox =
+      document.getElementById("messagesBox");
+
+    const questionList =
+      document.getElementById("questionList");
+
+    const aiChat =
+      document.getElementById("aiChat");
+
+    const reelUpload =
+      document.getElementById("reelUpload");
+
+    const uploadReelBtn =
+      document.getElementById("uploadReelBtn");
+
+
+    /* PREMIUM */
+
+    function updatePremiumUI() {
+
+      if (isPremium) {
+
+        document
+          .querySelectorAll(".ad")
+          .forEach(ad =>
+            ad.classList.add("hide")
+          );
+
+        document
+          .getElementById("premiumBadge")
+          .classList.remove("hidden");
+
+        document
+          .getElementById("buyPremiumBtn")
+          .innerText =
+          "✓ You are Premium";
+      }
+
     }
-  });
 
-  document.getElementById('logoutBtn').onclick = () => signOut(auth);
-  document.querySelectorAll('.pin button').forEach(btn => btn.onclick = () => {
-    if(btn.id === 'pinDelete'){ pinInput = pinInput.slice(0,-1); } 
-    else if(btn.innerText){ pinInput += btn.innerText; } 
-    if(pinInput.length === 4){ 
-      if(pinInput === appPin){ document.getElementById('lockscreen').classList.add('hidden'); } 
-      pinInput = '';
+
+    /* NAVIGATION */
+
+    document
+      .querySelectorAll(".nav button, .tile")
+      .forEach(button => {
+
+        button.onclick = () => {
+
+          const page =
+            button.dataset.page;
+
+          if (!page) return;
+
+          document
+            .querySelectorAll(".page")
+            .forEach(p =>
+              p.classList.remove("active")
+            );
+
+          document
+            .querySelectorAll(".nav button")
+            .forEach(btn =>
+              btn.classList.remove("active")
+            );
+
+          const target =
+            document.getElementById(page);
+
+          if (target) {
+            target.classList.add("active");
+          }
+
+          const navButton =
+            document.querySelector(
+              `.nav button[data-page="${page}"]`
+            );
+
+          if (navButton) {
+            navButton.classList.add("active");
+          }
+
+        };
+
+      });
+
+
+    /* SWITCH LOGIN/SIGNUP */
+
+    document
+      .getElementById("switchBtn")
+      .onclick = () => {
+
+        document
+          .getElementById("loginForm")
+          .classList.toggle("hidden");
+
+        document
+          .getElementById("signupForm")
+          .classList.toggle("hidden");
+
+        document
+          .getElementById("switchBtn")
+          .innerText =
+          document
+            .getElementById("signupForm")
+            .classList.contains("hidden")
+            ? "Create an account"
+            : "Back to login";
+
+      };
+
+
+    /* SIGN UP */
+
+    document
+      .getElementById("signupForm")
+      .onsubmit = async (e) => {
+
+        e.preventDefault();
+
+        authmsg.innerText =
+          "Creating account...";
+
+        try {
+
+          const credential =
+            await createUserWithEmailAndPassword(
+              auth,
+              document.getElementById("se").value,
+              document.getElementById("sp").value
+            );
+
+          authmsg.innerText =
+            "Account created!";
+
+        } catch (err) {
+
+          authmsg.innerText =
+            err.message;
+
+        }
+
+      };
+
+
+    /* LOGIN */
+
+    document
+      .getElementById("loginForm")
+      .onsubmit = async (e) => {
+
+        e.preventDefault();
+
+        authmsg.innerText =
+          "Logging in...";
+
+        try {
+
+          await signInWithEmailAndPassword(
+            auth,
+            document.getElementById("le").value,
+            document.getElementById("lp").value
+          );
+
+          authmsg.innerText = "";
+
+        } catch (err) {
+
+          authmsg.innerText =
+            err.message;
+
+        }
+
+      };
+
+
+    /* AUTH STATE */
+
+    onAuthStateChanged(auth, user => {
+
+      if (user) {
+
+        currentUser = user;
+
+        document
+          .getElementById("auth")
+          .classList.add("hidden");
+
+        document
+          .getElementById("app")
+          .classList.remove("hidden");
+
+        document
+          .getElementById("userEmail")
+          .innerText =
+          user.email || "";
+
+        updatePremiumUI();
+
+        if (!listenersStarted) {
+
+          listenersStarted = true;
+
+          loadAll();
+
+        }
+
+        if (appPin) {
+
+          document
+            .getElementById("lockscreen")
+            .classList.remove("hidden");
+
+        }
+
+      } else {
+
+        currentUser = null;
+
+        document
+          .getElementById("app")
+          .classList.add("hidden");
+
+        document
+          .getElementById("auth")
+          .classList.remove("hidden");
+
+      }
+
+    });
+
+
+    /* LOGOUT */
+
+    document
+      .getElementById("logoutBtn")
+      .onclick = () => {
+
+        signOut(auth);
+
+      };
+
+
+    /* PIN */
+
+    document
+      .querySelectorAll(".pin button")
+      .forEach(button => {
+
+        button.onclick = () => {
+
+          if (button.id === "pinDelete") {
+
+            pinInput =
+              pinInput.slice(0, -1);
+
+          } else if (button.innerText) {
+
+            if (pinInput.length < 4) {
+
+              pinInput +=
+                button.innerText;
+
+            }
+
+          }
+
+          if (pinInput.length === 4) {
+
+            if (pinInput === appPin) {
+
+              document
+                .getElementById("lockscreen")
+                .classList.add("hidden");
+
+            } else {
+
+              alert("Incorrect PIN");
+
+            }
+
+            pinInput = "";
+
+          }
+
+        };
+
+      });
+
+
+    /* SAVE PIN */
+
+    document
+      .getElementById("savePinBtn")
+      .onclick = () => {
+
+        const pin =
+          document
+            .getElementById("setPin")
+            .value
+            .trim();
+
+        if (!/^\d{4}$/.test(pin)) {
+
+          alert(
+            "PIN must contain exactly 4 numbers."
+          );
+
+          return;
+
+        }
+
+        localStorage.setItem(
+          "sc_pin",
+          pin
+        );
+
+        appPin = pin;
+
+        alert("PIN Saved");
+
+      };
+
+
+    /* LOCK */
+
+    document
+      .getElementById("lockBtn")
+      .onclick = () => {
+
+        if (!appPin) {
+
+          alert(
+            "Set a PIN in your profile first."
+          );
+
+          return;
+
+        }
+
+        pinInput = "";
+
+        document
+          .getElementById("lockscreen")
+          .classList.remove("hidden");
+
+      };
+
+
+    /* PREMIUM */
+
+    document
+      .getElementById("buyPremiumBtn")
+      .onclick = () => {
+
+        if (
+          confirm(
+            "Pay $1 to remove all ads for 30 days?"
+          )
+        ) {
+
+          /*
+            This is only a local demo.
+            Real payments need a payment provider.
+          */
+
+          localStorage.setItem(
+            "sc_premium",
+            "true"
+          );
+
+          isPremium = true;
+
+          updatePremiumUI();
+
+        }
+
+      };
+
+
+    /* CREATE POST */
+
+    async function postMessage() {
+
+      if (!currentUser) return;
+
+      const input =
+        document.getElementById("postInput");
+
+      const text =
+        input.value.trim();
+
+      if (!text) return;
+
+      try {
+
+        await addDoc(
+          collection(db, "posts"),
+          {
+            text: text,
+            uid: currentUser.uid,
+            user: currentUser.email,
+            time: serverTimestamp()
+          }
+        );
+
+        input.value = "";
+
+      } catch (error) {
+
+        alert(
+          "Post failed: " +
+          error.message
+        );
+
+      }
+
     }
-  });
-  document.getElementById('savePinBtn').onclick = () => { localStorage.setItem('sc_pin', document.getElementById('setPin').value); alert('PIN Saved'); }
-  document.getElementById('lockBtn').onclick = () => document.getElementById('lockscreen').classList.remove('hidden');
-  document.getElementById('buyPremiumBtn').onclick = () => {
-    if(confirm('Pay $1 to remove all ads for 30 days?')){
-      localStorage.setItem('sc_premium', 'true'); isPremium = true; updatePremiumUI();
+
+    document
+      .getElementById("postBtn")
+      .onclick = postMessage;
+
+
+    /* =========================
+       REELS UPLOAD
+       ========================= */
+
+    async function uploadReel() {
+
+      if (!currentUser) {
+
+        alert("Please log in first.");
+
+        return;
+
+      }
+
+      const file =
+        reelUpload.files[0];
+
+      if (!file) {
+
+        alert(
+          "Please choose a video first."
+        );
+
+        return;
+
+      }
+
+      if (!file.type.startsWith("video/")) {
+
+        alert(
+          "Please select a video file."
+        );
+
+        return;
+
+      }
+
+      if (file.size > 50 * 1024 * 1024) {
+
+        alert(
+          "Video must be smaller than 50MB."
+        );
+
+        return;
+
+      }
+
+      const caption =
+        document
+          .getElementById("reelCaption")
+          .value
+          .trim();
+
+      try {
+
+        uploadReelBtn.disabled = true;
+
+        uploadReelBtn.innerText =
+          "Uploading...";
+
+        const safeName =
+          file.name.replace(
+            /[^a-zA-Z0-9._-]/g,
+            "_"
+          );
+
+        const fileName =
+          Date.now() +
+          "_" +
+          safeName;
+
+        const storageRef =
+          ref(
+            storage,
+            "reels/" + fileName
+          );
+
+        const snapshot =
+          await uploadBytes(
+            storageRef,
+            file
+          );
+
+        const videoUrl =
+          await getDownloadURL(
+            snapshot.ref
+          );
+
+        await addDoc(
+          collection(db, "reels"),
+          {
+            uid: currentUser.uid,
+            user: currentUser.email,
+            videoUrl: videoUrl,
+            caption: caption,
+            time: serverTimestamp()
+          }
+        );
+
+        reelUpload.value = "";
+
+        document
+          .getElementById("reelCaption")
+          .value = "";
+
+        alert(
+          "Reel uploaded successfully! 🎬"
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Reel upload failed: " +
+          error.message
+        );
+
+      } finally {
+
+        uploadReelBtn.disabled = false;
+
+        uploadReelBtn.innerText =
+          "🎬 Upload Reel";
+
+      }
+
     }
-  };
 
-  async function postMessage(){
-    if(!postInput.value) return;
-    await addDoc(collection(db, "posts"), { text: postInput.value, user: currentUser.email, time: serverTimestamp() });
-    postInput.value = '';
-  }
-  document.getElementById('postBtn').onclick = postMessage;
+    uploadReelBtn.onclick =
+      uploadReel;
 
-  async function uploadReel(){
-    const file = reelUpload.files[0]; if(!file) return;
-    const storageRef = ref(storage, 'reels/' + Date.now() + file.name);
-    const snap = await uploadBytes(storageRef, file);
-    const url = await getDownloadURL(snap.ref);
-    await addDoc(collection(db, "reels"), { videoUrl: url, user: currentUser.email, time: serverTimestamp() });
-  }
-  document.getElementById('uploadReelBtn').onclick = uploadReel;
 
-  async function askQuestion(){
-    if(!questionInput.value) return;
-    await addDoc(collection(db, "questions"), { text: questionInput.value, user: currentUser.email, time: serverTimestamp() });
-    questionInput.value = '';
-  }
-  document.getElementById('askBtn').onclick = askQuestion;
+    /* =========================
+       REEL PLAYBACK
+       ========================= */
 
-  async function sendMessage(){
-    if(!msgInput.value) return;
-    await addDoc(collection(db, "messages"), { text: msgInput.value, user: currentUser.email, time: serverTimestamp() });
-    msgInput.value = '';
-  }
-  document.getElementById('sendMsgBtn').onclick = sendMessage;
+    function setupReelVideos() {
 
-  async function askAI(){
-    const question = aiInput.value; if(!question) return;
-    aiChat.innerHTML += `<div class="bubble"><b>You:</b> ${question}</div>`;
-    aiInput.value = '';
-    const answer = "This is AI answer. To make it real, we need to add Gemini API key in Firebase.";
-    await addDoc(collection(db, "ai_chats"), { user: currentUser.email, question, answer, time: serverTimestamp() });
-    aiChat.innerHTML += `<div class="bubble mine"><b>AI:</b> ${answer}</div>`;
-    aiChat.scrollTop = aiChat.scrollHeight;
-  }
-  document.getElementById('aiSendBtn').onclick = askAI;
+      const videos =
+        document.querySelectorAll(
+          ".reel-video"
+        );
 
-  function loadAll(){
-    onSnapshot(query(collection(db, "posts"), orderBy("time", "desc")), (snap) => {
-      feedList.innerHTML = ''; snap.forEach(doc => { const d = doc.data(); feedList.innerHTML += `<div class="card"><b>${d.user}</b><p>${d.text}</p></div>`; });
-    });
-    onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), (snap) => {
-      reelsList.innerHTML = ''; snap.forEach(doc => { const d = doc.data(); reelsList.innerHTML += `<div class="card"><b>${d.user}</b><video src="${d.videoUrl}" controls></video></div>`; });
-    });
-    onSnapshot(query(collection(db, "messages"), orderBy("time", "asc")), (snap) => {
-      messagesBox.innerHTML = ''; snap.forEach(doc => { const d = doc.data(); const mine = d.user === currentUser.email ? 'mine' : ''; messagesBox.innerHTML += `<div class="bubble ${mine}"><b>${d.user.split('@')[0]}:</b> ${d.text}</div>`; });
-      messagesBox.scrollTop = messagesBox.scrollHeight;
-    });
-    onSnapshot(query(collection(db, "questions"), orderBy("time", "desc")), (snap) => {
-      questionList.innerHTML = ''; snap.forEach(doc => { const d = doc.data(); questionList.innerHTML += `<div class="card"><b>${d.user}</b><p>${d.text}</p></div>`; });
-    });
-  }
-</script>
+      if (!videos.length) return;
+
+      const observer =
+        new IntersectionObserver(
+          entries => {
+
+            entries.forEach(entry => {
+
+              const video =
+                entry.target;
+
+              if (entry.isIntersecting) {
+
+                videos.forEach(other => {
+
+                  if (other !== video) {
+
+                    other.pause();
+
+                  }
+
+                });
+
+                video
+                  .play()
+                  .catch(() => {});
+
+              } else {
+
+                video.pause();
+
+              }
+
+            });
+
+          },
+          {
+            threshold: 0.7
+          }
+        );
+
+      videos.forEach(video => {
+
+        observer.observe(video);
+
+        video.onclick = () => {
+
+          if (video.paused) {
+
+            video
+              .play()
+              .catch(() => {});
+
+          } else {
+
+            video.pause();
+
+          }
+
+        };
+
+      });
+
+    }
+
+
+    /* REEL PLAY/PAUSE */
+
+    window.toggleReel =
+      function(button) {
+
+        const card =
+          button.closest(".reel-card");
+
+        const video =
+          card.querySelector(
+            ".reel-video"
+          );
+
+        if (video.paused) {
+
+          video
+            .play()
+            .catch(() => {});
+
+          button.innerText =
+            "⏸️";
+
+        } else {
+
+          video.pause();
+
+          button.innerText =
+            "▶️";
+
+        }
+
+      };
+
+
+    /* REEL MUTE */
+
+    window.muteReel =
+      function(button) {
+
+        const card =
+          button.closest(".reel-card");
+
+        const video =
+          card.querySelector(
+            ".reel-video"
+          );
+
+        video.muted =
+          !video.muted;
+
+        button.innerText =
+          video.muted
+            ? "🔇"
+            : "🔊";
+
+      };
+
+
+    /* REEL SHARE */
+
+    window.shareReel =
+      async function(url) {
+
+        try {
+
+          if (
+            navigator.share
+          ) {
+
+            await navigator.share({
+              title:
+                "StudentConnect Reel",
+              text:
+                "Check out this StudentConnect Reel!",
+              url: url
+            });
+
+          } else {
+
+            await navigator.clipboard.writeText(
+              url
+            );
+
+            alert(
+              "Reel link copied!"
+            );
+
+          }
+
+        } catch (error) {
+
+          console.log(
+            "Share cancelled."
+          );
+
+        }
+
+      };
+
+
+    /* ASK QUESTION */
+
+    async function askQuestion() {
+
+      if (!currentUser) return;
+
+      const input =
+        document.getElementById(
+          "questionInput"
+        );
+
+      const text =
+        input.value.trim();
+
+      if (!text) return;
+
+      try {
+
+        await addDoc(
+          collection(db, "questions"),
+          {
+            text: text,
+            uid: currentUser.uid,
+            user: currentUser.email,
+            time: serverTimestamp()
+          }
+        );
+
+        input.value = "";
+
+      } catch (error) {
+
+        alert(
+          "Question failed: " +
+          error.message
+        );
+
+      }
+
+    }
+
+    document
+      .getElementById("askBtn")
+      .onclick = askQuestion;
+
+
+    /* SEND CHAT MESSAGE */
+
+    async function sendMessage() {
+
+      if (!currentUser) return;
+
+      const input =
+        document.getElementById(
+          "msgInput"
+        );
+
+      const text =
+        input.value.trim();
+
+      if (!text) return;
+
+      try {
+
+        await addDoc(
+          collection(db, "messages"),
+          {
+            text: text,
+            uid: currentUser.uid,
+            user: currentUser.email,
+            time: serverTimestamp()
+          }
+        );
+
+        input.value = "";
+
+      } catch (error) {
+
+        alert(
+          "Message failed: " +
+          error.message
+        );
+
+      }
+
+    }
+
+    document
+      .getElementById("sendMsgBtn")
+      .onclick = sendMessage;
+
+
+    /* AI DEMO */
+
+    async function askAI() {
+
+      if (!currentUser) return;
+
+      const input =
+        document.getElementById(
+          "aiInput"
+        );
+
+      const question =
+        input.value.trim();
+
+      if (!question) return;
+
+      aiChat.innerHTML += `
+        <div class="bubble">
+          <b>You:</b>
+          ${escapeHTML(question)}
+        </div>
+      `;
+
+      input.value = "";
+
+      const answer =
+        "The AI Study Assistant is ready for the real AI connection. We will connect the AI API later.";
+
+      try {
+
+        await addDoc(
+          collection(db, "ai_chats"),
+          {
+            uid: currentUser.uid,
+            user: currentUser.email,
+            question: question,
+            answer: answer,
+            time: serverTimestamp()
+          }
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+      }
+
+      aiChat.innerHTML += `
+        <div class="bubble mine">
+          <b>AI:</b>
+          ${escapeHTML(answer)}
+        </div>
+      `;
+
+      aiChat.scrollTop =
+        aiChat.scrollHeight;
+
+    }
+
+    document
+      .getElementById("aiSendBtn")
+      .onclick = askAI;
+
+
+    /* SIMPLE HTML ESCAPE */
+
+    function escapeHTML(text) {
+
+      const div =
+        document.createElement("div");
+
+      div.textContent = text;
+
+      return div.innerHTML;
+
+    }
+
+
+    /* =========================
+       LOAD FIREBASE DATA
+       ========================= */
+
+    function loadAll() {
+
+      /* POSTS */
+
+      onSnapshot(
+        query(
+          collection(db, "posts"),
+          orderBy("time", "desc")
+        ),
+        snap => {
+
+          feedList.innerHTML = "";
+
+          snap.forEach(docSnap => {
+
+            const d =
+              docSnap.data();
+
+            feedList.innerHTML += `
+              <div class="card" style="margin-top:10px">
+                <b>${escapeHTML(d.user || "Student")}</b>
+                <p>${escapeHTML(d.text || "")}</p>
+              </div>
+            `;
+
+          });
+
+        },
+        error => {
+
+          console.error(
+            "Posts error:",
+            error
+          );
+
+        }
+      );
+
+
+      /* =========================
+         REELS
+         ========================= */
+
+      onSnapshot(
+        query(
+          collection(db, "reels"),
+          orderBy("time", "desc")
+        ),
+        snap => {
+
+          reelsList.innerHTML = "";
+
+          snap.forEach(docSnap => {
+
+            const d =
+              docSnap.data();
+
+            const user =
+              escapeHTML(
+                d.user || "Student"
+              );
+
+            const caption =
+              escapeHTML(
+                d.caption || ""
+              );
+
+            const videoUrl =
+              escapeHTML(
+                d.videoUrl || ""
+              );
+
+            reelsList.innerHTML += `
+
+              <article class="reel-card">
+
+                <video
+                  class="reel-video"
+                  src="${videoUrl}"
+                  playsinline
+                  loop
+                  muted
+                  preload="metadata">
+                </video>
+
+                <div class="reel-overlay"></div>
+
+                <div class="reel-info">
+
+                  <b>👤 ${user}</b>
+
+                  ${
+                    caption
+                      ? `<p>${caption}</p>`
+                      : ""
+                  }
+
+                </div>
+
+                <div class="reel-actions">
+
+                  <button
+                    onclick="toggleReel(this)">
+                    ▶️
+                  </button>
+
+                  <button
+                    onclick="muteReel(this)">
+                    🔇
+                  </button>
+
+                  <button
+                    onclick="shareReel('${videoUrl}')">
+                    ↗️
+                  </button>
+
+                  <button
+                    onclick="alert('Like feature coming next ❤️')">
+                    ❤️
+                  </button>
+
+                  <button
+                    onclick="alert('Comments feature coming next 💬')">
+                    💬
+                  </button>
+
+                </div>
+
+              </article>
+
+            `;
+
+          });
+
+          setupReelVideos();
+
+        },
+        error => {
+
+          console.error(
+            "Reels error:",
+            error
+          );
+
+          reelsList.innerHTML = `
+            <div class="card">
+              <b>Unable to load Reels.</b>
+              <p>
+                Check your Firebase rules and internet connection.
+              </p>
+            </div>
+          `;
+
+        }
+      );
+
+
+      /* MESSAGES */
+
+      onSnapshot(
+        query(
+          collection(db, "messages"),
+          orderBy("time", "asc")
+        ),
+        snap => {
+
+          messagesBox.innerHTML = "";
+
+          snap.forEach(docSnap => {
+
+            const d =
+              docSnap.data();
+
+            const mine =
+              d.uid === currentUser.uid
+                ? "mine"
+                : "";
+
+            const name =
+              escapeHTML(
+                d.user
+                  ? d.user.split("@")[0]
+                  : "Student"
+              );
+
+            const text =
+              escapeHTML(
+                d.text || ""
+              );
+
+            messagesBox.innerHTML += `
+
+              <div class="bubble ${mine}">
+
+                <b>${name}:</b>
+                ${text}
+
+              </div>
+
+            `;
+
+          });
+
+          messagesBox.scrollTop =
+            messagesBox.scrollHeight;
+
+        },
+        error => {
+
+          console.error(
+            "Messages error:",
+            error
+          );
+
+        }
+      );
+
+
+      /* QUESTIONS */
+
+      onSnapshot(
+        query(
+          collection(db, "questions"),
+          orderBy("time", "desc")
+        ),
+        snap => {
+
+          questionList.innerHTML = "";
+
+          snap.forEach(docSnap => {
+
+            const d =
+              docSnap.data();
+
+            questionList.innerHTML += `
+
+              <div class="card" style="margin-top:10px">
+
+                <b>
+                  👤 ${escapeHTML(
+                    d.user || "Student"
+                  )}
+                </b>
+
+                <p>
+                  ${escapeHTML(
+                    d.text || ""
+                  )}
+                </p>
+
+              </div>
+
+            `;
+
+          });
+
+        },
+        error => {
+
+          console.error(
+            "Questions error:",
+            error
+          );
+
+        }
+      );
+
+    }
+
+  </script>
+
 </body>
 </html>
